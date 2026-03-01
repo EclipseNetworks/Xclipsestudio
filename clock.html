@@ -41,7 +41,7 @@
         align-items: center;
         justify-content: center;
         min-height: 100vh;
-        overflow: hidden;
+        overflow-x: hidden;
       }
 
       /* REACTIVE MESH BACKGROUND */
@@ -84,6 +84,15 @@
       }
 
       .no-select { user-select: none; }
+      
+      /* TIME DIFFERENCE PULSE */
+      .diff-glow {
+        animation: pulseText 2s infinite ease-in-out;
+      }
+      @keyframes pulseText {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; text-shadow: 0 0 15px rgba(236, 72, 153, 0.5); }
+      }
     </style>
 </head>
 <body class="no-select">
@@ -91,8 +100,9 @@
     <canvas id="bg-canvas"></canvas>
     <div class="mesh-gradient" id="mesh"></div>
 
-    <div class="w-full max-w-5xl px-6 relative z-10">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+    <div class="w-full max-w-5xl px-6 relative z-10 py-20">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
             
             <div class="glass-card p-12 rounded-[3.5rem] text-center relative overflow-hidden group">
                 <div class="absolute top-6 right-10 flex items-center gap-2">
@@ -118,6 +128,20 @@
                 <p class="text-[10px] text-gray-600 uppercase font-black tracking-[0.5em]">Queensland Time</p>
             </div>
 
+        </div>
+
+        <div class="glass-card max-w-2xl mx-auto p-8 rounded-full border-white/5 flex items-center justify-center gap-8 overflow-hidden relative">
+            <div class="absolute inset-0 bg-primary/5 blur-3xl"></div>
+            <div class="relative z-10 flex flex-col items-center">
+                <p class="text-[9px] font-black uppercase tracking-[0.8em] text-primary mb-2 italic opacity-60">Temporal Offset</p>
+                <div class="flex items-center gap-6">
+                    <i class="fas fa-bolt text-primary animate-pulse text-xs"></i>
+                    <span id="time-difference" class="font-display text-white text-xl md:text-2xl italic tracking-widest diff-glow">
+                        CALCULATING...
+                    </span>
+                    <i class="fas fa-bolt text-primary animate-pulse text-xs"></i>
+                </div>
+            </div>
         </div>
 
         <div class="mt-16 text-center opacity-20 group">
@@ -180,7 +204,7 @@
             requestAnimationFrame(animate);
         }
 
-        /* CLOCK ENGINE */
+        /* CLOCK & DIFFERENCE ENGINE */
         function updateStudioClocks() {
             const now = new Date();
             
@@ -195,6 +219,25 @@
 
             document.getElementById('bordertown-clock').innerText = btTime;
             document.getElementById('goldcoast-clock').innerText = gcTime;
+
+            // Calculate Difference
+            const btDate = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Adelaide' }));
+            const gcDate = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }));
+            
+            const diffMs = gcDate - btDate;
+            const diffMinsTotal = Math.round(diffMs / 60000);
+            const diffHrs = Math.floor(Math.abs(diffMinsTotal) / 60);
+            const diffMinsRemaining = Math.abs(diffMinsTotal) % 60;
+            
+            let diffStr = "";
+            if (diffMinsTotal === 0) {
+                diffStr = "SYSTEMS ALIGNED";
+            } else {
+                const relation = diffMinsTotal > 0 ? "AHEAD" : "BEHIND";
+                diffStr = `${diffHrs}H ${diffMinsRemaining}M ${relation}`;
+            }
+            
+            document.getElementById('time-difference').innerText = diffStr;
         }
 
         window.addEventListener('resize', resize);
