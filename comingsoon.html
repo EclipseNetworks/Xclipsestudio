@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REMIX STUDIO | Reactive Intelligence</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: { primary: '#10b981', secondary: '#22d3ee', dark: '#050a15' },
+            fontFamily: { sans: ['Montserrat', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }
+          }
+        }
+      }
+    </script>
+
+    <style>
+      body { background-color: #050a15; overflow-x: hidden; }
+      
+      /* Animated Tech Grid */
+      .grid-bg {
+        background-image: linear-gradient(to right, rgba(16, 185, 129, 0.05) 1px, transparent 1px),
+                          linear-gradient(to bottom, rgba(16, 185, 129, 0.05) 1px, transparent 1px);
+        background-size: 40px 40px;
+        mask-image: radial-gradient(circle at center, black, transparent 80%);
+        animation: grid-travel 40s linear infinite;
+      }
+      @keyframes grid-travel { from { background-position: 0 0; } to { background-position: 0 400px; } }
+
+      /* Reactive Scanning Line */
+      .scanner {
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #10b981, transparent);
+        opacity: 0.3;
+        animation: scan 4s ease-in-out infinite;
+      }
+      @keyframes scan { 0% { top: 0%; } 100% { top: 100%; } }
+
+      /* Number Reactive Pulse */
+      .number-pulse { animation: glitch-bump 0.3s ease-out; }
+      @keyframes glitch-bump {
+        0% { transform: scale(1.1) skewX(-5deg); filter: hue-rotate(90deg); }
+        100% { transform: scale(1) skewX(0deg); filter: hue-rotate(0deg); }
+      }
+
+      .glass-blur {
+        background: rgba(255, 255, 255, 0.01);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(16, 185, 129, 0.1);
+        box-shadow: 0 0 30px rgba(0,0,0,0.5);
+      }
+
+      /* Glitch Text Effect */
+      .glitch-text:hover {
+        animation: glitch 0.3s cubic-bezier(.25,.46,.45,.94) both infinite;
+      }
+      @keyframes glitch {
+        0% { transform: translate(0); }
+        20% { transform: translate(-2px, 2px); }
+        40% { transform: translate(-2px, -2px); }
+        60% { transform: translate(2px, 2px); }
+        80% { transform: translate(2px, -2px); }
+        100% { transform: translate(0); }
+      }
+    </style>
+</head>
+<body class="text-white font-sans selection:bg-primary/30">
+
+    <div class="fixed inset-0 grid-bg -z-10"></div>
+    <div class="fixed inset-0 scanner -z-10"></div>
+
+    <main class="min-h-screen flex flex-col items-center justify-center p-6 relative">
+        
+        <div class="absolute top-10 flex gap-8 items-center opacity-50 font-mono text-[9px] uppercase tracking-[0.4em]">
+            <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span>
+                SIGNAL_STRENGTH: 100%
+            </div>
+            <div class="hidden md:block">ENCRYPTION: AES-256</div>
+            <div class="hidden md:block">LOC: Bordertown_Node</div>
+        </div>
+
+        <div class="text-center mb-12">
+            <h1 class="text-6xl md:text-9xl font-black italic tracking-tighter uppercase leading-none mb-4 glitch-text">
+                Remix<br/><span class="text-primary">Studio</span>
+            </h1>
+            <div class="flex items-center justify-center gap-4">
+                <div class="h-[1px] w-12 bg-primary/30"></div>
+                <p class="font-mono text-[10px] tracking-[0.5em] text-gray-400 uppercase">Deploying Audio Intelligence</p>
+                <div class="h-[1px] w-12 bg-primary/30"></div>
+            </div>
+        </div>
+
+        <div id="countdown" class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl">
+            <div class="glass-blur p-8 rounded-3xl text-center group transition-all hover:border-primary/50">
+                <span id="days" class="text-5xl md:text-7xl font-black block leading-none">00</span>
+                <span class="text-[9px] font-mono text-primary uppercase mt-4 block tracking-[0.3em]">Days</span>
+            </div>
+            <div class="glass-blur p-8 rounded-3xl text-center group transition-all hover:border-primary/50">
+                <span id="hours" class="text-5xl md:text-7xl font-black block leading-none">00</span>
+                <span class="text-[9px] font-mono text-primary uppercase mt-4 block tracking-[0.3em]">Hours</span>
+            </div>
+            <div class="glass-blur p-8 rounded-3xl text-center group transition-all hover:border-secondary/50">
+                <span id="minutes" class="text-5xl md:text-7xl font-black block leading-none text-secondary">00</span>
+                <span class="text-[9px] font-mono text-secondary uppercase mt-4 block tracking-[0.3em]">Minutes</span>
+            </div>
+            <div class="glass-blur p-8 rounded-3xl text-center group transition-all hover:border-secondary/50">
+                <span id="seconds" class="text-5xl md:text-7xl font-black block leading-none text-secondary">00</span>
+                <span class="text-[9px] font-mono text-secondary uppercase mt-4 block tracking-[0.3em]">Seconds</span>
+            </div>
+        </div>
+
+        <div class="mt-16 w-full max-w-2xl font-mono text-[10px] text-primary/40 glass-blur p-4 rounded-xl border-white/5 h-24 overflow-hidden relative">
+            <div id="terminal" class="space-y-1"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent pointer-events-none"></div>
+        </div>
+
+    </main>
+
+    <div class="fixed bottom-10 right-10 flex flex-col gap-6">
+        <a href="https://www.instagram.com/thekidleeroy.m/" class="hover:text-primary transition-all hover:-translate-y-1"><i class="fab fa-instagram text-xl"></i></a>
+        <a href="https://discord.gg/rbleaks" class="hover:text-primary transition-all hover:-translate-y-1"><i class="fab fa-discord text-xl"></i></a>
+    </div>
+
+    <script>
+      // Countdown Logic
+      const targetDate = new Date("March 8, 2026 00:00:00").getTime();
+      const ids = ['days', 'hours', 'minutes', 'seconds'];
+      let cache = {};
+
+      function updateCountdown() {
+        const now = new Date().getTime();
+        const diff = targetDate - now;
+
+        const time = {
+          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((diff % (1000 * 60)) / 1000)
+        };
+
+        ids.forEach(id => {
+          const el = document.getElementById(id);
+          const val = time[id].toString().padStart(2, '0');
+          if (val !== cache[id]) {
+            el.innerText = val;
+            el.classList.remove('number-pulse');
+            void el.offsetWidth;
+            el.classList.add('number-pulse');
+            cache[id] = val;
+          }
+        });
+      }
+
+      // Terminal Simulation
+      const logs = [
+        "INITIALIZING AUDIO_CORE...",
+        "STABILIZING BASS_FREQUENCIES...",
+        "OPTIMIZING SIGNAL_FLOW...",
+        "ENCODING REMIX_LOGIC_V2...",
+        "DECODING STEREO_IMAGING...",
+        "SYNCING TO MASTER_CLOCK...",
+        "UPLOADING SONIC_ASSETS...",
+        "COMPILING WAVEFORM_DATA..."
+      ];
+      const terminal = document.getElementById('terminal');
+
+      function addLog() {
+        const p = document.createElement('p');
+        p.innerText = `> ${logs[Math.floor(Math.random() * logs.length)]}`;
+        terminal.prepend(p);
+        if (terminal.children.length > 5) terminal.lastChild.remove();
+      }
+
+      setInterval(updateCountdown, 1000);
+      setInterval(addLog, 2000);
+      updateCountdown();
+    </script>
+</body>
+</html>

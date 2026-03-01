@@ -1,0 +1,63 @@
+    <!-- Server Requirements -->
+    <section class="py-16 bg-dark">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-12 text-center" data-aos="fade-up">Server <span class="text-primary">Requirements</span></h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <!-- Minimum Requirements -->
+          <div class="bg-dark-light p-6 rounded-lg" data-aos="fade-up">
+            <div class="text-primary text-3xl mb-4">
+              <i class="fas fa-microchip"></i>
+            </div>
+            <h3 class="font-bold mb-4">Minimum Requirements</h3>
+            <ul class="space-y-2 text-gray-300">
+              <li><i class="fas fa-check text-primary mr-2"></i>CPU: Intel i5-4460</li>
+              <li><i class="fas fa-check text-primary mr-2"></i>RAM: 8GB</li>
+              <li><i class="fas fa-check text-primary mr-2"></i>GPU: GTX 760</li>
+              <li><i class="fas fa-check text-primary mr-2"></i>Storage: 120GB</li>
+            </ul>
+          </div>
+
+          <!-- Recommended Requirements -->
+          <div class="bg-dark-light p-6 rounded-lg" data-aos="fade-up" data-aos-delay="100">
+            <div class="text-primary text-3xl mb-4">
+              <i class="fas fa-desktop"></i>
+            </div>
+            <h3 class="font-bold mb-4">Recommended Requirements</h3>
+            <ul class="space-y-2 text-gray-300">
+              <li><i class="fas fa-check text-primary mr-2"></i>CPU: Intel i7-8700K</li>
+              <li><i class="fas fa-check text-primary mr-2"></i>RAM: 16GB</li>
+              <li><i class="fas fa-check text-primary mr-2"></i>GPU: RTX 2060</li>
+              <li><i class="fas fa-check text-primary mr-2"></i>Storage: 250GB SSD</li>
+            </ul>
+          </div>
+
+          <!-- Software Requirements -->
+          <div class="bg-dark-light p-6 rounded-lg" data-aos="fade-up" data-aos-delay="200">
+            <div class="text-primary text-3xl mb-4">
+              <i class="fas fa-download"></i>
+            </div>
+            <h3 class="font-bold mb-4">Required Software</h3>
+            <ul class="space-y-2 text-gray-300">
+              <li><i class="fas fa-check text-primary mr-2"></i>GTA V (Legal Copy)</li>
+              <li><i class="fas fa-check text-primary mr-2"></i>FiveM Client</li>
+              <li><i class="fas fa-check text-primary mr-2"></i>Discord App</li>
+              <li><i class="fas fa-check text-primary mr-2"></i>Teamspeak 3</li>
+            </ul>
+          </div>
+
+          <!-- Additional Info -->
+          <div class="bg-dark-light p-6 rounded-lg" data-aos="fade-up" data-aos-delay="300">
+            <div class="text-primary text-3xl mb-4">
+              <i class="fas fa-info-circle"></i>
+            </div>
+            <h3 class="font-bold mb-4">Important Notes</h3>
+            <ul class="space-y-2 text-gray-300">
+              <li><i class="fas fa-check text-primary mr-2"></i>Stable Internet Connection</li>
+              <li><i class="fas fa-check text-primary mr-2"></i>Working Microphone</li>
+              <li><i class="fas fa-check text-primary mr-2"></i>Age: 10+</li>
+              <li><i class="fas fa-check text-primary mr-2"></i>English Communication</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>

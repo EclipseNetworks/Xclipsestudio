@@ -1,0 +1,49 @@
+<!-- FAQ Section -->
+    <section class="py-16 bg-dark-light">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-12 text-center" data-aos="fade-up">Frequently Asked <span class="text-primary">Questions</span></h2>
+        <div class="max-w-3xl mx-auto space-y-4">
+          <!-- FAQ Item 1 -->
+          <div class="bg-dark p-6 rounded-lg shadow-lg" data-aos="fade-up">
+            <button class="faq-btn w-full text-left flex justify-between items-center">
+              <h3 class="text-lg font-bold">How do I join the server?</h3>
+              <i class="fas fa-chevron-down text-primary"></i>
+            </button>
+            <div class="faq-content hidden mt-4">
+              <p class="text-gray-300">To join our server, you need to have FiveM installed and join our Discord server. After that, you'll need to complete the whitelist application process.</p>
+            </div>
+          </div>
+
+          <!-- FAQ Item 2 -->
+          <div class="bg-dark p-6 rounded-lg shadow-lg" data-aos="fade-up" data-aos-delay="100">
+            <button class="faq-btn w-full text-left flex justify-between items-center">
+              <h3 class="text-lg font-bold">What are the server rules?</h3>
+              <i class="fas fa-chevron-down text-primary"></i>
+            </button>
+            <div class="faq-content hidden mt-4">
+              <p class="text-gray-300">Our server rules can be found in the #rules channel on our Discord server. They include guidelines for roleplay, behavior, and server etiquette.</p>
+            </div>
+          </div>
+
+          <!-- FAQ Item 3 -->
+          <div class="bg-dark p-6 rounded-lg shadow-lg" data-aos="fade-up" data-aos-delay="200">
+            <button class="faq-btn w-full text-left flex justify-between items-center">
+              <h3 class="text-lg font-bold">How do I report a player?</h3>
+              <i class="fas fa-chevron-down text-primary"></i>
+            </button>
+            <div class="faq-content hidden mt-4">
+              <p class="text-gray-300">You can report players through our Discord server using the #report channel or by submitting a ticket through our support system.</p>
+            </div>
+          </div>
+
+          <!-- FAQ Item 4 -->
+          <div class="bg-dark p-6 rounded-lg shadow-lg" data-aos="fade-up" data-aos-delay="300">
+            <button class="faq-btn w-full text-left flex justify-between items-center">
+              <h3 class="text-lg font-bold">What are the server requirements?</h3>
+              <i class="fas fa-chevron-down text-primary"></i>
+            </button>
+            <div class="faq-content hidden mt-4">
+              <p class="text-gray-300">You need a valid copy of GTA V, the latest version of FiveM, and a Discord account. A microphone is recommended for voice chat.</p>
+            </div>
+          </div>
+        </div>

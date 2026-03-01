@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>★》 Visual Gallery | XCLIPSE STUDIO 《★</title>
+    
+<link rel="icon" type="image/png" href="logo.png">    <meta name="description" content="Visual archive of Xclipse Studio song covers, studio sessions, and network art.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Montserrat:wght@100;200;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#ec4899', 
+              secondary: '#a855f7',
+              accent: '#10b981',
+              dark: '#050811',
+              'dark-light': '#0f172a',
+              'glass': 'rgba(255, 255, 255, 0.01)'
+            },
+            fontFamily: { 
+                sans: ['Montserrat', 'sans-serif'],
+                display: ['Syncopate', 'sans-serif'],
+                mono: ['JetBrains Mono', 'monospace']
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
+      :root {
+        --p-glow: #ec4899;
+        --transition-master: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      html { 
+        scroll-behavior: smooth; 
+        cursor: none; 
+        overflow-x: hidden; 
+        background: #050811;
+        font-size: 13px;
+      }
+      
+      body { color: white; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+      /* UI ARCHITECTURE */
+      #cursor { width: 8px; height: 8px; background: var(--p-glow); border-radius: 50%; position: fixed; pointer-events: none; z-index: 10000000; transition: transform 0.05s linear; mix-blend-mode: difference; }
+      #cursor-blur { width: 150px; height: 150px; background: rgba(236, 72, 153, 0.1); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999999; filter: blur(50px); transition: transform 0.2s var(--transition-master); }
+
+      .mesh-gradient { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, #0c1021 0%, #050811 100%); }
+      .blob { position: absolute; width: 450px; height: 450px; background: rgba(236, 72, 153, 0.03); filter: blur(100px); border-radius: 50%; animation: morph 20s infinite alternate; }
+      @keyframes morph { 0% { border-radius: 50%; } 50% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; } 100% { border-radius: 50%; } }
+
+      .glass-card { background: rgba(255, 255, 255, 0.015); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); transition: 0.4s var(--transition-master); }
+      .reveal-text { background: linear-gradient(to right, #fff, #ec4899, #fff); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 6s linear infinite; }
+      @keyframes shine { to { background-position: 200% center; } }
+
+      .gallery-frame { position: relative; overflow: hidden; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.05); transition: 0.5s var(--transition-master); }
+      .gallery-frame:hover { border-color: #ec4899; transform: translateY(-5px); }
+      .gallery-frame img { transition: 0.8s var(--transition-master); }
+      .gallery-frame:hover img { transform: scale(1.1); filter: saturate(1.2); }
+
+      .no-select { user-select: none; }
+    </style>
+  </head>
+
+  <body class="no-select">
+
+    <div id="no-inspect-shield"></div>
+    <div id="cursor"></div>
+    <div id="cursor-blur"></div>
+    <div class="mesh-gradient">
+        <div class="blob" style="top: 10%; left: 5%;"></div>
+        <div class="blob" style="bottom: 10%; right: 5%; background: rgba(168, 85, 247, 0.03); animation-delay: -5s;"></div>
+    </div>
+
+    <header class="fixed top-0 w-full z-[10000] px-8 py-6 md:px-14 flex justify-between items-center mix-blend-exclusion">
+        <div class="flex items-center gap-4 group">
+            <div class="w-9 h-9 border border-primary rounded flex items-center justify-center rotate-45 group-hover:rotate-[225deg] transition-all duration-1000">
+                <span class="font-display text-primary text-xl -rotate-45 group-hover:rotate-[-225deg] transition-all">X</span>
+            </div>
+            <a href="index.html" class="font-display text-lg md:text-xl font-bold tracking-tighter uppercase italic text-white">XCLIPSE<span class="text-primary">STUDIO</span></a>
+        </div>
+        <nav class="hidden lg:flex items-center gap-12 font-medium text-[9px] uppercase tracking-[0.4em]">
+            <a href="index.html" class="hover:text-primary transition py-1 text-white">Home</a>
+            <a href="upcoming.html" class="hover:text-primary transition py-1 text-white text-primary">Gallery</a>
+            <a href="terms.html" class="hover:text-primary transition py-1 text-white">Terms</a>
+            <a href="rules.html" class="hover:text-primary transition py-1 text-white">Rules</a>
+        </nav>
+    </header>
+
+    <main class="pt-32 pb-20 px-6">
+      <section class="text-center mb-24" data-aos="fade-up">
+        <h1 class="reveal-text text-5xl md:text-7xl font-black italic tracking-tighter uppercase mb-4">Visual <span class="text-primary">Archive</span></h1>
+        <p class="text-gray-400 font-mono text-[10px] tracking-widest uppercase italic">Xclipse Studio Track Assets & Media</p>
+      </section>
+
+      <section class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+        <div class="gallery-frame group" data-aos="fade-up">
+            <img src="StayAway.png" class="w-full aspect-square object-cover" alt="Stay Away Cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
+                <p class="text-primary font-bold text-[10px] tracking-widest uppercase mb-1">Single Master</p>
+                <h3 class="text-xl font-bold italic uppercase tracking-tighter">Stay Away</h3>
+            </div>
+        </div>
+
+        <div class="gallery-frame group" data-aos="fade-up" data-aos-delay="100">
+            <img src="Tell me we weren't just friends - Hoodtrap.png" class="w-full aspect-square object-cover" alt="Friends Cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
+                <p class="text-primary font-bold text-[10px] tracking-widest uppercase mb-1">Hoodtrap Master</p>
+                <h3 class="text-xl font-bold italic uppercase tracking-tighter">Friends</h3>
+            </div>
+        </div>
+
+        <div class="gallery-frame group" data-aos="fade-up" data-aos-delay="200">
+            <img src="IMG_9564.png" class="w-full aspect-square object-cover" alt="Studio Core">
+            <div class="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
+                <p class="text-primary font-bold text-[10px] tracking-widest uppercase mb-1">Portal Core</p>
+                <h3 class="text-xl font-bold italic uppercase tracking-tighter">Monolith Asset</h3>
+            </div>
+        </div>
+
+        <div class="gallery-frame group opacity-40 hover:opacity-100" data-aos="fade-up" data-aos-delay="300">
+            <div class="w-full aspect-square bg-white/5 flex items-center justify-center">
+                <i class="fas fa-plus text-primary text-3xl"></i>
+            </div>
+            <div class="absolute bottom-6 left-6">
+                <h3 class="text-sm font-bold uppercase tracking-widest">Incoming Masters...</h3>
+            </div>
+        </div>
+
+      </section>
+    </main>
+
+    <div id="mgmt-popup" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100000] w-auto transition-all duration-1000 transform translate-y-20 opacity-0">
+      <div class="glass-card px-6 py-2.5 rounded-full shadow-2xl flex items-center gap-5 border-primary/20 relative group/mgmt">
+        <div class="flex items-center gap-3 border-r border-white/5 pr-5">
+          <div class="w-2 h-2 bg-accent rounded-full animate-ping"></div>
+          <span class="text-[9px] font-black uppercase tracking-[0.3em] text-white">Verified Management</span>
+        </div>
+        <div class="flex items-center gap-6">
+          <p class="text-[10px] font-medium text-gray-500 italic">Ecosystem: <span class="text-white font-bold text-primary">Xclipse Studio</span></p>
+        </div>
+        <button id="close-mgmt" class="ml-2 w-5 h-5 rounded-full bg-white/5 hover:bg-primary/20 flex items-center justify-center transition-all opacity-30 group-hover/mgmt:opacity-100">
+            <i class="fas fa-times text-[10px]"></i>
+        </button>
+      </div>
+    </div>
+
+    <footer class="py-16 border-t border-white/5 text-center opacity-30">
+      <p class="text-[9px] tracking-[0.6em] uppercase font-black italic">© 2026 XCLIPSE STUDIO | VISUAL ARCHIVE</p>
+    </footer>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+          // Cursor Logic
+          const c = document.getElementById('cursor'), cb = document.getElementById('cursor-blur');
+          document.addEventListener('mousemove', (e) => {
+              window.requestAnimationFrame(() => {
+                  c.style.transform = `translate3d(${e.clientX - 4}px, ${e.clientY - 4}px, 0)`;
+                  cb.style.transform = `translate3d(${e.clientX - 75}px, ${e.clientY - 75}px, 0)`;
+              });
+          });
+
+          // Management Popup
+          const mgmt = document.getElementById('mgmt-popup');
+          setTimeout(() => mgmt.classList.remove('translate-y-20', 'opacity-0'), 2000);
+          document.getElementById('close-mgmt').addEventListener('click', () => {
+              mgmt.classList.add('opacity-0');
+              setTimeout(() => mgmt.remove(), 600);
+          });
+
+          // AOS Init
+          const aosScript = document.createElement('script');
+          aosScript.src = "https://unpkg.com/aos@2.3.1/dist/aos.js";
+          aosScript.onload = () => AOS.init({ duration: 1200, once: true });
+          document.head.appendChild(aosScript);
+      });
+
+      // NO INSPECT GUARD
+      (function() {
+        const R = '/404.html';
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
+            e.preventDefault(); window.location.href = R;
+          }
+        });
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+      })();
+    </script>
+  </body>
+</html>

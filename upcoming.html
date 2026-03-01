@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPCOMING RELEASES | XCLIPSE STUDIO</title>
+    <link rel="icon" type="image/x-icon" href="logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Montserrat:wght@300;400;600;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#ec4899', 
+              secondary: '#a855f7',
+              dark: '#050811',
+              'glass': 'rgba(255, 255, 255, 0.03)'
+            },
+            fontFamily: { 
+                sans: ['Montserrat', 'sans-serif'],
+                display: ['Syncopate', 'sans-serif']
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      html { scroll-behavior: smooth; cursor: none; }
+      #cursor { width: 12px; height: 12px; background: #ec4899; border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999; transition: transform 0.1s ease; mix-blend-mode: difference; }
+      #cursor-blur { width: 150px; height: 150px; background: rgba(236, 72, 153, 0.1); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99998; filter: blur(40px); transition: transform 0.2s ease; }
+
+      .mesh-gradient { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #050811 100%); }
+      .blob { position: absolute; width: 400px; height: 400px; background: rgba(236, 72, 153, 0.08); filter: blur(80px); border-radius: 50%; animation: move 20s infinite alternate; }
+      @keyframes move { from { transform: translate(-5%, -5%); } to { transform: translate(15%, 15%); } }
+
+      @keyframes floatHero { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(1deg); } }
+      .floating-card { animation: floatHero 6s ease-in-out infinite; }
+
+      .reveal-text { background: linear-gradient(to right, #fff 20%, #ec4899 40%, #ec4899 60%, #fff 80%); background-size: 200% auto; color: #000; background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 5s linear infinite; }
+      @keyframes shine { to { background-position: 200% center; } }
+      
+      .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+    </style>
+  </head>
+  <body class="bg-dark text-white overflow-x-hidden selection:bg-primary selection:text-white">
+
+    <div id="cursor"></div>
+    <div id="cursor-blur"></div>
+
+    <div class="mesh-gradient">
+        <div class="blob" style="top: 15%; left: 5%;"></div>
+        <div class="blob" style="bottom: 10%; right: 5%; animation-delay: -5s; background: rgba(168, 85, 247, 0.08);"></div>
+    </div>
+
+    <nav class="fixed top-0 w-full z-[9999] px-6 py-8 md:px-12 flex justify-between items-center mix-blend-exclusion">
+      <a href="index.html" class="font-display text-xl font-bold tracking-tighter uppercase italic">XCLIPSE<span class="text-primary">STUDIO</span></a>
+      <a href="index.html" class="font-medium text-[9px] uppercase tracking-[0.3em] hover:text-primary transition">← Back Home</a>
+    </nav>
+
+    <section class="min-h-screen pt-32 pb-20 px-6">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-24" data-aos="fade-down">
+          <h2 class="font-display text-primary text-[10px] tracking-[0.8em] mb-4 opacity-60 uppercase">The Pipeline</h2>
+          <h1 class="reveal-text text-4xl md:text-7xl font-black italic tracking-tighter uppercase leading-none">UPCOMING DROPS</h1>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+          
+          <div class="relative group floating-card" data-aos="fade-right">
+            <div class="glass-card rounded-[3rem] overflow-hidden p-6 hover:border-primary/30 transition-all duration-700">
+              <div class="relative overflow-hidden rounded-[2rem] aspect-square mb-8">
+                <img src="Tell me we weren't just friends - Hoodtrap.png" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="Release 1">
+                <div class="absolute inset-0 bg-gradient-to-t from-dark/80 to-transparent"></div>
+                <div class="absolute top-6 right-6">
+                    <span class="px-4 py-2 bg-primary text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg">In Progress</span>
+                </div>
+              </div>
+              <div class="px-4">
+                <p class="text-primary font-bold tracking-widest text-[10px] uppercase mb-2">Hoodtrap / Aesthetic</p>
+                <h3 class="text-3xl font-black italic uppercase mb-6 tracking-tight">Tell me we weren't just friends</h3>
+                <div class="w-full bg-white/5 h-[2px] mb-8 relative">
+                    <div class="absolute top-0 left-0 bg-primary h-full w-[85%] shadow-[0_0_10px_#ec4899]"></div>
+                    <p class="absolute -top-6 right-0 text-[8px] font-bold text-gray-500 uppercase tracking-widest">85% Complete</p>
+                </div>
+                <button class="w-full py-5 rounded-2xl bg-white/5 border border-white/10 font-black text-[10px] uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all shadow-xl">Notify on Release</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative group floating-card" style="animation-delay: 1s;" data-aos="fade-left">
+            <div class="glass-card rounded-[3rem] overflow-hidden p-6 hover:border-secondary/30 transition-all duration-700">
+              <div class="relative overflow-hidden rounded-[2rem] aspect-square mb-8">
+                <img src="StayAway.png" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="Release 2">
+                <div class="absolute inset-0 bg-gradient-to-t from-dark/80 to-transparent"></div>
+                <div class="absolute top-6 right-6">
+                    <span class="px-4 py-2 bg-secondary text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg">Mastering</span>
+                </div>
+              </div>
+              <div class="px-4">
+                <p class="text-secondary font-bold tracking-widest text-[10px] uppercase mb-2">Hoodtrap / Hard</p>
+                <h3 class="text-3xl font-black italic uppercase mb-6 tracking-tight">Stay Away</h3>
+                <div class="w-full bg-white/5 h-[2px] mb-8 relative">
+                    <div class="absolute top-0 left-0 bg-secondary h-full w-[95%] shadow-[0_0_10px_#a855f7]"></div>
+                    <p class="absolute -top-6 right-0 text-[8px] font-bold text-gray-500 uppercase tracking-widest">95% Complete</p>
+                </div>
+                <button class="w-full py-5 rounded-2xl bg-white/5 border border-white/10 font-black text-[10px] uppercase tracking-[0.3em] hover:bg-secondary hover:text-white transition-all shadow-xl">Pre-Save Soon</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-20 border-t border-white/5 text-center opacity-30">
+      <p class="text-[9px] tracking-[0.4em] uppercase font-bold italic">© 2026 Xclipse Studio | Managed by Xclipse Networks</p>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+      AOS.init({ duration: 1000, once: true });
+      
+      const cursor = document.getElementById('cursor');
+      const cursorBlur = document.getElementById('cursor-blur');
+      document.addEventListener('mousemove', (e) => {
+        cursor.style.transform = `translate3d(${e.clientX - 6}px, ${e.clientY - 6}px, 0)`;
+        cursorBlur.style.transform = `translate3d(${e.clientX - 75}px, ${e.clientY - 75}px, 0)`;
+      });
+      
+      document.querySelectorAll('a, button').forEach(link => {
+        link.addEventListener('mouseenter', () => cursor.style.transform += ' scale(2.5)');
+        link.addEventListener('mouseleave', () => cursor.style.transform = cursor.style.transform.replace(' scale(2.5)', ''));
+      });
+    </script>
+  </body>
+</html>
