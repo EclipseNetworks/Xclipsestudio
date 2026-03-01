@@ -1,6 +1,6 @@
 # ★》 Xclipse Studio Monolithic Portal 《★
 
-![Xclipse Studio UI](Xclipse Studio.png)
+![Xclipse Studio UI](https://github.com/EclipseNetworks/Xclipsestudio/blob/b2aa9bb62bb3925de9f14bfb27b259de7268b539/Xclipse%20Studio.png)
 
 **The ultimate high-fidelity distribution and mastering portal for the underground music scene.**
 
