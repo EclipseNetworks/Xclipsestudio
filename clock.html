@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xclipse Studio | Sync Engine</title>
+    <title>Xclipse Studio | Cyber Node</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <script>
@@ -14,9 +14,11 @@
         theme: {
           extend: {
             colors: {
-              primary: '#ec4899', 
-              secondary: '#a855f7',
-              dark: '#050811'
+              cyber: '#00f3ff',   /* Neon Cyan */
+              alert: '#fcee0a',   /* Cyber Yellow */
+              danger: '#ff003c',  /* Neon Red */
+              dark: '#030408',    /* Deep Void */
+              panel: '#090d14'    /* Terminal Background */
             },
             fontFamily: { 
                 display: ['Syncopate', 'sans-serif'],
@@ -29,12 +31,405 @@
 
     <style>
       :root {
-        --transition-fluid: cubic-bezier(0.16, 1, 0.3, 1);
         --mouse-x: 50%;
         --mouse-y: 50%;
       }
 
       body {
+        background: #030408;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        overflow-x: hidden;
+        color: #fff;
+      }
+
+      /* CYBER GRID BACKGROUND */
+      .cyber-grid {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        background-image: 
+            linear-gradient(to right, rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+        background-size: 40px 40px;
+        background-position: center center;
+      }
+
+      /* CRT SCANLINES & VIGNETTE */
+      .scanlines {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        pointer-events: none;
+        background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+        background-size: 100% 4px;
+        opacity: 0.4;
+      }
+
+      .vignette {
+        position: fixed;
+        inset: 0;
+        z-index: 49;
+        pointer-events: none;
+        background: radial-gradient(circle at center, transparent 30%, #030408 100%);
+      }
+
+      #bg-canvas {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        opacity: 0.6;
+      }
+
+      /* SHARP CYBER PANELS */
+      .cyber-card {
+        background: rgba(9, 13, 20, 0.85);
+        border: 1px solid rgba(0, 243, 255, 0.2);
+        backdrop-filter: blur(5px);
+        position: relative;
+        /* Chamfered bottom-right corner */
+        clip-path: polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%);
+        transition: all 0.2s ease-out;
+      }
+
+      .cyber-card:hover {
+        border-color: rgba(0, 243, 255, 0.8);
+        box-shadow: 0 0 20px rgba(0, 243, 255, 0.1), inset 0 0 20px rgba(0, 243, 255, 0.05);
+      }
+
+      /* Decorative Cyber Notch */
+      .cyber-notch {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 30px;
+        height: 30px;
+        background: rgba(0, 243, 255, 0.2);
+        clip-path: polygon(100% 0, 0 100%, 100% 100%);
+      }
+      
+      .cyber-notch.alert-notch {
+        background: rgba(252, 238, 10, 0.2);
+      }
+
+      /* TERMINAL DIGIT BOXES */
+      .digit-box {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 55px;
+        height: 75px;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 800;
+        font-size: 3rem;
+        background: rgba(0, 243, 255, 0.03);
+        border: 1px solid rgba(0, 243, 255, 0.1);
+        margin: 0 4px;
+        transition: all 0.1s linear;
+      }
+
+      .alert-theme .digit-box {
+        background: rgba(252, 238, 10, 0.03);
+        border-color: rgba(252, 238, 10, 0.1);
+      }
+
+      @media (min-width: 768px) {
+        .digit-box { width: 85px; height: 110px; font-size: 5rem; margin: 0 6px; }
+      }
+
+      /* DIGITAL GLITCH / PULSE */
+      .pulse-react {
+        animation: cyberDigitPulse 0.3s ease-out;
+      }
+
+      @keyframes cyberDigitPulse {
+        0% { transform: scale(1); text-shadow: 0 0 0px transparent; background: rgba(0, 243, 255, 0.5); color: #000; }
+        50% { transform: scale(1.05); text-shadow: 0 0 20px rgba(0, 243, 255, 1); }
+        100% { transform: scale(1); text-shadow: 0 0 10px rgba(0, 243, 255, 0.3); background: rgba(0, 243, 255, 0.03); color: #fff; }
+      }
+
+      .alert-theme .pulse-react {
+        animation: cyberAlertPulse 0.3s ease-out;
+      }
+
+      @keyframes cyberAlertPulse {
+        0% { transform: scale(1); text-shadow: 0 0 0px transparent; background: rgba(252, 238, 10, 0.5); color: #000; }
+        50% { transform: scale(1.05); text-shadow: 0 0 20px rgba(252, 238, 10, 1); }
+        100% { transform: scale(1); text-shadow: 0 0 10px rgba(252, 238, 10, 0.3); background: rgba(252, 238, 10, 0.03); color: #fff; }
+      }
+
+      .separator {
+        font-size: 2.5rem;
+        opacity: 0.3;
+        margin: 0 5px;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      .ampm-tag {
+        font-size: 1.5rem;
+        font-family: 'JetBrains Mono', monospace;
+        opacity: 0.7;
+        margin-left: 12px;
+      }
+
+      .cyber-glitch {
+        animation: textGlitch 2s infinite linear alternate-reverse;
+      }
+      @keyframes textGlitch {
+        0%, 100% { opacity: 1; transform: translateX(0); }
+        92% { opacity: 1; transform: translateX(0); }
+        94% { opacity: 0.8; transform: translateX(-2px); text-shadow: 2px 0 #ff003c; }
+        96% { opacity: 0.9; transform: translateX(2px); text-shadow: -2px 0 #00f3ff; }
+        98% { opacity: 1; transform: translateX(0); }
+      }
+
+      .no-select { user-select: none; }
+    </style>
+</head>
+<body class="no-select">
+
+    <div class="cyber-grid"></div>
+    <canvas id="bg-canvas"></canvas>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <div class="w-full max-w-7xl px-6 py-10 relative z-10 flex flex-col gap-10">
+        
+        <div class="flex justify-between items-end border-b-2 border-cyber/30 pb-2">
+            <div>
+                <h1 class="font-display text-cyber text-sm md:text-xl tracking-[0.5em] font-bold">XCLIPSE//NODE</h1>
+                <p class="font-mono text-[10px] text-gray-500 uppercase tracking-widest mt-1">Sys.Version: 7.1.0_CYBER</p>
+            </div>
+            <div class="flex gap-2">
+                <div class="w-4 h-4 bg-cyber/20 border border-cyber"></div>
+                <div class="w-4 h-4 bg-alert/20 border border-alert"></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            
+            <div class="cyber-card p-10 md:p-14 group">
+                <div class="cyber-notch"></div>
+                
+                <div class="flex justify-between items-start mb-10">
+                    <div class="flex items-center gap-3">
+                        <span class="w-2.5 h-2.5 bg-cyber animate-ping"></span>
+                        <span class="text-[10px] font-mono uppercase tracking-[0.3em] text-cyber">ACDT_LINK_ACTIVE</span>
+                    </div>
+                    <span class="font-mono text-xs text-cyber/40 border border-cyber/20 px-2 py-1">SYS.01</span>
+                </div>
+
+                <h3 class="text-white font-display text-[12px] tracking-[0.5em] uppercase mb-10">Bordertown HQ</h3>
+                
+                <div class="flex justify-center items-center">
+                    <div id="bt-h" class="digit-box text-cyber" style="text-shadow: 0 0 10px rgba(0,243,255,0.4);">12</div>
+                    <span class="separator text-cyber">:</span>
+                    <div id="bt-m" class="digit-box text-cyber" style="text-shadow: 0 0 10px rgba(0,243,255,0.4);">00</div>
+                    <span class="separator text-cyber">:</span>
+                    <div id="bt-s" class="digit-box text-cyber" style="text-shadow: 0 0 10px rgba(0,243,255,0.4);">00</div>
+                    <span id="bt-ampm" class="ampm-tag text-cyber">AM</span>
+                </div>
+                
+                <div class="mt-12 flex justify-between items-center border-t border-cyber/20 pt-4">
+                    <p class="text-[10px] text-gray-500 uppercase font-mono tracking-[0.2em]">Loc: South Australia</p>
+                    <p class="text-[10px] text-cyber uppercase font-mono tracking-[0.2em] cyber-glitch">DATA_STREAMING</p>
+                </div>
+            </div>
+
+            <div class="cyber-card alert-theme p-10 md:p-14 group" style="border-color: rgba(252, 238, 10, 0.2);">
+                <div class="cyber-notch alert-notch"></div>
+                
+                <div class="flex justify-between items-start mb-10">
+                    <div class="flex items-center gap-3">
+                        <span class="w-2.5 h-2.5 bg-alert shadow-[0_0_10px_#fcee0a] animate-pulse"></span>
+                        <span class="text-[10px] font-mono uppercase tracking-[0.3em] text-alert">AEST_LINK_ACTIVE</span>
+                    </div>
+                    <span class="font-mono text-xs text-alert/40 border border-alert/20 px-2 py-1">SYS.02</span>
+                </div>
+
+                <h3 class="text-white font-display text-[12px] tracking-[0.5em] uppercase mb-10">Gold Coast Distro</h3>
+                
+                <div class="flex justify-center items-center">
+                    <div id="gc-h" class="digit-box text-alert" style="text-shadow: 0 0 10px rgba(252,238,10,0.4);">12</div>
+                    <span class="separator text-alert">:</span>
+                    <div id="gc-m" class="digit-box text-alert" style="text-shadow: 0 0 10px rgba(252,238,10,0.4);">00</div>
+                    <span class="separator text-alert">:</span>
+                    <div id="gc-s" class="digit-box text-alert" style="text-shadow: 0 0 10px rgba(252,238,10,0.4);">00</div>
+                    <span id="gc-ampm" class="ampm-tag text-alert">AM</span>
+                </div>
+                
+                <div class="mt-12 flex justify-between items-center border-t border-alert/20 pt-4">
+                    <p class="text-[10px] text-gray-500 uppercase font-mono tracking-[0.2em]">Loc: Queensland</p>
+                    <p class="text-[10px] text-alert uppercase font-mono tracking-[0.2em] cyber-glitch">DATA_STREAMING</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="cyber-card p-6 border-l-4 border-l-cyber flex flex-col md:flex-row items-center justify-between gap-6 w-full relative">
+            
+            <div class="flex flex-col items-start w-full md:w-auto">
+                <span class="font-mono text-[9px] text-gray-400 tracking-[0.3em] uppercase mb-1">> EXECUTE: diff_calc.exe</span>
+                <span class="font-display text-[11px] text-white tracking-[0.4em]">TEMPORAL OFFSET</span>
+            </div>
+
+            <div class="flex items-center gap-4 bg-dark/50 px-8 py-4 border border-white/5 w-full md:w-auto justify-center">
+                <i class="fas fa-network-wired text-cyber/50 text-xs"></i>
+                <span id="calc-diff" class="font-mono text-xl md:text-2xl font-black text-cyber cyber-glitch" style="text-shadow: 0 0 15px rgba(0,243,255,0.6);">
+                    SYNCING...
+                </span>
+                <i class="fas fa-network-wired text-alert/50 text-xs"></i>
+            </div>
+            
+            <div class="flex flex-col items-end w-full md:w-auto">
+                <span class="font-mono text-[9px] text-cyber tracking-[0.3em] uppercase mb-1 animate-pulse">STATUS: CALIBRATED</span>
+                <span class="font-mono text-[10px] text-gray-500 tracking-[0.2em]">Net-Sync Active</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DIGITAL BIT PARTICLE ENGINE (CYBER THEME) ---
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class CyberBit {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() > 0.8 ? 4 : 2; // Square bits
+                this.speedY = Math.random() * 1.5 + 0.5; // Falling down like code
+                this.opacity = Math.random() * 0.5;
+                this.color = Math.random() > 0.5 ? '#00f3ff' : '#fcee0a'; // Mix of Cyan and Yellow
+            }
+            update() {
+                this.y += this.speedY;
+                if (this.y > canvas.height) {
+                    this.y = 0;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.opacity;
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        for(let i=0; i<150; i++) particles.push(new CyberBit());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // --- BULLETPROOF CLOCK LOGIC ---
+        function extractTimeParts(now, timeZone) {
+            const parts = new Intl.DateTimeFormat('en-US', { 
+                timeZone: timeZone, 
+                hour: '2-digit', minute: '2-digit', second: '2-digit', 
+                hour12: true 
+            }).formatToParts(now);
+
+            let h='00', m='00', s='00', ampm='';
+            parts.forEach(p => {
+                if(p.type === 'hour') h = p.value;
+                if(p.type === 'minute') m = p.value;
+                if(p.type === 'second') s = p.value;
+                if(p.type === 'dayPeriod') ampm = p.value.toUpperCase();
+            });
+
+            return { h, m, s, ampm };
+        }
+
+        function updateDigit(id, newValue) {
+            const el = document.getElementById(id);
+            if (el.innerText !== newValue) {
+                el.innerText = newValue;
+                el.classList.remove('pulse-react');
+                void el.offsetWidth; // Force CSS reflow
+                el.classList.add('pulse-react');
+            }
+        }
+
+        function syncEngine() {
+            const now = new Date();
+            
+            // Extract times
+            const bt = extractTimeParts(now, 'Australia/Adelaide');
+            const gc = extractTimeParts(now, 'Australia/Brisbane');
+
+            // Update Bordertown (Cyan)
+            updateDigit('bt-h', bt.h);
+            updateDigit('bt-m', bt.m);
+            updateDigit('bt-s', bt.s);
+            document.getElementById('bt-ampm').innerText = bt.ampm;
+
+            // Update Gold Coast (Yellow)
+            updateDigit('gc-h', gc.h);
+            updateDigit('gc-m', gc.m);
+            updateDigit('gc-s', gc.s);
+            document.getElementById('gc-ampm').innerText = gc.ampm;
+
+            // Matrix glitch particles on tick
+            particles.forEach(p => {
+                if(Math.random() > 0.95) p.x += (Math.random() - 0.5) * 10;
+            });
+
+            // Calculate Difference
+            const btDateString = new Intl.DateTimeFormat('en-US', { timeZone: 'Australia/Adelaide', dateStyle: 'short', timeStyle: 'medium', hour12: false }).format(now);
+            const gcDateString = new Intl.DateTimeFormat('en-US', { timeZone: 'Australia/Brisbane', dateStyle: 'short', timeStyle: 'medium', hour12: false }).format(now);
+            
+            const diffMs = new Date(gcDateString).getTime() - new Date(btDateString).getTime();
+            const diffMinsTotal = Math.round(diffMs / 60000);
+            
+            const diffEl = document.getElementById('calc-diff');
+            
+            if (diffMinsTotal === 0) {
+                diffEl.innerText = "[ SYSTEMS_ALIGNED ]";
+                diffEl.style.color = '#00f3ff';
+                diffEl.style.textShadow = '0 0 15px rgba(0,243,255,0.6)';
+            } else {
+                const diffHrs = Math.floor(Math.abs(diffMinsTotal) / 60);
+                const diffMinsRemaining = Math.abs(diffMinsTotal) % 60;
+                const relation = diffMinsTotal > 0 ? "AHEAD (+)" : "BEHIND (-)";
+                
+                diffEl.innerText = `${String(diffHrs).padStart(2, '0')}:${String(diffMinsRemaining).padStart(2, '0')} ${relation}`;
+                
+                // Change color based on offset direction
+                if(diffMinsTotal > 0) {
+                    diffEl.style.color = '#fcee0a';
+                    diffEl.style.textShadow = '0 0 15px rgba(252,238,10,0.6)';
+                } else {
+                    diffEl.style.color = '#00f3ff';
+                    diffEl.style.textShadow = '0 0 15px rgba(0,243,255,0.6)';
+                }
+            }
+        }
+
+        // Initialize and loop
+        setInterval(syncEngine, 1000);
+        syncEngine();
+    </script>
+</body>
+</html>      body {
         background: #050811;
         margin: 0;
         display: flex;
