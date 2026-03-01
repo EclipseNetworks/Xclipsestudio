@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xclipse Studio | Advanced Telemetry Node</title>
+    <title>Xclipse Studio | Sync Engine</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@300;400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <script>
@@ -16,8 +16,7 @@
             colors: {
               primary: '#ec4899', 
               secondary: '#a855f7',
-              dark: '#03050a',
-              terminal: 'rgba(236, 72, 153, 0.2)'
+              dark: '#050811'
             },
             fontFamily: { 
                 display: ['Syncopate', 'sans-serif'],
@@ -30,12 +29,13 @@
 
     <style>
       :root {
+        --transition-fluid: cubic-bezier(0.16, 1, 0.3, 1);
         --mouse-x: 50%;
         --mouse-y: 50%;
       }
 
       body {
-        background: #03050a;
+        background: #050811;
         margin: 0;
         display: flex;
         align-items: center;
@@ -45,93 +45,91 @@
         color: white;
       }
 
-      /* CRT SCANLINES & VIGNETTE */
-      .scanlines {
-        position: fixed;
-        inset: 0;
-        z-index: 50;
-        pointer-events: none;
-        background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
-        background-size: 100% 4px;
-        opacity: 0.3;
-      }
-      .vignette {
-        position: fixed;
-        inset: 0;
-        z-index: 49;
-        pointer-events: none;
-        background: radial-gradient(circle at center, transparent 30%, #03050a 100%);
-      }
-
-      /* CANVAS BACKGROUND */
-      #tactical-canvas {
+      /* REACTIVE MESH BACKGROUND */
+      .mesh-gradient {
         position: fixed;
         inset: 0;
         z-index: -1;
-        opacity: 0.4;
+        background: radial-gradient(
+            circle at var(--mouse-x) var(--mouse-y), 
+            rgba(236, 72, 153, 0.12) 0%, 
+            rgba(5, 8, 17, 1) 50%
+        ), radial-gradient(circle at 50% 50%, #0d1226 0%, #050811 100%);
+        transition: background 0.3s ease;
       }
 
-      /* HUD PANELS */
-      .hud-panel {
-        background: rgba(10, 15, 30, 0.4);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(236, 72, 153, 0.15);
-        box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(236, 72, 153, 0.05);
+      #bg-canvas {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      /* GLASSMORPHISM CARD */
+      .glass-card {
+        background: rgba(255, 255, 255, 0.01);
+        backdrop-filter: blur(40px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: 0.6s var(--transition-fluid);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      }
+
+      .glass-card:hover {
+        border-color: rgba(236, 72, 153, 0.3);
+        transform: translateY(-8px);
+      }
+
+      /* SPACED DIGIT ARCHITECTURE */
+      .digit-box {
         position: relative;
-        overflow: hidden;
-      }
-      
-      .hud-panel::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 2px;
-        background: linear-gradient(90deg, transparent, #ec4899, transparent);
-        opacity: 0.5;
-      }
-
-      /* DATA GLITCH FX */
-      .glitch {
-        animation: glitch-skew 4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate;
-      }
-      @keyframes glitch-skew {
-        0%, 95%, 100% { transform: skew(0deg); }
-        96% { transform: skew(2deg); }
-        97% { transform: skew(-2deg); }
-      }
-
-      /* MICRO-TYPOGRAPHY */
-      .data-label {
-        font-size: 0.55rem;
-        text-transform: uppercase;
-        letter-spacing: 0.3em;
-        color: #ec4899;
-        opacity: 0.7;
-      }
-      .data-value {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 55px;
+        height: 80px;
         font-family: 'JetBrains Mono', monospace;
-        font-size: 0.75rem;
-        letter-spacing: 0.1em;
-      }
-      .ms-ticker {
-        font-size: 0.35em;
-        opacity: 0.5;
-        vertical-align: top;
-        line-height: 2.5;
+        font-weight: 700;
+        font-size: 3rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        margin: 0 4px;
+        transition: all 0.3s var(--transition-fluid);
       }
 
-      .pulse-bar {
-        height: 2px;
-        background: rgba(255,255,255,0.1);
-        width: 100%;
-        position: relative;
-        overflow: hidden;
+      @media (min-width: 768px) {
+        .digit-box { width: 85px; height: 110px; font-size: 5rem; margin: 0 6px; }
       }
-      .pulse-bar-fill {
-        position: absolute;
-        top: 0; left: 0; height: 100%;
-        background: #ec4899;
-        box-shadow: 0 0 10px #ec4899;
-        transition: width 0.1s linear;
+
+      .separator {
+        font-size: 2.5rem;
+        opacity: 0.15;
+        margin: 0 5px;
+        font-weight: 100;
+      }
+
+      .ampm-tag {
+        font-size: 1.5rem;
+        font-family: 'JetBrains Mono', monospace;
+        opacity: 0.5;
+        margin-left: 12px;
+      }
+
+      /* DIGITAL PULSE REACTION */
+      .pulse-react {
+        animation: digitPulse 0.4s ease-out;
+      }
+      @keyframes digitPulse {
+        0% { transform: scale(1); text-shadow: 0 0 0px transparent; }
+        30% { transform: scale(1.08); color: #ec4899; text-shadow: 0 0 35px rgba(236, 72, 153, 0.8); }
+        100% { transform: scale(1); text-shadow: 0 0 15px rgba(236, 72, 153, 0.2); }
+      }
+
+      .diff-glow {
+        animation: pulseText 2s infinite ease-in-out;
+      }
+      @keyframes pulseText {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; text-shadow: 0 0 15px rgba(236, 72, 153, 0.5); }
       }
 
       .no-select { user-select: none; }
@@ -139,290 +137,196 @@
 </head>
 <body class="no-select">
 
-    <div class="scanlines"></div>
-    <div class="vignette"></div>
-    <canvas id="tactical-canvas"></canvas>
+    <canvas id="bg-canvas"></canvas>
+    <div class="mesh-gradient" id="mesh"></div>
 
-    <div class="w-full max-w-7xl px-4 py-10 relative z-10 flex flex-col gap-6">
+    <div class="w-full max-w-7xl px-6 py-10 relative z-10 flex flex-col gap-10">
         
-        <div class="hud-panel p-4 flex flex-wrap justify-between items-center rounded-lg">
-            <div class="flex items-center gap-4">
-                <i class="fas fa-satellite-dish text-primary animate-pulse"></i>
-                <div>
-                    <div class="data-label">Network Status</div>
-                    <div class="data-value text-white">SECURE / ENCRYPTED</div>
-                </div>
-            </div>
-            <div class="text-center hidden md:block">
-                <div class="data-label">Unix Epoch Time</div>
-                <div id="epoch-ticker" class="data-value text-gray-300 font-bold tracking-widest">0000000000.000</div>
-            </div>
-            <div class="flex items-center gap-4 text-right">
-                <div>
-                    <div class="data-label">Server Latency</div>
-                    <div id="ping-sim" class="data-value text-secondary">14ms</div>
-                </div>
-                <div class="w-16 h-8 flex items-end gap-1 opacity-50" id="ping-graph"></div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
             
-            <div class="hud-panel p-8 rounded-2xl relative group">
-                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
-                    <div class="text-[0.45rem] font-mono text-right text-primary">LAT: 36° 18' 22" S<br>LON: 140° 46' 11" E</div>
+            <div class="glass-card p-12 rounded-[3.5rem] relative overflow-hidden group border-primary/20">
+                <div class="absolute top-8 left-10 flex items-center gap-3">
+                    <span class="w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
+                    <span class="text-[9px] font-black uppercase tracking-[0.3em] text-gray-500">Live ACDT</span>
                 </div>
+                <h3 class="text-primary font-display text-[11px] tracking-[0.6em] uppercase mb-12 italic text-center">Bordertown HQ</h3>
                 
-                <div class="flex items-center gap-3 mb-8 border-b border-primary/20 pb-4">
-                    <div class="w-3 h-3 border border-primary flex items-center justify-center">
-                        <div class="w-1.5 h-1.5 bg-primary animate-ping"></div>
-                    </div>
-                    <div>
-                        <h2 class="font-display text-sm tracking-[0.5em] text-white">NODE_01: BORDERTOWN</h2>
-                        <span class="data-label">UTC +10:30 [ACDT]</span>
-                    </div>
+                <div class="flex justify-center items-center">
+                    <div id="bt-h" class="digit-box">12</div>
+                    <span class="separator">/</span>
+                    <div id="bt-m" class="digit-box">00</div>
+                    <span class="separator">/</span>
+                    <div id="bt-s" class="digit-box">00</div>
+                    <span id="bt-ampm" class="ampm-tag">AM</span>
                 </div>
-
-                <div class="text-center my-10 relative">
-                    <div id="bt-clock" class="text-5xl md:text-7xl font-black font-mono tracking-tighter text-white glitch" style="text-shadow: 0 0 30px rgba(236,72,153,0.4);">
-                        00:00:00
-                    </div>
-                    <div class="data-value text-primary mt-2" id="bt-date">YYYY-MM-DD</div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
-                    <div>
-                        <div class="data-label">Phase Shift</div>
-                        <div class="pulse-bar mt-1"><div class="pulse-bar-fill" id="bt-phase" style="width: 0%;"></div></div>
-                    </div>
-                    <div class="text-right">
-                        <div class="data-label">Active Hash</div>
-                        <div class="data-value text-gray-500" id="bt-hash">0x00000000</div>
-                    </div>
-                </div>
+                <p class="text-center mt-12 text-[10px] text-gray-600 uppercase font-black tracking-[0.5em]">South Australia Standard</p>
             </div>
 
-            <div class="hud-panel p-8 rounded-2xl relative group">
-                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
-                    <div class="text-[0.45rem] font-mono text-right text-secondary">LAT: 28° 00' 59" S<br>LON: 153° 25' 48" E</div>
+            <div class="glass-card p-12 rounded-[3.5rem] relative overflow-hidden group border-secondary/20">
+                <div class="absolute top-8 left-10 flex items-center gap-3">
+                    <span class="w-2.5 h-2.5 rounded-full bg-secondary animate-pulse"></span>
+                    <span class="text-[9px] font-black uppercase tracking-[0.3em] text-gray-500">Live AEST</span>
                 </div>
-
-                <div class="flex items-center gap-3 mb-8 border-b border-secondary/20 pb-4">
-                    <div class="w-3 h-3 border border-secondary flex items-center justify-center">
-                        <div class="w-1.5 h-1.5 bg-secondary animate-pulse"></div>
-                    </div>
-                    <div>
-                        <h2 class="font-display text-sm tracking-[0.5em] text-white">NODE_02: GOLD COAST</h2>
-                        <span class="data-label text-secondary">UTC +10:00 [AEST]</span>
-                    </div>
+                <h3 class="text-secondary font-display text-[11px] tracking-[0.6em] uppercase mb-12 italic text-center">Gold Coast Distro</h3>
+                
+                <div class="flex justify-center items-center">
+                    <div id="gc-h" class="digit-box">12</div>
+                    <span class="separator">/</span>
+                    <div id="gc-m" class="digit-box">00</div>
+                    <span class="separator">/</span>
+                    <div id="gc-s" class="digit-box">00</div>
+                    <span id="gc-ampm" class="ampm-tag">AM</span>
                 </div>
-
-                <div class="text-center my-10 relative">
-                    <div id="gc-clock" class="text-5xl md:text-7xl font-black font-mono tracking-tighter text-white glitch" style="text-shadow: 0 0 30px rgba(168,85,247,0.4);">
-                        00:00:00
-                    </div>
-                    <div class="data-value text-secondary mt-2" id="gc-date">YYYY-MM-DD</div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
-                    <div>
-                        <div class="data-label">Phase Shift</div>
-                        <div class="pulse-bar mt-1"><div class="pulse-bar-fill bg-secondary shadow-[0_0_10px_#a855f7]" id="gc-phase" style="width: 0%;"></div></div>
-                    </div>
-                    <div class="text-right">
-                        <div class="data-label">Active Hash</div>
-                        <div class="data-value text-gray-500" id="gc-hash">0x00000000</div>
-                    </div>
-                </div>
+                <p class="text-center mt-12 text-[10px] text-gray-600 uppercase font-black tracking-[0.5em]">Queensland Standard</p>
             </div>
 
         </div>
 
-        <div class="hud-panel p-6 rounded-xl flex flex-col md:flex-row items-center justify-between gap-6 border-l-4 border-l-primary relative overflow-hidden">
-            <div class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-primary/10 to-transparent pointer-events-none"></div>
-            
-            <div class="flex flex-col">
-                <span class="data-label mb-1">Algorithmic Temporal Offset</span>
-                <span class="font-display text-xs md:text-sm text-white tracking-[0.4em]">DISPLACEMENT MATRIX</span>
+        <div class="glass-card max-w-2xl mx-auto p-8 rounded-[2rem] border-white/5 flex items-center justify-center gap-8 w-full relative">
+            <div class="absolute inset-0 bg-primary/5 blur-2xl"></div>
+            <div class="relative z-10 flex flex-col items-center w-full">
+                <p class="text-[9px] font-black uppercase tracking-[0.8em] text-primary mb-3 italic opacity-60">Temporal Offset</p>
+                <div class="flex items-center gap-6">
+                    <i class="fas fa-bolt text-primary animate-pulse text-xs"></i>
+                    <span id="calc-diff" class="font-display text-white text-xl md:text-2xl italic tracking-widest diff-glow">
+                        SYNCING...
+                    </span>
+                    <i class="fas fa-bolt text-primary animate-pulse text-xs"></i>
+                </div>
             </div>
+        </div>
 
-            <div class="flex-1 w-full flex items-center gap-4 px-4">
-                <div class="h-[1px] bg-white/20 flex-1 relative">
-                    <div class="absolute top-1/2 left-0 w-2 h-2 bg-primary rounded-full -translate-y-1/2 shadow-[0_0_10px_#ec4899]"></div>
-                </div>
-                <div class="text-center min-w-[180px]">
-                    <span id="calc-diff" class="font-mono text-2xl md:text-3xl font-black text-white" style="text-shadow: 0 0 20px rgba(255,255,255,0.5);">--:--</span>
-                </div>
-                <div class="h-[1px] bg-white/20 flex-1 relative">
-                    <div class="absolute top-1/2 right-0 w-2 h-2 bg-secondary rounded-full -translate-y-1/2 shadow-[0_0_10px_#a855f7]"></div>
-                </div>
-            </div>
-            
-            <div class="text-right">
-                <div id="calc-status" class="data-value text-primary font-bold">SYNCING...</div>
-                <div class="data-label mt-1">Relative to Node_01</div>
-            </div>
+        <div class="mt-8 text-center opacity-20">
+            <p class="text-white font-display text-[9px] tracking-[1.5em] uppercase italic">Xclipse Studio | Synchronization Engine</p>
         </div>
 
     </div>
 
     <script>
-        // --- 1. CANVAS TACTICAL RADAR ENGINE ---
-        const canvas = document.getElementById('tactical-canvas');
+        // --- MOUSE TRACKING ---
+        document.addEventListener('mousemove', e => {
+            const x = (e.clientX / window.innerWidth) * 100;
+            const y = (e.clientY / window.innerHeight) * 100;
+            document.documentElement.style.setProperty('--mouse-x', `${x}%`);
+            document.documentElement.style.setProperty('--mouse-y', `${y}%`);
+        });
+
+        // --- PARTICLE BACKGROUND ENGINE ---
+        const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
-        let width, height;
-        let radarAngle = 0;
-        let dataNodes = [];
+        let particles = [];
 
         function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
         window.addEventListener('resize', resize);
         resize();
 
-        for(let i=0; i<40; i++) {
-            dataNodes.push({ x: Math.random() * width, y: Math.random() * height, pulse: Math.random() * Math.PI * 2 });
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedY = Math.random() * -0.3 - 0.1;
+                this.opacity = Math.random() * 0.4;
+            }
+            update() {
+                this.y += this.speedY;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(236, 72, 153, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
 
-        function drawRadar() {
-            const cx = width / 2; const cy = height / 2; const radius = Math.max(width, height);
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-            ctx.fillRect(0, 0, width, height);
+        for(let i=0; i<80; i++) particles.push(new Particle());
 
-            ctx.strokeStyle = 'rgba(236, 72, 153, 0.03)';
-            ctx.lineWidth = 1;
-            const gridSize = 50;
-            for(let x=0; x<width; x+=gridSize) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke(); }
-            for(let y=0; y<height; y+=gridSize) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke(); }
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
 
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.rotate(radarAngle);
-            const gradient = ctx.createConicGradient(0, 0, 0);
-            gradient.addColorStop(0, 'rgba(236, 72, 153, 0.1)');
-            gradient.addColorStop(0.1, 'transparent');
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.arc(0, 0, radius, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.strokeStyle = 'rgba(236, 72, 153, 0.5)';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(radius, 0);
-            ctx.stroke();
-            ctx.restore();
+        // --- BULLETPROOF CLOCK LOGIC ---
+        function extractTimeParts(now, timeZone) {
+            // Uses browser's native formatter to get exact values without string splitting bugs
+            const parts = new Intl.DateTimeFormat('en-US', { 
+                timeZone: timeZone, 
+                hour: '2-digit', minute: '2-digit', second: '2-digit', 
+                hour12: true 
+            }).formatToParts(now);
 
-            ctx.fillStyle = 'rgba(168, 85, 247, 0.6)';
-            dataNodes.forEach(node => {
-                node.pulse += 0.05;
-                const size = 1 + Math.sin(node.pulse) * 1.5;
-                ctx.beginPath();
-                ctx.arc(node.x, node.y, size, 0, Math.PI * 2);
-                ctx.fill();
+            let h='00', m='00', s='00', ampm='';
+            parts.forEach(p => {
+                if(p.type === 'hour') h = p.value;
+                if(p.type === 'minute') m = p.value;
+                if(p.type === 'second') s = p.value;
+                if(p.type === 'dayPeriod') ampm = p.value.toUpperCase();
             });
 
-            radarAngle += 0.01;
+            return { h, m, s, ampm };
         }
 
-        // --- 2. ADVANCED TELEMETRY & TIME LOGIC ---
-        function getHash() { return '0x' + Math.random().toString(16).substr(2, 8).toUpperCase(); }
-        
-        function initPingGraph() {
-            const container = document.getElementById('ping-graph');
-            for(let i=0; i<10; i++) {
-                const bar = document.createElement('div');
-                bar.className = 'w-1 bg-primary transition-all duration-100';
-                bar.style.height = '10%';
-                container.appendChild(bar);
-            }
-        }
-        initPingGraph();
-
-        function updateTelemetry(now) {
-            document.getElementById('epoch-ticker').innerText = (now.getTime() / 1000).toFixed(3);
-            
-            if(Math.random() > 0.8) {
-                const ping = Math.floor(Math.random() * 30 + 10);
-                document.getElementById('ping-sim').innerText = ping + 'ms';
-                const bars = document.getElementById('ping-graph').children;
-                for(let bar of bars) { bar.style.height = Math.floor(Math.random() * 100) + '%'; }
-            }
-
-            const secProgress = (now.getSeconds() + now.getMilliseconds()/1000) / 60 * 100;
-            document.getElementById('bt-phase').style.width = secProgress + '%';
-            document.getElementById('gc-phase').style.width = secProgress + '%';
-
-            if(Math.floor(now.getTime() / 100) % 2 === 0) {
-                document.getElementById('bt-hash').innerText = getHash();
-                document.getElementById('gc-hash').innerText = getHash();
+        function updateDigit(id, newValue) {
+            const el = document.getElementById(id);
+            if (el.innerText !== newValue) {
+                el.innerText = newValue;
+                el.classList.remove('pulse-react');
+                void el.offsetWidth; // Force CSS reflow
+                el.classList.add('pulse-react');
             }
         }
 
-        // --- BULLETPROOF MATH & DATE LOGIC ---
-        function updateClocks(now) {
-            // Force native Date objects for exact timezones
-            const btDate = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Adelaide' }));
-            const gcDate = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }));
-
-            // Formatting Function (No strings splitting needed)
-            function formatClock(d) {
-                let h = d.getHours();
-                const m = d.getMinutes().toString().padStart(2, '0');
-                const s = d.getSeconds().toString().padStart(2, '0');
-                const ampm = h >= 12 ? 'PM' : 'AM';
-                
-                h = h % 12;
-                h = h ? h : 12; 
-                h = h.toString().padStart(2, '0');
-
-                const ms = now.getMilliseconds().toString().padStart(3, '0');
-
-                return `${h}:${m}:${s}<span class="text-xl md:text-2xl ml-2 text-gray-500">${ampm}</span><span class="ms-ticker text-primary ml-2">.${ms}</span>`;
-            }
-
-            // Apply HTML
-            document.getElementById('bt-clock').innerHTML = formatClock(btDate);
-            document.getElementById('gc-clock').innerHTML = formatClock(gcDate);
-
-            // Apply Dates
-            document.getElementById('bt-date').innerText = btDate.toLocaleDateString('en-AU');
-            document.getElementById('gc-date').innerText = gcDate.toLocaleDateString('en-AU');
-
-            // Accurate Mathematical Offset
-            const diffMs = gcDate.getTime() - btDate.getTime();
-            const diffMinsTotal = Math.round(diffMs / 60000);
-            const diffHrs = Math.floor(Math.abs(diffMinsTotal) / 60);
-            const diffMinsRemaining = Math.abs(diffMinsTotal) % 60;
-
-            const diffEl = document.getElementById('calc-diff');
-            const statusEl = document.getElementById('calc-status');
-
-            if (diffMinsTotal === 0) {
-                diffEl.innerText = "00:00";
-                statusEl.innerText = "NODES ALIGNED";
-                statusEl.className = "data-value text-white font-bold";
-            } else {
-                diffEl.innerText = `${String(diffHrs).padStart(2, '0')}H ${String(diffMinsRemaining).padStart(2, '0')}M`;
-                statusEl.innerText = diffMinsTotal > 0 ? "AHEAD (+)" : "BEHIND (-)";
-                statusEl.className = diffMinsTotal > 0 ? "data-value text-secondary font-bold" : "data-value text-primary font-bold";
-            }
-        }
-
-        // --- 3. MASTER RENDERING LOOP (60FPS) ---
-        function engineLoop() {
+        function syncEngine() {
             const now = new Date();
-            drawRadar();
-            updateTelemetry(now);
-            updateClocks(now);
-            requestAnimationFrame(engineLoop);
+            
+            // Extract times
+            const bt = extractTimeParts(now, 'Australia/Adelaide');
+            const gc = extractTimeParts(now, 'Australia/Brisbane');
+
+            // Update Bordertown
+            updateDigit('bt-h', bt.h);
+            updateDigit('bt-m', bt.m);
+            updateDigit('bt-s', bt.s);
+            document.getElementById('bt-ampm').innerText = bt.ampm;
+
+            // Update Gold Coast
+            updateDigit('gc-h', gc.h);
+            updateDigit('gc-m', gc.m);
+            updateDigit('gc-s', gc.s);
+            document.getElementById('gc-ampm').innerText = gc.ampm;
+
+            // Pulse particles every second
+            particles.forEach(p => p.opacity = Math.random() * 0.7);
+
+            // Calculate Difference (Safe Math)
+            const btDateString = new Intl.DateTimeFormat('en-US', { timeZone: 'Australia/Adelaide', dateStyle: 'short', timeStyle: 'medium', hour12: false }).format(now);
+            const gcDateString = new Intl.DateTimeFormat('en-US', { timeZone: 'Australia/Brisbane', dateStyle: 'short', timeStyle: 'medium', hour12: false }).format(now);
+            
+            const diffMs = new Date(gcDateString).getTime() - new Date(btDateString).getTime();
+            const diffMinsTotal = Math.round(diffMs / 60000);
+            
+            const diffEl = document.getElementById('calc-diff');
+            
+            if (diffMinsTotal === 0) {
+                diffEl.innerText = "SYSTEMS ALIGNED";
+            } else {
+                const diffHrs = Math.floor(Math.abs(diffMinsTotal) / 60);
+                const diffMinsRemaining = Math.abs(diffMinsTotal) % 60;
+                const relation = diffMinsTotal > 0 ? "AHEAD" : "BEHIND";
+                
+                diffEl.innerText = `${diffHrs}H ${diffMinsRemaining}M ${relation}`;
+            }
         }
 
-        // IGNITE ENGINE
-        requestAnimationFrame(engineLoop);
+        // Initialize and loop
+        setInterval(syncEngine, 1000);
+        syncEngine();
     </script>
 </body>
 </html>
