@@ -1,10 +1,10 @@
 # ★》 Xclipse Studio Monolithic Portal 《★
 
-![Xclipse Studio UI](https://github.com/user-attachments/assets/1c8425c5-c913-4334-a937-b2ca243e2fd0)
+![Xclipse Studio UI](Xclipse Studio.png)
 
 **The ultimate high-fidelity distribution and mastering portal for the underground music scene.**
 
-[![Xclipse Discord](https://img.shields.io/badge/Discord-Join_Circle-ec4899?style=for-the-badge&logo=discord)](https://discord.gg/qrnJAqxRtr)
+[![Xclipse Discord](https://img.shields.io/badge/Discord-Join_Circle-ec4899?style=for-the-badge&logo=discord)](https://instagram.com/xclipse.studio)
 [![Spotify Pipeline](https://img.shields.io/badge/Spotify-Stream_Masters-1DB954?style=for-the-badge&logo=spotify)](https://open.spotify.com/artist/62bVBRNgrIcR4EMSQoNAyz?si=sosTHY1-ToebLZj3uV7WrA)
 [![Management](https://img.shields.io/badge/Contact-Management-a855f7?style=for-the-badge&logo=mail.ru)](mailto:owner@xclipsenetworks.com.au)
 
