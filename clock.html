@@ -362,72 +362,53 @@
             }
         }
 
-        // BULLETPROOF TIME EXTRACTION
-        function extractTimeParts(now, timeZone) {
-            const parts = new Intl.DateTimeFormat('en-AU', { 
-                timeZone: timeZone, 
-                hour: '2-digit', minute: '2-digit', second: '2-digit', 
-                hour12: true 
-            }).formatToParts(now);
-
-            let h='00', m='00', s='00', ampm='';
-            parts.forEach(p => {
-                if(p.type === 'hour') h = p.value;
-                if(p.type === 'minute') m = p.value;
-                if(p.type === 'second') s = p.value;
-                if(p.type === 'dayPeriod') ampm = p.value.toUpperCase();
-            });
-
-            return { h, m, s, ampm };
-        }
-
-        function getTzOffsetMins(timeZone, date) {
-            const tzDateStr = date.toLocaleString('en-US', { timeZone });
-            const utcDateStr = date.toLocaleString('en-US', { timeZone: 'UTC' });
-            return Math.round((new Date(tzDateStr) - new Date(utcDateStr)) / 60000);
-        }
-
+        // --- BULLETPROOF MATH & DATE LOGIC ---
         function updateClocks(now) {
-            // 1. Time Formatting (100% Safe from browser spacing bugs)
-            const bt = extractTimeParts(now, 'Australia/Adelaide');
-            const gc = extractTimeParts(now, 'Australia/Brisbane');
-            const ms = now.getMilliseconds().toString().padStart(3, '0');
+            // Force native Date objects for exact timezones
+            const btDate = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Adelaide' }));
+            const gcDate = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }));
 
-            const buildHTML = (t) => {
-                return `${t.h}:${t.m}:${t.s}<span class="text-xl md:text-2xl ml-2 text-gray-500">${t.ampm}</span><span class="ms-ticker text-primary ml-2">.${ms}</span>`;
-            };
-
-            document.getElementById('bt-clock').innerHTML = buildHTML(bt);
-            document.getElementById('gc-clock').innerHTML = buildHTML(gc);
-
-            // 2. Date Formatting
-            const dateOpts = { year: 'numeric', month: '2-digit', day: '2-digit' };
-            document.getElementById('bt-date').innerText = new Intl.DateTimeFormat('en-AU', { ...dateOpts, timeZone: 'Australia/Adelaide' }).format(now);
-            document.getElementById('gc-date').innerText = new Intl.DateTimeFormat('en-AU', { ...dateOpts, timeZone: 'Australia/Brisbane' }).format(now);
-
-            // 3. Bulletproof Offset Calculation (Prevents NaN crashes)
-            try {
-                const btOffset = getTzOffsetMins('Australia/Adelaide', now);
-                const gcOffset = getTzOffsetMins('Australia/Brisbane', now);
+            // Formatting Function (No strings splitting needed)
+            function formatClock(d) {
+                let h = d.getHours();
+                const m = d.getMinutes().toString().padStart(2, '0');
+                const s = d.getSeconds().toString().padStart(2, '0');
+                const ampm = h >= 12 ? 'PM' : 'AM';
                 
-                const diffMinsTotal = gcOffset - btOffset;
-                const diffHrs = Math.floor(Math.abs(diffMinsTotal) / 60);
-                const diffMinsRemaining = Math.abs(diffMinsTotal) % 60;
+                h = h % 12;
+                h = h ? h : 12; 
+                h = h.toString().padStart(2, '0');
 
-                const diffEl = document.getElementById('calc-diff');
-                const statusEl = document.getElementById('calc-status');
+                const ms = now.getMilliseconds().toString().padStart(3, '0');
 
-                if (diffMinsTotal === 0) {
-                    diffEl.innerText = "00:00";
-                    statusEl.innerText = "NODES ALIGNED";
-                    statusEl.className = "data-value text-white font-bold";
-                } else {
-                    diffEl.innerText = `${String(diffHrs).padStart(2, '0')}H ${String(diffMinsRemaining).padStart(2, '0')}M`;
-                    statusEl.innerText = diffMinsTotal > 0 ? "AHEAD (+)" : "BEHIND (-)";
-                    statusEl.className = diffMinsTotal > 0 ? "data-value text-secondary font-bold" : "data-value text-primary font-bold";
-                }
-            } catch (e) {
-                console.error("Math sync error", e);
+                return `${h}:${m}:${s}<span class="text-xl md:text-2xl ml-2 text-gray-500">${ampm}</span><span class="ms-ticker text-primary ml-2">.${ms}</span>`;
+            }
+
+            // Apply HTML
+            document.getElementById('bt-clock').innerHTML = formatClock(btDate);
+            document.getElementById('gc-clock').innerHTML = formatClock(gcDate);
+
+            // Apply Dates
+            document.getElementById('bt-date').innerText = btDate.toLocaleDateString('en-AU');
+            document.getElementById('gc-date').innerText = gcDate.toLocaleDateString('en-AU');
+
+            // Accurate Mathematical Offset
+            const diffMs = gcDate.getTime() - btDate.getTime();
+            const diffMinsTotal = Math.round(diffMs / 60000);
+            const diffHrs = Math.floor(Math.abs(diffMinsTotal) / 60);
+            const diffMinsRemaining = Math.abs(diffMinsTotal) % 60;
+
+            const diffEl = document.getElementById('calc-diff');
+            const statusEl = document.getElementById('calc-status');
+
+            if (diffMinsTotal === 0) {
+                diffEl.innerText = "00:00";
+                statusEl.innerText = "NODES ALIGNED";
+                statusEl.className = "data-value text-white font-bold";
+            } else {
+                diffEl.innerText = `${String(diffHrs).padStart(2, '0')}H ${String(diffMinsRemaining).padStart(2, '0')}M`;
+                statusEl.innerText = diffMinsTotal > 0 ? "AHEAD (+)" : "BEHIND (-)";
+                statusEl.className = diffMinsTotal > 0 ? "data-value text-secondary font-bold" : "data-value text-primary font-bold";
             }
         }
 
