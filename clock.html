@@ -162,8 +162,7 @@
                     <div class="data-label">Server Latency</div>
                     <div id="ping-sim" class="data-value text-secondary">14ms</div>
                 </div>
-                <div class="w-16 h-8 flex items-end gap-1 opacity-50" id="ping-graph">
-                    </div>
+                <div class="w-16 h-8 flex items-end gap-1 opacity-50" id="ping-graph"></div>
             </div>
         </div>
 
@@ -186,7 +185,7 @@
 
                 <div class="text-center my-10 relative">
                     <div id="bt-clock" class="text-5xl md:text-7xl font-black font-mono tracking-tighter text-white glitch" style="text-shadow: 0 0 30px rgba(236,72,153,0.4);">
-                        00:00:00<span class="ms-ticker" id="bt-ms">000</span>
+                        00:00:00
                     </div>
                     <div class="data-value text-primary mt-2" id="bt-date">YYYY-MM-DD</div>
                 </div>
@@ -220,7 +219,7 @@
 
                 <div class="text-center my-10 relative">
                     <div id="gc-clock" class="text-5xl md:text-7xl font-black font-mono tracking-tighter text-white glitch" style="text-shadow: 0 0 30px rgba(168,85,247,0.4);">
-                        00:00:00<span class="ms-ticker" id="gc-ms">000</span>
+                        00:00:00
                     </div>
                     <div class="data-value text-secondary mt-2" id="gc-date">YYYY-MM-DD</div>
                 </div>
@@ -291,14 +290,12 @@
             ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
             ctx.fillRect(0, 0, width, height);
 
-            // Grid rendering
             ctx.strokeStyle = 'rgba(236, 72, 153, 0.03)';
             ctx.lineWidth = 1;
             const gridSize = 50;
             for(let x=0; x<width; x+=gridSize) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke(); }
             for(let y=0; y<height; y+=gridSize) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke(); }
 
-            // Radar Sweep
             ctx.save();
             ctx.translate(cx, cy);
             ctx.rotate(radarAngle);
@@ -319,7 +316,6 @@
             ctx.stroke();
             ctx.restore();
 
-            // Render Nodes
             ctx.fillStyle = 'rgba(168, 85, 247, 0.6)';
             dataNodes.forEach(node => {
                 node.pulse += 0.05;
@@ -347,10 +343,8 @@
         initPingGraph();
 
         function updateTelemetry(now) {
-            // Unix Epoch
             document.getElementById('epoch-ticker').innerText = (now.getTime() / 1000).toFixed(3);
             
-            // Ping Simulation
             if(Math.random() > 0.8) {
                 const ping = Math.floor(Math.random() * 30 + 10);
                 document.getElementById('ping-sim').innerText = ping + 'ms';
@@ -358,70 +352,82 @@
                 for(let bar of bars) { bar.style.height = Math.floor(Math.random() * 100) + '%'; }
             }
 
-            // Phase Progress (0-60 Seconds)
             const secProgress = (now.getSeconds() + now.getMilliseconds()/1000) / 60 * 100;
             document.getElementById('bt-phase').style.width = secProgress + '%';
             document.getElementById('gc-phase').style.width = secProgress + '%';
 
-            // Data Hashes
             if(Math.floor(now.getTime() / 100) % 2 === 0) {
                 document.getElementById('bt-hash').innerText = getHash();
                 document.getElementById('gc-hash').innerText = getHash();
             }
         }
 
+        // BULLETPROOF TIME EXTRACTION
+        function extractTimeParts(now, timeZone) {
+            const parts = new Intl.DateTimeFormat('en-AU', { 
+                timeZone: timeZone, 
+                hour: '2-digit', minute: '2-digit', second: '2-digit', 
+                hour12: true 
+            }).formatToParts(now);
+
+            let h='00', m='00', s='00', ampm='';
+            parts.forEach(p => {
+                if(p.type === 'hour') h = p.value;
+                if(p.type === 'minute') m = p.value;
+                if(p.type === 'second') s = p.value;
+                if(p.type === 'dayPeriod') ampm = p.value.toUpperCase();
+            });
+
+            return { h, m, s, ampm };
+        }
+
+        function getTzOffsetMins(timeZone, date) {
+            const tzDateStr = date.toLocaleString('en-US', { timeZone });
+            const utcDateStr = date.toLocaleString('en-US', { timeZone: 'UTC' });
+            return Math.round((new Date(tzDateStr) - new Date(utcDateStr)) / 60000);
+        }
+
         function updateClocks(now) {
-            const timeOpts = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
-            const dateOpts = { year: 'numeric', month: '2-digit', day: '2-digit' };
-
-            // Fetch times
-            const btTime = new Intl.DateTimeFormat('en-AU', { ...timeOpts, timeZone: 'Australia/Adelaide' }).format(now);
-            const btDate = new Intl.DateTimeFormat('en-AU', { ...dateOpts, timeZone: 'Australia/Adelaide' }).format(now);
-            
-            const gcTime = new Intl.DateTimeFormat('en-AU', { ...timeOpts, timeZone: 'Australia/Brisbane' }).format(now);
-            const gcDate = new Intl.DateTimeFormat('en-AU', { ...dateOpts, timeZone: 'Australia/Brisbane' }).format(now);
-
+            // 1. Time Formatting (100% Safe from browser spacing bugs)
+            const bt = extractTimeParts(now, 'Australia/Adelaide');
+            const gc = extractTimeParts(now, 'Australia/Brisbane');
             const ms = now.getMilliseconds().toString().padStart(3, '0');
 
-            // Regex safe-split to bypass browser formatting bugs (invisible spaces)
-            const formatHTML = (str, msStr) => {
-                const match = str.match(/(.*?)\s*([AP]M)/i);
-                let time = str, ampm = '';
-                if(match) { time = match[1]; ampm = match[2]; }
-                return `${time}<span class="text-xl md:text-2xl ml-2 text-gray-500">${ampm}</span><span class="ms-ticker text-primary ml-2">.${msStr}</span>`;
+            const buildHTML = (t) => {
+                return `${t.h}:${t.m}:${t.s}<span class="text-xl md:text-2xl ml-2 text-gray-500">${t.ampm}</span><span class="ms-ticker text-primary ml-2">.${ms}</span>`;
             };
 
-            // Apply to DOM
-            document.getElementById('bt-clock').innerHTML = formatHTML(btTime, ms);
-            document.getElementById('bt-date').innerText = btDate;
+            document.getElementById('bt-clock').innerHTML = buildHTML(bt);
+            document.getElementById('gc-clock').innerHTML = buildHTML(gc);
 
-            document.getElementById('gc-clock').innerHTML = formatHTML(gcTime, ms);
-            document.getElementById('gc-date').innerText = gcDate;
+            // 2. Date Formatting
+            const dateOpts = { year: 'numeric', month: '2-digit', day: '2-digit' };
+            document.getElementById('bt-date').innerText = new Intl.DateTimeFormat('en-AU', { ...dateOpts, timeZone: 'Australia/Adelaide' }).format(now);
+            document.getElementById('gc-date').innerText = new Intl.DateTimeFormat('en-AU', { ...dateOpts, timeZone: 'Australia/Brisbane' }).format(now);
 
-            // Robust Time Difference Math (Uses exact timezone parsing)
-            const parseOpts = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-            const btString = new Intl.DateTimeFormat('en-US', { ...parseOpts, timeZone: 'Australia/Adelaide' }).format(now);
-            const gcString = new Intl.DateTimeFormat('en-US', { ...parseOpts, timeZone: 'Australia/Brisbane' }).format(now);
-            
-            const btD = new Date(btString);
-            const gcD = new Date(gcString);
-            
-            const diffMs = gcD - btD;
-            const diffMinsTotal = Math.round(diffMs / 60000);
-            const diffHrs = Math.floor(Math.abs(diffMinsTotal) / 60);
-            const diffMinsRemaining = Math.abs(diffMinsTotal) % 60;
+            // 3. Bulletproof Offset Calculation (Prevents NaN crashes)
+            try {
+                const btOffset = getTzOffsetMins('Australia/Adelaide', now);
+                const gcOffset = getTzOffsetMins('Australia/Brisbane', now);
+                
+                const diffMinsTotal = gcOffset - btOffset;
+                const diffHrs = Math.floor(Math.abs(diffMinsTotal) / 60);
+                const diffMinsRemaining = Math.abs(diffMinsTotal) % 60;
 
-            const diffEl = document.getElementById('calc-diff');
-            const statusEl = document.getElementById('calc-status');
+                const diffEl = document.getElementById('calc-diff');
+                const statusEl = document.getElementById('calc-status');
 
-            if (diffMinsTotal === 0) {
-                diffEl.innerText = "00:00";
-                statusEl.innerText = "NODES ALIGNED";
-                statusEl.className = "data-value text-white font-bold";
-            } else {
-                diffEl.innerText = `${String(diffHrs).padStart(2, '0')}:${String(diffMinsRemaining).padStart(2, '0')}`;
-                statusEl.innerText = diffMinsTotal > 0 ? "AHEAD (+)" : "BEHIND (-)";
-                statusEl.className = diffMinsTotal > 0 ? "data-value text-secondary font-bold" : "data-value text-primary font-bold";
+                if (diffMinsTotal === 0) {
+                    diffEl.innerText = "00:00";
+                    statusEl.innerText = "NODES ALIGNED";
+                    statusEl.className = "data-value text-white font-bold";
+                } else {
+                    diffEl.innerText = `${String(diffHrs).padStart(2, '0')}H ${String(diffMinsRemaining).padStart(2, '0')}M`;
+                    statusEl.innerText = diffMinsTotal > 0 ? "AHEAD (+)" : "BEHIND (-)";
+                    statusEl.className = diffMinsTotal > 0 ? "data-value text-secondary font-bold" : "data-value text-primary font-bold";
+                }
+            } catch (e) {
+                console.error("Math sync error", e);
             }
         }
 
