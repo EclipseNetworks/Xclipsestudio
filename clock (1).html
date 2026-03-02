@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xclipse Studio | Time-Sync Engine</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#ec4899', 
+              secondary: '#a855f7',
+              dark: '#050811'
+            },
+            fontFamily: { 
+                display: ['Syncopate', 'sans-serif'],
+                mono: ['JetBrains Mono', 'monospace']
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
+      :root {
+        --transition-fluid: cubic-bezier(0.16, 1, 0.3, 1);
+        --mouse-x: 50%;
+        --mouse-y: 50%;
+      }
+
+      body {
+        background: #050811;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      /* REACTIVE MESH BACKGROUND */
+      .mesh-gradient {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background: radial-gradient(
+            circle at var(--mouse-x) var(--mouse-y), 
+            rgba(236, 72, 153, 0.15) 0%, 
+            rgba(5, 8, 17, 1) 50%
+        ), radial-gradient(circle at 50% 50%, #0d1226 0%, #050811 100%);
+        transition: background 0.3s ease;
+      }
+
+      /* PARTICLE CANVAS */
+      #bg-canvas {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      /* GLASSMORPHISM CARD */
+      .glass-card {
+        background: rgba(255, 255, 255, 0.01);
+        backdrop-filter: blur(40px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: 0.6s var(--transition-fluid);
+      }
+
+      .glass-card:hover {
+        border-color: rgba(236, 72, 153, 0.4);
+        transform: translateY(-8px) scale(1.01);
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .clock-text {
+        text-shadow: 0 0 40px rgba(236, 72, 153, 0.3);
+      }
+
+      .no-select { user-select: none; }
+    </style>
+</head>
+<body class="no-select">
+
+    <canvas id="bg-canvas"></canvas>
+    <div class="mesh-gradient" id="mesh"></div>
+
+    <div class="w-full max-w-5xl px-6 relative z-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            
+            <div class="glass-card p-12 rounded-[3.5rem] text-center relative overflow-hidden group">
+                <div class="absolute top-6 right-10 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-gray-500">Live ACDT</span>
+                </div>
+                <h3 class="text-primary font-display text-[11px] tracking-[0.6em] uppercase mb-6 italic">Bordertown HQ</h3>
+                <div id="bordertown-clock" class="clock-text text-6xl md:text-8xl font-black text-white italic tracking-tighter tabular-nums leading-none mb-6">
+                    00:00:00
+                </div>
+                <p class="text-[10px] text-gray-600 uppercase font-black tracking-[0.5em]">South Australia Time</p>
+            </div>
+
+            <div class="glass-card p-12 rounded-[3.5rem] text-center relative overflow-hidden group">
+                <div class="absolute top-6 right-10 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-secondary animate-pulse"></span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-gray-500">Live AEST</span>
+                </div>
+                <h3 class="text-secondary font-display text-[11px] tracking-[0.6em] uppercase mb-6 italic">Gold Coast Distro</h3>
+                <div id="goldcoast-clock" class="clock-text text-6xl md:text-8xl font-black text-white italic tracking-tighter tabular-nums leading-none mb-6" style="text-shadow: 0 0 40px rgba(168, 85, 247, 0.3);">
+                    00:00:00
+                </div>
+                <p class="text-[10px] text-gray-600 uppercase font-black tracking-[0.5em]">Queensland Time</p>
+            </div>
+
+        </div>
+
+        <div class="mt-16 text-center opacity-20 group">
+            <p class="text-white font-display text-[9px] tracking-[1.5em] uppercase italic group-hover:opacity-100 transition-opacity">Xclipse Studio | Temporal Synchronization Engine</p>
+        </div>
+    </div>
+
+    <script>
+        /* MOUSE TRACKING ENGINE */
+        document.addEventListener('mousemove', e => {
+            const x = (e.clientX / window.innerWidth) * 100;
+            const y = (e.clientY / window.innerHeight) * 100;
+            document.documentElement.style.setProperty('--mouse-x', `${x}%`);
+            document.documentElement.style.setProperty('--mouse-y', `${y}%`);
+        });
+
+        /* PARTICLE ENGINE */
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedY = Math.random() * -0.5 - 0.2;
+                this.opacity = Math.random() * 0.5;
+            }
+            update() {
+                this.y += this.speedY;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(236, 72, 153, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        /* CLOCK ENGINE */
+        function updateStudioClocks() {
+            const now = new Date();
+            
+            // Pulse particles on every second
+            particles.forEach(p => p.opacity = Math.random() * 0.8);
+
+            const btOptions = { timeZone: 'Australia/Adelaide', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const gcOptions = { timeZone: 'Australia/Brisbane', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+
+            const btTime = new Intl.DateTimeFormat('en-AU', btOptions).format(now);
+            const gcTime = new Intl.DateTimeFormat('en-AU', gcOptions).format(now);
+
+            document.getElementById('bordertown-clock').innerText = btTime;
+            document.getElementById('goldcoast-clock').innerText = gcTime;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        initParticles();
+        animate();
+
+        setInterval(updateStudioClocks, 1000);
+        updateStudioClocks();
+    </script>
+
+</body>
+</html>

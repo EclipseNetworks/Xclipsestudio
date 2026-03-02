@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xclipse Studio | Cyber Node</title>
+    <title>Xclipse Studio | Time-Sync Engine</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <script>
@@ -14,11 +14,9 @@
         theme: {
           extend: {
             colors: {
-              cyber: '#00f3ff',   /* Neon Cyan */
-              alert: '#fcee0a',   /* Cyber Yellow */
-              danger: '#ff003c',  /* Neon Red */
-              dark: '#030408',    /* Deep Void */
-              panel: '#090d14'    /* Terminal Background */
+              primary: '#ec4899', 
+              secondary: '#a855f7',
+              dark: '#050811'
             },
             fontFamily: { 
                 display: ['Syncopate', 'sans-serif'],
@@ -30,147 +28,73 @@
     </script>
 
     <style>
+      :root {
+        --transition-fluid: cubic-bezier(0.16, 1, 0.3, 1);
+        --mouse-x: 50%;
+        --mouse-y: 50%;
+      }
+
       body {
-        background: #030408;
+        background: #050811;
         margin: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         min-height: 100vh;
         overflow-x: hidden;
-        color: #fff;
       }
 
-      /* CYBER GRID BACKGROUND */
-      .cyber-grid {
+      /* REACTIVE MESH BACKGROUND */
+      .mesh-gradient {
         position: fixed;
         inset: 0;
-        z-index: -2;
-        background-image: 
-            linear-gradient(to right, rgba(0, 243, 255, 0.05) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
-        background-size: 40px 40px;
-        background-position: center center;
+        z-index: -1;
+        background: radial-gradient(
+            circle at var(--mouse-x) var(--mouse-y), 
+            rgba(236, 72, 153, 0.15) 0%, 
+            rgba(5, 8, 17, 1) 50%
+        ), radial-gradient(circle at 50% 50%, #0d1226 0%, #050811 100%);
+        transition: background 0.3s ease;
       }
 
-      /* CRT SCANLINES & VIGNETTE */
-      .scanlines {
-        position: fixed;
-        inset: 0;
-        z-index: 50;
-        pointer-events: none;
-        background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
-        background-size: 100% 4px;
-        opacity: 0.4;
-      }
-
-      .vignette {
-        position: fixed;
-        inset: 0;
-        z-index: 49;
-        pointer-events: none;
-        background: radial-gradient(circle at center, transparent 30%, #030408 100%);
-      }
-
+      /* PARTICLE CANVAS */
       #bg-canvas {
         position: fixed;
         inset: 0;
         z-index: -1;
         pointer-events: none;
-        opacity: 0.6;
       }
 
-      /* SHARP CYBER PANELS */
-      .cyber-card {
-        background: rgba(9, 13, 20, 0.85);
-        border: 1px solid rgba(0, 243, 255, 0.2);
-        backdrop-filter: blur(5px);
-        position: relative;
-        clip-path: polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%);
-        transition: all 0.2s ease-out;
+      /* GLASSMORPHISM CARD */
+      .glass-card {
+        background: rgba(255, 255, 255, 0.01);
+        backdrop-filter: blur(40px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: 0.6s var(--transition-fluid);
       }
 
-      /* Decorative Cyber Notch */
-      .cyber-notch {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 30px;
-        height: 30px;
-        background: rgba(0, 243, 255, 0.2);
-        clip-path: polygon(100% 0, 0 100%, 100% 100%);
+      .glass-card:hover {
+        border-color: rgba(236, 72, 153, 0.4);
+        transform: translateY(-8px) scale(1.01);
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .clock-text {
+        text-shadow: 0 0 40px rgba(236, 72, 153, 0.3);
       }
       
-      .cyber-notch.alert-notch {
-        background: rgba(252, 238, 10, 0.2);
+      /* ALARM INPUT STYLING */
+      input[type="time"] {
+        color-scheme: dark;
       }
-
-      /* TERMINAL DIGIT BOXES */
-      .digit-box {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 55px;
-        height: 75px;
-        font-family: 'JetBrains Mono', monospace;
-        font-weight: 800;
-        font-size: 3rem;
-        background: rgba(0, 243, 255, 0.03);
-        border: 1px solid rgba(0, 243, 255, 0.1);
-        margin: 0 4px;
-        transition: all 0.1s linear;
+      input[type="time"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+        cursor: pointer;
+        opacity: 0.5;
+        transition: 0.3s;
       }
-
-      .alert-theme .digit-box {
-        background: rgba(252, 238, 10, 0.03);
-        border-color: rgba(252, 238, 10, 0.1);
-      }
-
-      @media (min-width: 768px) {
-        .digit-box { width: 85px; height: 110px; font-size: 5rem; margin: 0 6px; }
-      }
-
-      /* DIGITAL GLITCH / PULSE */
-      .pulse-react {
-        animation: cyberDigitPulse 0.3s ease-out;
-      }
-      @keyframes cyberDigitPulse {
-        0% { transform: scale(1); background: rgba(0, 243, 255, 0.5); color: #000; }
-        50% { transform: scale(1.05); text-shadow: 0 0 20px rgba(0, 243, 255, 1); }
-        100% { transform: scale(1); background: rgba(0, 243, 255, 0.03); color: #00f3ff; }
-      }
-
-      .alert-theme .pulse-react {
-        animation: cyberAlertPulse 0.3s ease-out;
-      }
-      @keyframes cyberAlertPulse {
-        0% { transform: scale(1); background: rgba(252, 238, 10, 0.5); color: #000; }
-        50% { transform: scale(1.05); text-shadow: 0 0 20px rgba(252, 238, 10, 1); }
-        100% { transform: scale(1); background: rgba(252, 238, 10, 0.03); color: #fcee0a; }
-      }
-
-      .separator {
-        font-size: 2.5rem;
-        opacity: 0.3;
-        margin: 0 5px;
-        font-family: 'JetBrains Mono', monospace;
-      }
-
-      .ampm-tag {
-        font-size: 1.5rem;
-        font-family: 'JetBrains Mono', monospace;
-        opacity: 0.7;
-        margin-left: 12px;
-      }
-
-      .cyber-glitch {
-        animation: textGlitch 2s infinite linear alternate-reverse;
-      }
-      @keyframes textGlitch {
-        0%, 100% { opacity: 1; transform: translateX(0); }
-        94% { opacity: 0.8; transform: translateX(-2px); text-shadow: 2px 0 #ff003c; }
-        96% { opacity: 0.9; transform: translateX(2px); text-shadow: -2px 0 #00f3ff; }
+      input[type="time"]::-webkit-calendar-picker-indicator:hover {
+        opacity: 1;
       }
 
       .no-select { user-select: none; }
@@ -178,109 +102,76 @@
 </head>
 <body class="no-select">
 
-    <div class="cyber-grid"></div>
     <canvas id="bg-canvas"></canvas>
-    <div class="scanlines"></div>
-    <div class="vignette"></div>
+    <div class="mesh-gradient" id="mesh"></div>
 
-    <div class="w-full max-w-7xl px-6 py-10 relative z-10 flex flex-col gap-10">
-        
-        <div class="flex justify-between items-end border-b-2 border-cyber/30 pb-2">
-            <div>
-                <h1 class="font-display text-cyber text-sm md:text-xl tracking-[0.5em] font-bold">XCLIPSE//NODE</h1>
-                <p class="font-mono text-[10px] text-gray-500 uppercase tracking-widest mt-1">Sys.Version: 7.2.0_SAFE</p>
-            </div>
-            <div class="flex gap-2">
-                <div class="w-4 h-4 bg-cyber/20 border border-cyber"></div>
-                <div class="w-4 h-4 bg-alert/20 border border-alert"></div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+    <div class="w-full max-w-5xl px-6 relative z-10 py-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
             
-            <div class="cyber-card p-10 md:p-14 group">
-                <div class="cyber-notch"></div>
-                
-                <div class="flex justify-between items-start mb-10">
-                    <div class="flex items-center gap-3">
-                        <span class="w-2.5 h-2.5 bg-cyber animate-ping"></span>
-                        <span class="text-[10px] font-mono uppercase tracking-[0.3em] text-cyber">ACDT_LINK_ACTIVE</span>
-                    </div>
-                    <span class="font-mono text-xs text-cyber/40 border border-cyber/20 px-2 py-1">SYS.01</span>
+            <div class="glass-card p-12 rounded-[3.5rem] text-center relative overflow-hidden group">
+                <div class="absolute top-6 right-10 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-gray-500">Live ACDT</span>
                 </div>
-
-                <h3 class="text-white font-display text-[12px] tracking-[0.5em] uppercase mb-10">Bordertown HQ</h3>
-                
-                <div class="flex justify-center items-center">
-                    <div id="bt-h" class="digit-box text-cyber">12</div>
-                    <span class="separator text-cyber">:</span>
-                    <div id="bt-m" class="digit-box text-cyber">00</div>
-                    <span class="separator text-cyber">:</span>
-                    <div id="bt-s" class="digit-box text-cyber">00</div>
-                    <span id="bt-ampm" class="ampm-tag text-cyber">AM</span>
+                <h3 class="text-primary font-display text-[11px] tracking-[0.6em] uppercase mb-6 italic">Bordertown HQ</h3>
+                <div id="bordertown-clock" class="clock-text text-6xl md:text-8xl font-black text-white italic tracking-tighter tabular-nums leading-none mb-6">
+                    00:00:00
                 </div>
-                
-                <div class="mt-12 flex justify-between items-center border-t border-cyber/20 pt-4">
-                    <p class="text-[10px] text-gray-500 uppercase font-mono tracking-[0.2em]">Loc: South Australia</p>
-                    <p class="text-[10px] text-cyber uppercase font-mono tracking-[0.2em] cyber-glitch">DATA_STREAMING</p>
-                </div>
+                <p class="text-[10px] text-gray-600 uppercase font-black tracking-[0.5em]">South Australia Time</p>
             </div>
 
-            <div class="cyber-card alert-theme p-10 md:p-14 group" style="border-color: rgba(252, 238, 10, 0.2);">
-                <div class="cyber-notch alert-notch"></div>
-                
-                <div class="flex justify-between items-start mb-10">
-                    <div class="flex items-center gap-3">
-                        <span class="w-2.5 h-2.5 bg-alert shadow-[0_0_10px_#fcee0a] animate-pulse"></span>
-                        <span class="text-[10px] font-mono uppercase tracking-[0.3em] text-alert">AEST_LINK_ACTIVE</span>
-                    </div>
-                    <span class="font-mono text-xs text-alert/40 border border-alert/20 px-2 py-1">SYS.02</span>
+            <div class="glass-card p-12 rounded-[3.5rem] text-center relative overflow-hidden group">
+                <div class="absolute top-6 right-10 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-secondary animate-pulse"></span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-gray-500">Live AEST</span>
                 </div>
-
-                <h3 class="text-white font-display text-[12px] tracking-[0.5em] uppercase mb-10">Gold Coast Distro</h3>
-                
-                <div class="flex justify-center items-center">
-                    <div id="gc-h" class="digit-box text-alert">12</div>
-                    <span class="separator text-alert">:</span>
-                    <div id="gc-m" class="digit-box text-alert">00</div>
-                    <span class="separator text-alert">:</span>
-                    <div id="gc-s" class="digit-box text-alert">00</div>
-                    <span id="gc-ampm" class="ampm-tag text-alert">AM</span>
+                <h3 class="text-secondary font-display text-[11px] tracking-[0.6em] uppercase mb-6 italic">Gold Coast Distro</h3>
+                <div id="goldcoast-clock" class="clock-text text-6xl md:text-8xl font-black text-white italic tracking-tighter tabular-nums leading-none mb-6" style="text-shadow: 0 0 40px rgba(168, 85, 247, 0.3);">
+                    00:00:00
                 </div>
-                
-                <div class="mt-12 flex justify-between items-center border-t border-alert/20 pt-4">
-                    <p class="text-[10px] text-gray-500 uppercase font-mono tracking-[0.2em]">Loc: Queensland</p>
-                    <p class="text-[10px] text-alert uppercase font-mono tracking-[0.2em] cyber-glitch">DATA_STREAMING</p>
-                </div>
+                <p class="text-[10px] text-gray-600 uppercase font-black tracking-[0.5em]">Queensland Time</p>
             </div>
 
         </div>
 
-        <div class="cyber-card p-6 border-l-4 border-l-cyber flex flex-col md:flex-row items-center justify-between gap-6 w-full relative">
+        <div id="alarm-card" class="glass-card mt-10 p-8 rounded-[3.5rem] flex flex-col md:flex-row items-center justify-between gap-6 transition-all duration-500">
             
-            <div class="flex flex-col items-start w-full md:w-auto">
-                <span class="font-mono text-[9px] text-gray-400 tracking-[0.3em] uppercase mb-1">> EXECUTE: diff_calc.exe</span>
-                <span class="font-display text-[11px] text-white tracking-[0.4em]">TEMPORAL OFFSET</span>
-            </div>
-
-            <div class="flex items-center gap-4 bg-dark/50 px-8 py-4 border border-white/5 w-full md:w-auto justify-center">
-                <i class="fas fa-network-wired text-cyber/50 text-xs"></i>
-                <span id="calc-diff" class="font-mono text-xl md:text-2xl font-black text-cyber cyber-glitch">
-                    SYNCING...
-                </span>
-                <i class="fas fa-network-wired text-alert/50 text-xs"></i>
+            <div class="flex items-center gap-5">
+                <div class="w-12 h-12 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary relative">
+                    <i class="fas fa-bell"></i>
+                    <div id="alarm-ping" class="absolute inset-0 rounded-full border-2 border-primary animate-ping hidden"></div>
+                </div>
+                <div>
+                    <h3 class="font-display text-[11px] tracking-[0.5em] text-white uppercase italic">Session Alarm</h3>
+                    <p class="text-[9px] text-gray-500 uppercase tracking-widest font-mono mt-1">Syncs with Bordertown HQ</p>
+                </div>
             </div>
             
-            <div class="flex flex-col items-end w-full md:w-auto">
-                <span class="font-mono text-[9px] text-cyber tracking-[0.3em] uppercase mb-1 animate-pulse">STATUS: CALIBRATED</span>
-                <span class="font-mono text-[10px] text-gray-500 tracking-[0.2em]">Net-Sync Active</span>
+            <div class="flex flex-wrap justify-center items-center gap-4">
+                <input type="time" id="alarm-input" class="bg-white/5 border border-white/10 text-white font-mono text-xl px-5 py-3 rounded-2xl outline-none focus:border-primary/50 transition shadow-inner">
+                <button id="alarm-btn" onclick="toggleAlarm()" class="px-8 py-3.5 rounded-full border border-primary text-primary font-bold text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg active:scale-95">
+                    Set Alarm
+                </button>
             </div>
+            
+            <audio id="alarm-audio" src="Tell me we were'nt just friends - hoodtrap-sped.mp3" preload="auto" loop></audio>
         </div>
 
+        <div class="mt-16 text-center opacity-20 group">
+            <p class="text-white font-display text-[9px] tracking-[1.5em] uppercase italic group-hover:opacity-100 transition-opacity">Xclipse Studio | Temporal Synchronization Engine</p>
+        </div>
     </div>
 
     <script>
-        // --- DIGITAL BIT PARTICLE ENGINE ---
+        /* --- MOUSE TRACKING ENGINE --- */
+        document.addEventListener('mousemove', e => {
+            const x = (e.clientX / window.innerWidth) * 100;
+            const y = (e.clientY / window.innerHeight) * 100;
+            document.documentElement.style.setProperty('--mouse-x', `${x}%`);
+            document.documentElement.style.setProperty('--mouse-y', `${y}%`);
+        });
+
+        /* --- PARTICLE ENGINE --- */
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -289,144 +180,183 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
-        window.addEventListener('resize', resize);
-        resize();
 
-        class CyberBit {
+        class Particle {
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.size = Math.random() > 0.8 ? 4 : 2; 
-                this.speedY = Math.random() * 1.5 + 0.5; 
+                this.size = Math.random() * 2 + 0.5;
+                this.speedY = Math.random() * -0.5 - 0.2;
                 this.opacity = Math.random() * 0.5;
-                this.color = Math.random() > 0.5 ? '#00f3ff' : '#fcee0a';
+                this.isAlarming = false;
             }
             update() {
-                this.y += this.speedY;
-                if (this.y > canvas.height) {
-                    this.y = 0;
-                    this.x = Math.random() * canvas.width;
-                }
+                this.y += this.isAlarming ? this.speedY * 4 : this.speedY; // Speed up when alarm rings
+                if (this.y < 0) this.y = canvas.height;
             }
             draw() {
-                ctx.fillStyle = this.color;
-                ctx.globalAlpha = this.opacity;
-                ctx.fillRect(this.x, this.y, this.size, this.size);
-                ctx.globalAlpha = 1.0;
+                ctx.fillStyle = `rgba(236, 72, 153, ${this.isAlarming ? Math.random() : this.opacity})`; // Flicker during alarm
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
             }
         }
 
-        for(let i=0; i<150; i++) particles.push(new CyberBit());
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+        }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
             requestAnimationFrame(animate);
         }
-        animate();
 
-        // --- BULLETPROOF TIME & OFFSET ENGINE ---
-        function extractTimeParts(now, timeZone) {
-            const parts = new Intl.DateTimeFormat('en-US', { 
-                timeZone: timeZone, 
-                hour: '2-digit', minute: '2-digit', second: '2-digit', 
-                hour12: true 
-            }).formatToParts(now);
+        /* --- ALARM STATE & LOGIC --- */
+        let alarmTime = null;
+        let isAlarmActive = false;
+        let isRinging = false;
 
-            let h='00', m='00', s='00', ampm='';
-            parts.forEach(p => {
-                if(p.type === 'hour') h = p.value;
-                if(p.type === 'minute') m = p.value;
-                if(p.type === 'second') s = p.value;
-                if(p.type === 'dayPeriod') ampm = p.value.toUpperCase();
-            });
-            return { h, m, s, ampm };
-        }
+        function toggleAlarm() {
+            const btn = document.getElementById('alarm-btn');
+            const input = document.getElementById('alarm-input');
+            const audio = document.getElementById('alarm-audio');
+            const card = document.getElementById('alarm-card');
+            const ping = document.getElementById('alarm-ping');
 
-        // Extracts mathematically exact time data (Prevents NaN crashes)
-        function getTzTimeMs(timeZone, date) {
-            const parts = new Intl.DateTimeFormat('en-US', {
-                timeZone: timeZone,
-                year: 'numeric', month: 'numeric', day: 'numeric',
-                hour: 'numeric', minute: 'numeric', second: 'numeric',
-                hour12: false
-            }).formatToParts(date);
-            
-            let y, m, d, h, min, s;
-            parts.forEach(p => {
-                if(p.type==='year') y = parseInt(p.value);
-                if(p.type==='month') m = parseInt(p.value);
-                if(p.type==='day') d = parseInt(p.value);
-                if(p.type==='hour') h = parseInt(p.value);
-                if(p.type==='minute') min = parseInt(p.value);
-                if(p.type==='second') s = parseInt(p.value);
-            });
-            if (h === 24) h = 0;
-            return new Date(Date.UTC(y, m-1, d, h, min, s)).getTime();
-        }
-
-        function updateDigit(id, newValue) {
-            const el = document.getElementById(id);
-            if (el.innerText !== newValue) {
-                el.innerText = newValue;
-                el.classList.remove('pulse-react');
-                void el.offsetWidth; // Force CSS reflow
-                el.classList.add('pulse-react');
+            if (isRinging) {
+                // STOP ALARM
+                isRinging = false;
+                isAlarmActive = false;
+                audio.pause();
+                audio.currentTime = 0;
+                
+                // Reset UI
+                btn.innerText = "Set Alarm";
+                btn.className = "px-8 py-3.5 rounded-full border border-primary text-primary font-bold text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg active:scale-95";
+                card.style.boxShadow = "none";
+                card.style.borderColor = "rgba(255, 255, 255, 0.05)";
+                ping.classList.add('hidden');
+                particles.forEach(p => p.isAlarming = false);
+                
+            } else if (isAlarmActive) {
+                // CANCEL ALARM
+                isAlarmActive = false;
+                alarmTime = null;
+                btn.innerText = "Set Alarm";
+                btn.className = "px-8 py-3.5 rounded-full border border-primary text-primary font-bold text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg active:scale-95";
+                
+            } else {
+                // SET ALARM
+                if (!input.value) return alert("Please select an alarm time first.");
+                alarmTime = input.value;
+                isAlarmActive = true;
+                
+                // **BROWSER AUTOPLAY FIX:** Unlock audio context silently
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        audio.pause();
+                        audio.currentTime = 0;
+                    }).catch(error => {
+                        console.log("Audio unlock process intercepted (Expected behavior)", error);
+                    });
+                }
+                
+                btn.innerText = "Alarm Active";
+                btn.className = "px-8 py-3.5 rounded-full border border-primary bg-primary text-white font-bold text-[10px] uppercase tracking-widest transition-all shadow-[0_0_15px_#ec4899] active:scale-95";
             }
         }
 
-        function syncEngine() {
+        function triggerAlarm() {
+            if (isRinging) return;
+            isRinging = true;
+            
+            // Play Track (Now unlocked)
+            const audio = document.getElementById('alarm-audio');
+            audio.currentTime = 0;
+            audio.volume = 1.0;
+            
+            let playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(e => {
+                    console.log("Audio playback blocked:", e);
+                    alert("ALARM RINGING! (Your browser blocked the audio. Click anywhere on the page to enable sound.)");
+                });
+            }
+
+            // Visual Freakout
+            const btn = document.getElementById('alarm-btn');
+            const card = document.getElementById('alarm-card');
+            const ping = document.getElementById('alarm-ping');
+
+            btn.innerText = "STOP ALARM";
+            btn.className = "px-8 py-3.5 rounded-full border border-red-500 bg-red-500 text-white font-bold text-[10px] uppercase tracking-widest transition-all shadow-[0_0_25px_red] animate-pulse active:scale-95";
+            
+            card.style.borderColor = "#ec4899";
+            card.style.boxShadow = "0 0 40px rgba(236, 72, 153, 0.4)";
+            ping.classList.remove('hidden');
+            
+            particles.forEach(p => p.isAlarming = true);
+        }
+
+        /* --- CLOCK ENGINE --- */
+        function updateStudioClocks() {
             const now = new Date();
             
-            // Extract times
-            const bt = extractTimeParts(now, 'Australia/Adelaide');
-            const gc = extractTimeParts(now, 'Australia/Brisbane');
+            // Base visual pulse
+            if(!isRinging) particles.forEach(p => p.opacity = Math.random() * 0.8);
 
-            // Update Bordertown
-            updateDigit('bt-h', bt.h);
-            updateDigit('bt-m', bt.m);
-            updateDigit('bt-s', bt.s);
-            document.getElementById('bt-ampm').innerText = bt.ampm;
+            // Clock Rendering
+            const btOptions = { timeZone: 'Australia/Adelaide', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const gcOptions = { timeZone: 'Australia/Brisbane', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
 
-            // Update Gold Coast
-            updateDigit('gc-h', gc.h);
-            updateDigit('gc-m', gc.m);
-            updateDigit('gc-s', gc.s);
-            document.getElementById('gc-ampm').innerText = gc.ampm;
+            const btTime = new Intl.DateTimeFormat('en-AU', btOptions).format(now);
+            const gcTime = new Intl.DateTimeFormat('en-AU', gcOptions).format(now);
 
-            // Bulletproof Offset Calculation (Mathematically Immune to Browser Formatting Bugs)
-            const btTimeMs = getTzTimeMs('Australia/Adelaide', now);
-            const gcTimeMs = getTzTimeMs('Australia/Brisbane', now);
-            
-            const diffMs = gcTimeMs - btTimeMs;
-            const diffMinsTotal = Math.round(diffMs / 60000);
-            
-            const diffEl = document.getElementById('calc-diff');
-            
-            if (diffMinsTotal === 0) {
-                diffEl.innerText = "[ SYSTEMS_ALIGNED ]";
-                diffEl.style.color = '#00f3ff';
-                diffEl.style.textShadow = '0 0 15px rgba(0,243,255,0.6)';
-            } else {
-                const diffHrs = Math.floor(Math.abs(diffMinsTotal) / 60);
-                const diffMinsRemaining = Math.abs(diffMinsTotal) % 60;
-                const relation = diffMinsTotal > 0 ? "AHEAD (+)" : "BEHIND (-)";
+            document.getElementById('bordertown-clock').innerText = btTime;
+            document.getElementById('goldcoast-clock').innerText = gcTime;
+
+            // Check Alarm condition against Bordertown Time
+            if (isAlarmActive && !isRinging && alarmTime) {
+                // Extract precise H & M to avoid browser formatting bugs
+                const parts = new Intl.DateTimeFormat('en-US', {
+                    timeZone: 'Australia/Adelaide',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    hour12: false
+                }).formatToParts(now);
+
+                let h = parts.find(p => p.type === 'hour').value;
+                let m = parts.find(p => p.type === 'minute').value;
                 
-                diffEl.innerText = `${String(diffHrs).padStart(2, '0')}:${String(diffMinsRemaining).padStart(2, '0')} ${relation}`;
+                if (h === '24') h = '00';
                 
-                if(diffMinsTotal > 0) {
-                    diffEl.style.color = '#fcee0a';
-                    diffEl.style.textShadow = '0 0 15px rgba(252,238,10,0.6)';
-                } else {
-                    diffEl.style.color = '#00f3ff';
-                    diffEl.style.textShadow = '0 0 15px rgba(0,243,255,0.6)';
+                // Format to match HTML <input type="time"> value "HH:MM"
+                const currentTimeStr = `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
+
+                // Trigger exactly when the minute matches
+                if (currentTimeStr === alarmTime) {
+                    triggerAlarm();
                 }
             }
         }
 
-        // Ignite the Engine
-        setInterval(syncEngine, 1000);
-        syncEngine();
+        // --- INIT ---
+        window.addEventListener('resize', resize);
+        resize();
+        initParticles();
+        animate();
+
+        setInterval(updateStudioClocks, 1000);
+        updateStudioClocks();
     </script>
+
 </body>
 </html>
