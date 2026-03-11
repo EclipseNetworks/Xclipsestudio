@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XCLIPSE | THE UNRELEASED VAULT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Montserrat:wght@300;400;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            background: #050505;
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .vault-gradient {
+            background: radial-gradient(circle at 50% 50%, #1e0b36 0%, #050505 100%);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .glass-vault {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 40px;
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+        }
+
+        .bass-visualizer {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 40px;
+        }
+
+        .bar {
+            width: 4px;
+            background: #a855f7;
+            border-radius: 2px;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            10% { height: 10%; }
+            100% { height: 100%; }
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            background: rgba(255,255,255,0.1);
+            height: 4px;
+            border-radius: 5px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 15px;
+            width: 15px;
+            border-radius: 50%;
+            background: #a855f7;
+            cursor: pointer;
+            box-shadow: 0 0 10px #a855f7;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6">
+
+    <div class="vault-gradient"></div>
+
+    <header class="mb-12 text-center">
+        <h2 class="text-[10px] tracking-[0.8em] uppercase text-purple-500 font-black mb-2">Private Access</h2>
+        <h1 class="font-display text-4xl md:text-6xl font-black italic tracking-tighter uppercase">The <span class="text-purple-600">Vault</span></h1>
+    </header>
+
+    <div class="glass-vault w-full max-w-4xl p-8 md:p-12 shadow-2xl">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            
+            <div class="relative group">
+                <div class="absolute -inset-4 bg-purple-600/20 rounded-[3rem] blur-2xl group-hover:bg-purple-600/40 transition duration-1000"></div>
+                <div class="relative aspect-square rounded-[2.5rem] overflow-hidden border border-white/10">
+                    <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=1000" 
+                         alt="Cover Art" 
+                         class="w-full h-full object-cover grayscale brightness-50 group-hover:grayscale-0 transition duration-1000 scale-110">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="bass-visualizer">
+                            <div class="bar" style="animation-delay: 0.1s"></div>
+                            <div class="bar" style="animation-delay: 0.3s"></div>
+                            <div class="bar" style="animation-delay: 0.2s"></div>
+                            <div class="bar" style="animation-delay: 0.4s"></div>
+                            <div class="bar" style="animation-delay: 0.1s"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col">
+                <div class="mb-8">
+                    <span class="bg-purple-600/20 text-purple-400 text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-widest border border-purple-500/30">
+                        Unreleased Leak
+                    </span>
+                    <h3 class="text-3xl md:text-5xl font-black italic uppercase mt-6 tracking-tighter">Mask Off</h3>
+                    <p class="text-gray-400 font-medium text-lg mt-2">Future</p>
+                    <p class="text-purple-500 text-[11px] font-bold uppercase tracking-widest mt-4 italic">
+                        Slowed + Reverb + Bass Boosted
+                    </p>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="flex items-center gap-4">
+                        <span id="time" class="text-xs font-mono text-gray-500">0:00</span>
+                        <input type="range" id="progress" value="0" class="flex-1">
+                        <span class="text-xs font-mono text-gray-500">4:20</span>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <button class="text-gray-500 hover:text-white transition"><i class="fas fa-random"></i></button>
+                        <div class="flex items-center gap-8">
+                            <button class="text-2xl hover:scale-110 transition"><i class="fas fa-step-backward"></i></button>
+                            <button id="playBtn" class="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center text-xl hover:scale-110 transition shadow-xl">
+                                <i class="fas fa-play ml-1"></i>
+                            </button>
+                            <button class="text-2xl hover:scale-110 transition"><i class="fas fa-step-forward"></i></button>
+                        </div>
+                        <button class="text-gray-500 hover:text-white transition"><i class="fas fa-redo"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audioSource" src="Mask Off - Future-.wav"></audio>
+
+    <footer class="mt-12 opacity-40">
+        <p class="text-[9px] uppercase tracking-[0.5em] font-bold">Encrypted Archive &copy; 2026 XCLIPSE STUDIO</p>
+    </footer>
+
+    <script>
+        const audio = document.getElementById('audioSource');
+        const playBtn = document.getElementById('playBtn');
+        const progress = document.getElementById('progress');
+        const timeDisplay = document.getElementById('time');
+
+        playBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play();
+                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                audio.pause();
+                playBtn.innerHTML = '<i class="fas fa-play ml-1"></i>';
+            }
+        });
+
+        audio.addEventListener('timeupdate', () => {
+            const val = (audio.currentTime / audio.duration) * 100;
+            progress.value = val || 0;
+            
+            let mins = Math.floor(audio.currentTime / 60);
+            let secs = Math.floor(audio.currentTime % 60);
+            timeDisplay.innerText = `${mins}:${secs < 10 ? '0'+secs : secs}`;
+        });
+
+        progress.addEventListener('input', () => {
+            audio.currentTime = (progress.value / 100) * audio.duration;
+        });
+    </script>
+</body>
+</html>
