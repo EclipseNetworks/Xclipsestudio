@@ -1,0 +1,13 @@
+# --- XCLIPSE SECURITY LAYER ---
+
+# 1. Protect the Admin/Command Center
+# (Assumes your secret admin file is named 'admin-c2.html')
+/admin-c2    /404    404
+
+# 2. Block specific attackers (Update this list manually when needed)
+/* /404    404!    X-NF-Client-IP=123.456.78.90
+
+# 3. Global 404 handling for your custom domain
+/* /404.html    404
+
+# --- END XCLIPSE SECURITY ---

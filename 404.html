@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TERMINATED | XCLIPSE SECURITY</title>
+    
+    <link rel="icon" type="image/png" href="logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Montserrat:wght@100;400;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#ec4899', 
+              secondary: '#a855f7',
+              dark: '#050811'
+            },
+            fontFamily: { 
+                sans: ['Montserrat', 'sans-serif'],
+                display: ['Syncopate', 'sans-serif']
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
+      :root { --primary-glow: #ec4899; }
+      html { background: #050811; cursor: none; overflow: hidden; font-size: 13px; }
+      body { color: white; -webkit-font-smoothing: antialiased; user-select: none; }
+
+      /* SECURITY OVERLAYS */
+      @keyframes pulseLockdown { 0%, 100% { background: rgba(236, 72, 153, 0.02); } 50% { background: rgba(236, 72, 153, 0.1); } }
+      .lockdown-bg { animation: pulseLockdown 2s infinite ease-in-out; }
+
+      #cursor { width: 8px; height: 8px; background: #fff; border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999; mix-blend-mode: difference; transition: transform 0.1s ease-out; }
+      #cursor-blur { width: 100px; height: 100px; background: rgba(236, 72, 153, 0.2); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99998; filter: blur(30px); transition: transform 0.2s ease-out; }
+
+      .mesh-gradient { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, #0a0d1a 0%, #050811 100%); }
+
+      .terminal-box {
+        background: rgba(255, 255, 255, 0.01);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(236, 72, 153, 0.3);
+        padding: 3.5rem; max-width: 600px; width: 90%; position: relative;
+        box-shadow: 0 0 50px rgba(0,0,0,0.5);
+      }
+
+      .scanline {
+        width: 100%; height: 2px; background: rgba(236, 72, 153, 0.4);
+        position: absolute; top: 0; left: 0; animation: scan 4s linear infinite;
+      }
+      @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+
+      .ban-overlay {
+        position: fixed; inset: 0; background: #000; z-index: 100000;
+        display: none; align-items: center; justify-content: center;
+        flex-direction: column; text-align: center;
+      }
+
+      .typewriter {
+        overflow: hidden; border-right: .15em solid #ec4899;
+        white-space: nowrap; letter-spacing: .15em;
+        animation: typing 3.5s steps(40, end), blink-caret .75s step-end infinite;
+      }
+      @keyframes typing { from { width: 0 } to { width: 100% } }
+      @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: #ec4899; } }
+    </style>
+</head>
+
+<body class="lockdown-bg flex items-center justify-center min-h-screen">
+
+    <div id="ban-screen" class="ban-overlay">
+        <div class="absolute inset-0 opacity-10" style="background-image: url('https://grainy-gradients.vercel.app/noise.svg');"></div>
+        <i class="fas fa-user-slash text-primary text-6xl mb-6 animate-bounce"></i>
+        <h1 class="font-display text-4xl font-black text-white italic tracking-tighter">IP_ADDRESS_BLACKLISTED</h1>
+        <p class="font-mono text-primary text-[10px] mt-4 tracking-[0.5em] uppercase">Security Breach Level 3: Permanent Revocation</p>
+        <div class="mt-12 p-4 border border-white/10 font-mono text-[8px] text-white/40">
+            TRACE_ID: XCP-SEC-<span id="trace-id"></span><br>
+            STATUS: PERMANENT_DROP
+        </div>
+    </div>
+
+    <div id="cursor"></div>
+    <div id="cursor-blur"></div>
+    <div class="mesh-gradient"></div>
+
+    <main class="relative z-10 text-center px-6">
+        <div class="terminal-box mx-auto">
+            <div class="scanline"></div>
+            
+            <div class="mb-8">
+                <i class="fas fa-shield-virus text-primary text-5xl mb-4 opacity-80"></i>
+                <h1 class="font-display text-4xl font-black italic text-white tracking-tighter mb-2">ACCESS_DENIED</h1>
+                <p class="text-[10px] font-mono text-primary tracking-[0.4em] uppercase">Unauthorized Inspection Reroute</p>
+            </div>
+
+            <div class="text-left font-mono space-y-4 mb-10 border-l-2 border-primary/20 pl-6">
+                <p class="text-white/60 text-[11px]"><span class="text-primary">></span> SYSTEM_DETECT: <span class="text-white font-bold uppercase italic">Dev_Tools_Active</span></p>
+                <p class="text-white/60 text-[11px] leading-relaxed">
+                   Source protection protocols engaged. Attempting to view restricted Xclipse Studio assets is a violation of the Integrated Distribution Policy.
+                </p>
+                <p class="text-primary text-[10px] font-bold uppercase">Violation Attempt: <span id="violation-count">1</span>/3</p>
+            </div>
+
+            <div class="flex flex-col gap-5">
+                <div class="bg-white/5 py-4 rounded-full border border-white/10 relative overflow-hidden">
+                    <p class="text-[9px] uppercase font-black tracking-[0.4em] relative z-10">
+                        Auto-Reroute in <span id="timer" class="text-primary text-lg ml-2">10</span>s
+                    </p>
+                </div>
+                <p class="text-[8px] text-gray-600 uppercase font-black tracking-widest">Client Identity Logged & Encrypted</p>
+            </div>
+        </div>
+
+        <div class="mt-12 opacity-20">
+            <p class="font-display text-[9px] tracking-[1.5em] uppercase italic">Xclipse Studio Security Engine</p>
+        </div>
+    </main>
+
+    <script>
+        // --- CONFIGURATION ---
+        const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1482990295569268766/kW5bHJ9azwSfNMVn5m1rSwy-Xu5vYEzuFWLAMji_NuEZ5SOW3UknJqi3A53BQV2eqSlv';
+        const HOME_PAGE = 'index.html';
+
+        // --- TRACKING LOGIC ---
+        let violations = parseInt(localStorage.getItem('xcp_violations')) || 0;
+        violations++;
+        localStorage.setItem('xcp_violations', violations);
+        
+        document.getElementById('violation-count').innerText = violations;
+        document.getElementById('trace-id').innerText = Math.floor(100000 + Math.random() * 900000);
+
+        // Check for Permanent Ban
+        if (violations >= 3) {
+            document.getElementById('ban-screen').style.display = 'flex';
+        }
+
+        // --- DISCORD WEBHOOK LOGIC ---
+        async function sendSecurityAlert() {
+            if (DISCORD_WEBHOOK === 'YOUR_DISCORD_WEBHOOK_URL_HERE') return;
+
+            try {
+                const ipRes = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipRes.json();
+                
+                const payload = {
+                    username: "XCLIPSE_SEC_BOT",
+                    embeds: [{
+                        title: "🚨 SECURITY ALERT: INSPECTION DETECTED",
+                        color: 15548997,
+                        fields: [
+                            { name: "IP Address", value: `\`${ipData.ip}\``, inline: true },
+                            { name: "Violation Level", value: `**${violations}/3**`, inline: true },
+                            { name: "Status", value: violations >= 3 ? "⛔ PERMANENT BAN" : "⚠️ REROUTED", inline: false },
+                            { name: "Device", value: navigator.userAgent, inline: false }
+                        ],
+                        timestamp: new Date()
+                    }]
+                };
+
+                await fetch(DISCORD_WEBHOOK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) { console.warn("Security log silent."); }
+        }
+
+        // --- TIMER & REDIRECT ---
+        let timeLeft = 10;
+        const timerInterval = setInterval(() => {
+            if (violations >= 3) {
+                clearInterval(timerInterval);
+                return;
+            }
+            timeLeft--;
+            document.getElementById('timer').innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                window.location.href = HOME_PAGE;
+            }
+        }, 1000);
+
+        // --- UI & PROTECTION ---
+        const c = document.getElementById('cursor'), cb = document.getElementById('cursor-blur');
+        document.addEventListener('mousemove', (e) => {
+            window.requestAnimationFrame(() => {
+                c.style.transform = `translate3d(${e.clientX - 4}px, ${e.clientY - 4}px, 0)`;
+                cb.style.transform = `translate3d(${e.clientX - 50}px, ${e.clientY - 50}px, 0)`;
+            });
+        });
+
+        // Prevention
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
+                e.preventDefault();
+            }
+        });
+
+        // Initialize Discord Report
+        sendSecurityAlert();
+    </script>
+</body>
+</html>

@@ -13,6 +13,56 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
+      
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <script>
+      // Your verified Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
+        authDomain: "xclipse-security.firebaseapp.com",
+        projectId: "xclipse-security",
+        storageBucket: "xclipse-security.firebasestorage.app",
+        messagingSenderId: "161353959200",
+        appId: "1:161353959200:web:d0b36f7817b31842cff945",
+        databaseURL: "https://xclipse-security-default-rtdb.firebaseio.com" 
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+
+      async function runSecurityGate() {
+        try {
+          const res = await fetch('https://api.ipify.org?format=json');
+          const data = await res.json();
+          const cleanIP = data.ip.replaceAll('.', '_');
+
+          // 1. Instant Blacklist Check
+          db.ref('blacklisted_ips/' + cleanIP).once('value', (snapshot) => {
+            if (snapshot.exists()) {
+              window.location.href = "/404.html";
+            }
+          });
+
+          // 2. Report to Live Traffic
+          const userRef = db.ref('live_traffic/' + cleanIP);
+          userRef.set({
+            ip: data.ip,
+            page: window.location.pathname,
+            last_seen: Date.now(),
+            platform: navigator.platform
+          });
+
+          // Remove presence when they close the tab
+          userRef.onDisconnect().remove();
+
+        } catch (e) { console.warn("Security Link: Offline Mode"); }
+      }
+
+      runSecurityGate();
+    </script>
+
     <script>
       tailwind.config = {
         theme: {
