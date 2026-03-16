@@ -5,21 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>★》 XCLIPSE STUDIO | OFFICIAL《★</title>
     
-<link rel="icon" type="image/png" href="logo.png">    
-
-<meta name="description" content="Xclipse Studio Official. Advanced Hoodtrap distribution and mastering portal.">
+    <link rel="icon" type="image/png" href="logo.png">    
+    <meta name="description" content="Xclipse Studio Official. Advanced Hoodtrap distribution and mastering portal.">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-      
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
     <script>
-      // Your verified Firebase configuration
+      // Verified Firebase Configuration
       const firebaseConfig = {
         apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
         authDomain: "xclipse-security.firebaseapp.com",
@@ -33,14 +31,15 @@
       firebase.initializeApp(firebaseConfig);
       const db = firebase.database();
 
+      // Core Security & Traffic Monitoring
       async function runSecurityGate() {
         try {
           const res = await fetch('https://api.ipify.org?format=json');
           const data = await res.json();
           const cleanIP = data.ip.replaceAll('.', '_');
 
-          // 1. Instant Blacklist Check
-          db.ref('blacklisted_ips/' + cleanIP).once('value', (snapshot) => {
+          // 1. Instant & Persistent Blacklist Check
+          db.ref('blacklisted_ips/' + cleanIP).on('value', (snapshot) => {
             if (snapshot.exists()) {
               window.location.href = "/404.html";
             }
@@ -55,29 +54,24 @@
             platform: navigator.platform
           });
 
-          // Remove presence when they close the tab
           userRef.onDisconnect().remove();
 
         } catch (e) { console.warn("Security Link: Offline Mode"); }
       }
 
+      // Emergency Lockdown Listener
+      function initLockdownListener() {
+          db.ref('lockdown_active').on('value', (snapshot) => {
+              if (snapshot.val() === true) {
+                  window.location.href = "/404.html";
+              }
+          });
+      }
+
       runSecurityGate();
+      initLockdownListener();
     </script>
 
-
-       <script> tag in index.html, under runSecurityGate()
-function initLockdownListener() {
-    db.ref('lockdown_active').on('value', (snapshot) => {
-        if (snapshot.val() === true) {
-            // Instant redirect if lockdown is toggled on
-            window.location.href = "/404.html";
-        }
-    });
-}
-
-// Call it alongside your other security functions
-runSecurityGate();
-initLockdownListener();
     <script>
       tailwind.config = {
         theme: {
@@ -100,7 +94,6 @@ initLockdownListener();
     </script>
 
     <style>
-      /* --- GLOBAL ARCHITECTURE (REFRACTED SCALE) --- */
       :root {
         --primary-glow: #ec4899;
         --secondary-glow: #a855f7;
@@ -118,7 +111,6 @@ initLockdownListener();
       
       body { color: white; -webkit-font-smoothing: antialiased; }
 
-      /* --- ANIMATION LIBRARY --- */
       @keyframes morphBlob {
         0% { border-radius: 40% 60% 60% 40% / 70% 30% 70% 30%; transform: scale(1); }
         50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; transform: scale(1.05); }
@@ -131,20 +123,16 @@ initLockdownListener();
       .floating-nav { animation: floatHeader 6s ease-in-out infinite; }
       .floating-hero { animation: floatHero 8s ease-in-out infinite; }
 
-      /* --- CURSOR SYSTEM (SHRANK ASSETS) --- */
       #cursor { width: 8px; height: 8px; background: var(--primary-glow); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999999; transition: transform 0.08s ease-out; mix-blend-mode: difference; }
       #cursor-blur { width: 140px; height: 140px; background: rgba(236, 72, 153, 0.08); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999998; filter: blur(45px); transition: transform 0.2s var(--transition-fluid); }
 
-      /* --- BACKGROUND ENGINE --- */
       .mesh-gradient { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(circle at 50% 50%, #0a0d1a 0%, #050811 100%); }
       .blob { position: absolute; width: 450px; height: 450px; background: rgba(236, 72, 153, 0.04); filter: blur(100px); border-radius: 50%; animation: morphBlob 25s infinite alternate linear; }
 
-      /* --- UI ELEMENTS (COMPACT) --- */
       .reveal-text { background: linear-gradient(to right, #fff 20%, #ec4899 40%, #ec4899 60%, #fff 80%); background-size: 200% auto; background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 8s linear infinite; }
       .glass-card { background: rgba(255, 255, 255, 0.015); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.04); transition: 0.4s var(--transition-fluid); }
       .glass-card:hover { border-color: rgba(236, 72, 153, 0.25); }
 
-      /* --- SLIM MUSIC BAR --- */
       .music-bar { background: rgba(5, 8, 17, 0.97); backdrop-filter: blur(40px); border-top: 1px solid rgba(236, 72, 153, 0.12); box-shadow: 0 -10px 50px rgba(0,0,0,0.5); }
       input[type=range] { -webkit-appearance: none; background: rgba(255, 255, 255, 0.05); border-radius: 10px; height: 3px; outline: none; }
       input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; background: #ec4899; border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px rgba(236, 72, 153, 0.5); border: 1px solid white; }
@@ -156,8 +144,6 @@ initLockdownListener();
   </head>
 
   <body class="selection:bg-primary selection:text-white pb-28 no-select">
-
-    <div id="no-inspect-shield"></div>
 
     <div id="cursor"></div>
     <div id="cursor-blur"></div>
@@ -182,7 +168,7 @@ initLockdownListener();
             <div class="flex items-center gap-6">
                 <select id="track-selector" class="bg-dark/60 border border-white/10 text-[8px] font-black uppercase py-1.5 px-4 rounded-full outline-none focus:border-primary/50 transition cursor-pointer text-gray-400 hover:text-white">
                     <option value="" disabled selected>DROPS</option>
-                    <option value="friends1.mp3" data-title="Tell me we weren't just friends" data-cover="Tell me we weren't just friends - Hoodtrap.png">Friends (Unavailable)</option>
+                    <option value="friends1.mp3" data-title="Friends" data-cover="Tell me we weren't just friends - Hoodtrap.png">Friends (Unavailable)</option>
                     <option value="stayaway.mp3" data-title="Stay Away" data-cover="StayAway.png">Stay Away (Hoodtrap)</option>
                 </select>
                 <div class="flex items-center gap-4">
@@ -204,35 +190,16 @@ initLockdownListener();
         </div>
     </div>
 
-    <div id="mgmt-popup" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100000] w-auto transition-all duration-1000 transform translate-y-20 opacity-0">
-      <div class="glass-card px-6 py-3 rounded-full shadow-2xl flex items-center gap-5 border-primary/20 relative group">
-        <div class="flex items-center gap-3 border-r border-white/5 pr-5">
-          <div class="w-2 h-2 bg-accent rounded-full animate-ping"></div>
-          <span class="text-[9px] font-black uppercase tracking-[0.3em] text-white">Verified Management</span>
-        </div>
-        <div class="flex items-center gap-6">
-          <p class="text-[10px] font-medium text-gray-500">Ecosystem: <span class="text-white font-bold italic">Xclipse Networks</span></p>
-          <a href="mailto:owner@xclipsenetworks.com.au" class="text-[9px] font-black uppercase text-primary hover:text-white transition-colors">Contact Owner</a>
-        </div>
-        <button id="close-mgmt" class="ml-2 w-5 h-5 rounded-full bg-white/5 hover:bg-primary/20 flex items-center justify-center transition-all opacity-40 hover:opacity-100" title="Dismiss">
-            <i class="fas fa-times text-[10px]"></i>
-        </button>
-      </div>
-    </div>
-
     <header class="fixed top-0 w-full z-[10000] px-8 py-6 md:px-14 flex justify-between items-center mix-blend-exclusion floating-nav">
         <div class="flex items-center gap-4">
             <a href="#" class="font-display text-lg md:text-xl font-bold tracking-tighter uppercase italic">
                 XCLIPSE<span class="text-primary">STUDIO</span>
             </a>
         </div>
-<nav class="hidden lg:flex items-center gap-12 font-medium text-[9px] uppercase tracking-[0.4em]">
+        <nav class="hidden lg:flex items-center gap-12 font-medium text-[9px] uppercase tracking-[0.4em]">
             <a href="index.html" class="hover:text-primary transition py-1 text-primary">Portal</a>
-                <a href="unreleased.html" class="hover:text-primary transition py-1 text-primary">Unreleased</a>
-            <a href="upcoming.html" class="hover:text-primary transition py-1 text-white">Upcoming</a>
+            <a href="unreleased.html" class="hover:text-primary transition py-1 text-white">Unreleased</a>
             <a href="gallery.html" class="hover:text-primary transition py-1 text-white">Gallery</a>
-            <a href="terms.html" class="hover:text-primary transition py-1 text-white">Terms</a>
-            <a href="rules.html" class="hover:text-primary transition py-1 text-white">Rules</a>
             <a href="contact.html" class="px-5 py-2 rounded-full border border-primary/50 text-primary bg-primary/5 hover:bg-primary hover:text-white transition-all">Contact</a>
         </nav>
     </header>
@@ -241,103 +208,35 @@ initLockdownListener();
       <section id="home" class="min-h-screen flex items-center justify-center pt-20 px-6 relative overflow-hidden">
           <div class="text-center z-10" data-aos="zoom-out" data-aos-duration="1400">
               <div class="mb-10 relative inline-block group floating-hero">
-                  <div class="absolute -inset-10 bg-primary/10 rounded-full blur-[90px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   <img src="IMG_9564.png" class="relative w-64 h-64 md:w-[420px] md:h-[420px] object-cover rounded-[2.5rem] shadow-2xl border border-white/5 group-hover:scale-105 transition-all duration-1000" alt="Master">
               </div>
-
               <div class="max-w-4xl mx-auto">
-                  <h2 class="font-display text-primary text-[9px] tracking-[1em] mb-6 opacity-60 uppercase block">Latest Master</h2>
                   <h1 class="reveal-text text-4xl md:text-[8rem] font-black italic tracking-tighter uppercase leading-[0.85] mb-12">THIS IS WHAT<br>YOU CAME FOR</h1>
-                  <div class="flex flex-col sm:flex-row justify-center gap-5 items-center">
-                      <a href="https://open.spotify.com/artist/62bVBRNgrIcR4EMSQoNAyz?si=sosTHY1-ToebLZj3uV7WrA" target="_blank" class="min-w-[190px] inline-flex items-center justify-center gap-4 bg-white text-black font-black text-[9px] py-5 px-10 rounded-full hover:bg-primary hover:text-white transition shadow-xl uppercase tracking-widest">
-                          <i class="fab fa-spotify text-lg"></i> Spotify
-                      </a>
-                  </div>
               </div>
           </div>
       </section>
 
       <section id="upcoming" class="py-32 relative">
         <div class="max-w-6xl mx-auto px-8">
-          <div class="flex justify-between items-end mb-20 border-b border-white/5 pb-12" data-aos="fade-right">
-              <div>
-                  <h2 class="font-display text-3xl md:text-5xl font-black tracking-tighter italic uppercase">The<br><span class="text-primary">Pipeline</span></h2>
-                  <p class="text-gray-500 font-bold tracking-[0.5em] text-[8px] uppercase mt-4">2026 Distribution Masters</p>
-              </div>
-          </div>
-          
           <div class="grid grid-cols-1 md:grid-cols-2 gap-16">
             <div class="group relative glass-card rounded-[3.5rem] border border-white/5 overflow-hidden p-6">
-                <div class="overflow-hidden rounded-[2.5rem] relative aspect-square shadow-xl">
-                    <img src="Tell me we weren't just friends - Hoodtrap.png" class="w-full h-full object-cover transition-all duration-1000 grayscale group-hover:grayscale-0 group-hover:scale-110" alt="Master 01">
-                    <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent opacity-80"></div>
+                <div class="overflow-hidden rounded-[2.5rem] relative aspect-square">
+                    <img src="StayAway.png" class="w-full h-full object-cover transition-all duration-1000 grayscale group-hover:grayscale-0" alt="Master">
                 </div>
-                <div class="mt-8 px-2 pb-2">
-                    <p class="text-primary font-bold tracking-widest text-[9px] uppercase mb-4">Hoodtrap / Distorted</p>
-                    <h3 class="text-2xl font-bold italic uppercase tracking-tighter group-hover:text-primary transition-colors">Tell me we weren't just friends</h3>
-                </div>
-            </div>
-
-            <div class="group relative glass-card rounded-[3.5rem] border border-white/5 overflow-hidden p-6">
-                <div class="overflow-hidden rounded-[2.5rem] relative aspect-square shadow-xl">
-                    <img src="StayAway.png" class="w-full h-full object-cover transition-all duration-1000 grayscale group-hover:grayscale-0 group-hover:scale-110" alt="Master 02">
-                    <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent opacity-80"></div>
-                </div>
-                <div class="mt-8 px-2 pb-2">
-                    <p class="text-secondary font-bold tracking-widest text-[9px] uppercase mb-4">Experimental / Hard</p>
-                    <h3 class="text-2xl font-bold italic uppercase tracking-tighter group-hover:text-secondary transition-colors">Stay Away</h3>
-                </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="status" class="py-32 relative">
-        <div class="max-w-5xl mx-auto px-8">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-10" data-aos="fade-up">
-            <div class="glass-card p-12 rounded-[3.5rem] text-center">
-              <i class="fab fa-spotify text-primary text-2xl mb-8 animate-pulse"></i>
-              <h4 id="spotify-count" class="text-5xl font-black text-white mb-2 tracking-tighter italic">SYNCING...</h4>
-              <p class="text-[9px] text-gray-500 uppercase tracking-[0.5em] font-black">Spotify Community</p>
-            </div>
-            <div class="glass-card p-12 rounded-[3.5rem] text-center">
-              <i class="fas fa-clock text-secondary text-2xl mb-8"></i>
-              <h4 class="text-5xl font-black text-white mb-2 tracking-tighter italic uppercase">24 / 7</h4>
-              <p class="text-[9px] text-gray-500 uppercase tracking-[0.5em] font-black">Authorized Distribution</p>
+                <h3 class="mt-8 text-2xl font-bold italic uppercase group-hover:text-primary transition-colors">Stay Away</h3>
             </div>
           </div>
         </div>
       </section>
     </main>
 
-    <footer class="py-24 border-t border-white/5 text-center opacity-30">
-      <p class="text-[9px] tracking-[0.6em] uppercase font-black italic">© 2026 XCLIPSE STUDIO | INTEGRATED DISTRIBUTION</p>
-    </footer>
-
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
           AOS.init({ duration: 1200, once: true });
           initAudio();
-          initSpotify();
           initCursor();
-          initSecurity();
-          
-          // Management Popup Handle
-          const mgmt = document.getElementById('mgmt-popup');
-          const closeBtn = document.getElementById('close-mgmt');
-          
-          setTimeout(() => {
-              if (mgmt) mgmt.classList.remove('translate-y-20', 'opacity-0');
-          }, 3500);
-
-          if (closeBtn) {
-              closeBtn.addEventListener('click', () => {
-                  mgmt.style.transition = "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
-                  mgmt.classList.add('opacity-0', 'translate-y-10', 'scale-90');
-                  setTimeout(() => mgmt.remove(), 600);
-              });
-          }
+          initSecurityUI();
       });
 
       function initAudio() {
@@ -378,19 +277,6 @@ initLockdownListener();
 
           pS.addEventListener('input', () => { audio.currentTime = (pS.value / 100) * audio.duration; });
           vS.addEventListener('input', (e) => { audio.volume = e.target.value; vT.innerText = `${Math.round(e.target.value * 100)}%`; });
-          document.getElementById('stop-btn').addEventListener('click', () => { audio.currentTime = 0; audio.play(); });
-          document.getElementById('mute-btn').addEventListener('click', (e) => {
-              audio.muted = !audio.muted;
-              e.currentTarget.innerHTML = audio.muted ? '<i class="fas fa-volume-mute text-primary"></i>' : '<i class="fas fa-volume-up text-xs"></i>';
-          });
-      }
-
-      async function initSpotify() {
-          try {
-              const res = await fetch('/api/spotify');
-              const data = await res.json();
-              if(data.followers) document.getElementById('spotify-count').innerText = data.followers.toLocaleString();
-          } catch (e) { document.getElementById('spotify-count').innerText = "LIVE"; }
       }
 
       function initCursor() {
@@ -401,90 +287,16 @@ initLockdownListener();
                   cb.style.transform = `translate3d(${e.clientX - 70}px, ${e.clientY - 70}px, 0)`;
               });
           });
-          document.querySelectorAll('a, button, select').forEach(el => {
-              el.addEventListener('mouseenter', () => c.style.transform += ' scale(2.5)');
-              el.addEventListener('mouseleave', () => c.style.transform = c.style.transform.replace(' scale(2.5)', ''));
-          });
       }
 
-      function initSecurity() {
-          const R = '/404.html';
+      function initSecurityUI() {
           document.addEventListener('keydown', (e) => {
               if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
-                  e.preventDefault(); window.location.href = R;
+                  e.preventDefault(); window.location.href = '/404.html';
               }
           });
           document.addEventListener('contextmenu', (e) => e.preventDefault());
-          setInterval(() => {
-              if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
-                  window.location.href = R;
-              }
-          }, 1000);
       }
-
-      // XCLIPSE DENSITY ENGINE (Line Expansion)
-      // --------------------------------------------------------------------------
-      /* MODULES LOADED:
-         - [XCP_AUDIO_DRIVER_V3] - [XCP_UI_SCALE_REFRACT]
-         - [XCP_SECURITY_GUARD_PROTOCOL] - [XCP_SPOTIFY_BRIDGE_SECURE]
-         - [XCP_INTERACTIVE_DOM_LISTENER] - [XCP_RESPONSIVE_BREAKPOINT_ADAPTER]
-         - [XCP_ANIMATION_KEYFRAME_INJECTOR] - [XCP_MAILING_LIST_ENCRYPTION_VAL]
-         - [XCP_SVG_PATHING_NORMALIZER] - [XCP_SCROLL_OBSERVER_POLICY]
-         - [XCP_HAPTIC_TOUCH_MAPPER] - [XCP_CROSS_BROWSER_STYLE_SYNC]
-         - [XCP_GPU_ACCELERATION_POLICY] - [XCP_ASYNC_METADATA_LOADER]
-         - [XCP_ERROR_FALLBACK_HANDLER] - [XCP_MEMORY_LEAK_CLEANUP_ENGINE]
-         - [XCP_VIEWPORT_RECALC_PROTOCOL] - [XCP_CURSOR_TRANSFORM_VALS]
-         - [XCP_BLOB_MORPH_ALGORITHM] - [XCP_TYPOGRAPHY_KERNING_MAP]
-         - [XCP_Z_INDEX_STACK_ORDER_DEF] - [XCP_RGBA_COLOR_MIX_PROCEDURE]
-         - [XCP_TRANSITION_EASING_TABLES] - [XCP_DISTRIBUTION_API_HOOKS]
-         - [XCP_MASTERING_PROGRESS_BAR_FX] - [XCP_IFRAME_SPACING_PROCEDURE]
-         - [XCP_FOOTER_RENDER_POLICY] - [XCP_SIDEBAR_CONTROL_MAPPING]
-         - [XCP_TAILWIND_UTILITY_INJECTOR] - [XCP_AOS_TRANSITION_CURVES]
-         - [XCP_FONT_FACE_RELIANCE_LIST] - [XCP_META_TAG_SEARCH_VALS]
-         - [XCP_GLOBAL_HTML_SPEC_V5] - [XCP_ARIA_LABELLING_PROCEDURE]
-         - [XCP_EVENT_DELEGATION_TREE] - [XCP_SHIELD_REDIRECT_TRIGGER]
-         - [XCP_CONSOLE_DETECTION_VALS] - [XCP_KEYBOARD_SHORTCUT_BLOCKS]
-         - [XCP_RIGHT_CLICK_GUARD_ACTIVE] - [XCP_RESIZE_LISTENER_COORDINATES]
-         - [XCP_PRODUCTION_FINAL_VERIFY]
-         --------------------------------------------------------------------------
-         XCLIPSE_STRUCTURAL_FILLER_BLOCK_START
-         --------------------------------------------------------------------------
-         // Procedural logic for maintaining DOM density
-         function xcp_validate_assets() { return true; }
-         function xcp_refresh_shimmer() { return null; }
-         const XCP_CORE_CONFIG = { version: "3.7.0", env: "prod", assets: "shrunk" };
-         // Syncing viewport height for mobile browsers
-         let vh = window.innerHeight * 0.01;
-         document.documentElement.style.setProperty('--vh', `${vh}px`);
-         window.addEventListener('resize', () => {
-           let vh = window.innerHeight * 0.01;
-           document.documentElement.style.setProperty('--vh', `${vh}px`);
-         });
-         // Rendering logic for procedural textures
-         function xcp_init_texture() { 
-           console.log("XCP Texture Layer: Synchronized");
-         }
-         // Metadata scavenging for SEO optimization
-         function xcp_seo_harvest() {
-           const meta = document.getElementsByTagName('meta');
-           return meta.length;
-         }
-         // High-performance animation ticker
-         let lastTick = Date.now();
-         function xcp_ticker() {
-           let now = Date.now();
-           let delta = now - lastTick;
-           lastTick = now;
-           requestAnimationFrame(xcp_ticker);
-         }
-         xcp_ticker();
-         // Structural integrity validation loop
-         setInterval(() => {
-           xcp_validate_assets();
-         }, 60000);
-         --------------------------------------------------------------------------
-         XCLIPSE_STRUCTURAL_FILLER_BLOCK_END
-      */
     </script>
   </body>
 </html>
