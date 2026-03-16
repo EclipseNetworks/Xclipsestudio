@@ -87,11 +87,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                     <div class="glass p-6 bg-black/40">
                         <h3 class="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">Session Logs</h3>
-                        <div id="logs" class="h-64 overflow-y-auto text-[10px] space-y-2"></div>
+                        <div id="logs" class="h-64 overflow-y-auto text-[10px] space-y-2 font-mono"></div>
                     </div>
                     <div class="glass p-6 bg-red-950/10">
                         <h3 class="text-xs font-bold text-red-500 uppercase tracking-widest mb-4">Ban History</h3>
-                        <div id="history-logs" class="h-64 overflow-y-auto text-[10px] space-y-2"></div>
+                        <div id="history-logs" class="h-64 overflow-y-auto text-[10px] space-y-2 font-mono"></div>
                     </div>
                 </div>
             </div>
@@ -100,7 +100,7 @@
 
     <script>
         // CONFIGURATION
-        const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1482990295569268766/kW5bHJ9azwSfNMVn5m1rSwy-Xu5vYEzuFWLAMji_NuEZ5SOW3UknJqi3A53BQV2eqSlv'; // Preset as requested
+        const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1482990295569268766/kW5bHJ9azwSfNMVn5m1rSwy-Xu5vYEzuFWLAMji_NuEZ5SOW3UknJqi3A53BQV2eqSlv';
         const firebaseConfig = {
             apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
             authDomain: "xclipse-security.firebaseapp.com",
@@ -124,7 +124,7 @@
         }
 
         function initC2() {
-            // Live Traffic
+            // Live Traffic Listener
             db.ref('live_traffic').on('value', (s) => {
                 const container = document.getElementById('live-visitors');
                 container.innerHTML = '';
@@ -132,11 +132,15 @@
                 if(!data) { container.innerHTML = '<p class="text-[10px] text-white/20 italic">No active sessions...</p>'; return; }
                 Object.keys(data).forEach(id => {
                     const u = data[id];
-                    container.innerHTML += `<div class="p-2 bg-white/5 border-l border-pink-500/50"><p class="text-[10px] font-bold text-pink-400">${u.ip}</p></div>`;
+                    container.innerHTML += `
+                        <div class="p-3 bg-white/5 border-l-2 border-pink-500/50 mb-2">
+                            <p class="text-[10px] font-bold text-pink-400">${u.ip}</p>
+                            <p class="text-[8px] opacity-40 uppercase">${u.platform} | ${u.page}</p>
+                        </div>`;
                 });
             });
 
-            // Blacklist
+            // Blacklist Listener
             db.ref('blacklisted_ips').on('value', (s) => {
                 const list = document.getElementById('ban-list');
                 const history = document.getElementById('history-logs');
@@ -145,8 +149,11 @@
                 if(data) {
                     Object.keys(data).forEach(id => {
                         const ip = id.replaceAll('_', '.');
-                        list.innerHTML += `<div class="flex justify-between items-center bg-red-500/10 border border-red-500/20 p-3"><span class="text-[10px]">${ip}</span><button onclick="revokeBan('${id}')" class="text-[8px] opacity-40 hover:opacity-100">REVOKE</button></div>`;
-                        history.innerHTML += `<p class="text-red-400/60">[${new Date(data[id].timestamp).toLocaleTimeString()}] BAN_PUSH: ${ip}</p>`;
+                        list.innerHTML += `
+                            <div class="flex justify-between items-center bg-red-500/10 border border-red-500/20 p-3">
+                                <span class="text-[10px]">${ip}</span>
+                                <button onclick="revokeBan('${id}')" class="text-[8px] bg-red-500/20 px-2 py-1 hover:bg-red-500 hover:text-white transition">REVOKE</button>
+                            </div>`;
                     });
                 }
             });
@@ -181,17 +188,30 @@
         function updateLockdownUI(active) {
             const btn = document.getElementById('lockdown-btn');
             btn.innerText = active ? "LOCKED DOWN" : "INITIALIZE LOCKDOWN";
-            btn.className = active ? "w-full py-6 bg-white text-red-600 font-black" : "w-full py-6 bg-red-600 text-white font-black";
+            if(active) {
+                btn.classList.add('bg-white', 'text-red-600');
+                btn.classList.remove('bg-red-600', 'text-white');
+            } else {
+                btn.classList.remove('bg-white', 'text-red-600');
+                btn.classList.add('bg-red-600', 'text-white');
+            }
         }
 
         function banIP() {
             const ip = document.getElementById('target-ip').value;
             if(!ip.includes('.')) return;
-            db.ref('blacklisted_ips/' + ip.replaceAll('.', '_')).set({ timestamp: Date.now() });
+            db.ref('blacklisted_ips/' + ip.replaceAll('.', '_')).set({ 
+                timestamp: Date.now(),
+                reason: 'Manual Admin Ban'
+            });
+            addLog(`Blacklisted: ${ip}`, 'red');
             document.getElementById('target-ip').value = '';
         }
 
-        function revokeBan(id) { db.ref('blacklisted_ips/' + id).remove(); }
+        function revokeBan(id) { 
+            db.ref('blacklisted_ips/' + id).remove(); 
+            addLog(`Revoked: ${id.replaceAll('_','.')}`, 'green');
+        }
 
         function addLog(msg, color = 'white') {
             const logEl = document.getElementById('logs');
@@ -201,6 +221,7 @@
             logEl.prepend(p);
         }
 
+        // Get Dashboard IP
         fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => document.getElementById('ip-display').innerText = `NODE_IP: ${d.ip}`);
     </script>
 </body>
