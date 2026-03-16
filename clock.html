@@ -314,8 +314,8 @@
             if(!isRinging) particles.forEach(p => p.opacity = Math.random() * 0.8);
 
             // Clock Rendering
-            const btOptions = { timeZone: 'Australia/Adelaide', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-            const gcOptions = { timeZone: 'Australia/Brisbane', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const btOptions = { timeZone: 'Australia/Adelaide', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            const gcOptions = { timeZone: 'Australia/Brisbane', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
 
             const btTime = new Intl.DateTimeFormat('en-AU', btOptions).format(now);
             const gcTime = new Intl.DateTimeFormat('en-AU', gcOptions).format(now);
