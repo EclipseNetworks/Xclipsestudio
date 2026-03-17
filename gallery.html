@@ -28,6 +28,7 @@
       const db = firebase.database();
       const galleryRef = db.ref('studio_gallery');
       const uiRef = db.ref('ui_settings');
+      const banRef = db.ref('blacklist'); // Firewall Node
 
       tailwind.config = {
         theme: {
@@ -63,7 +64,6 @@
       .btn-gradient { background: linear-gradient(90deg, #4c0519 0%, #3b82f6 100%); transition: 0.3s; }
       .btn-gradient:hover { opacity: 0.9; transform: translateY(-2px); }
 
-      /* Editable UI elements */
       .editable-container { position: relative; display: inline-block; width: 100%; }
       .edit-html-trigger { 
           position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
@@ -75,6 +75,9 @@
       
       .admin-tab { display: none; }
       .admin-tab.active { display: block; }
+
+      /* Banned UI */
+      #banned-screen { position: fixed; inset: 0; background: black; z-index: 9999999; display: none; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
     </style>
   </head>
   <body oncontextmenu="return false;">
@@ -82,27 +85,35 @@
     <div id="cursor"></div>
     <div class="mesh-bg"></div>
 
-    <nav class="fixed top-0 left-0 w-full p-8 flex justify-between items-center z-[60]">
-        <div class="font-display text-[10px] tracking-[0.5em] text-white/20 italic">XCLIPSE_SYSTEM</div>
-        <button onclick="toggleLoginModal()" id="login-icon" class="w-12 h-12 glass-card rounded-full flex items-center justify-center text-white/40 hover:text-primary transition-all">
-            <i class="fas fa-user-circle text-2xl"></i>
-        </button>
-    </nav>
+    <div id="banned-screen">
+        <i class="fas fa-biohazard text-danger text-7xl mb-8 animate-pulse"></i>
+        <h1 class="font-display text-2xl tracking-[0.5em] text-white italic">ACCESS_TERMINATED</h1>
+        <p class="font-mono text-[8px] text-white/20 mt-6 uppercase tracking-[0.5em]">Your IP signature has been blacklisted.</p>
+    </div>
 
-    <header class="py-40 px-6 text-center">
-        <div class="editable-container" data-ui-key="main_header">
-            <div class="edit-html-trigger hidden">EDIT HTML</div>
-            <h1 id="main_header" class="font-display text-4xl md:text-7xl italic tracking-tighter mb-4">ARCHIVE</h1>
-        </div>
-        <div class="editable-container" data-ui-key="sub_header">
-            <div class="edit-html-trigger hidden">EDIT HTML</div>
-            <p id="sub_header" class="font-mono text-[8px] tracking-[1em] text-white/30 uppercase italic">Network Node Management</p>
-        </div>
-    </header>
+    <div id="main-content">
+        <nav class="fixed top-0 left-0 w-full p-8 flex justify-between items-center z-[60]">
+            <div class="font-display text-[10px] tracking-[0.5em] text-white/20 italic">XCLIPSE_SYSTEM</div>
+            <button onclick="toggleLoginModal()" id="login-icon" class="w-12 h-12 glass-card rounded-full flex items-center justify-center text-white/40 hover:text-primary transition-all">
+                <i class="fas fa-user-circle text-2xl"></i>
+            </button>
+        </nav>
 
-    <main class="max-w-7xl mx-auto px-6 pb-60">
-        <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"></div>
-    </main>
+        <header class="py-40 px-6 text-center">
+            <div class="editable-container" data-ui-key="main_header">
+                <div class="edit-html-trigger hidden">EDIT HTML</div>
+                <h1 id="main_header" class="font-display text-4xl md:text-7xl italic tracking-tighter mb-4">ARCHIVE</h1>
+            </div>
+            <div class="editable-container" data-ui-key="sub_header">
+                <div class="edit-html-trigger hidden">EDIT HTML</div>
+                <p id="sub_header" class="font-mono text-[8px] tracking-[1em] text-white/30 uppercase italic">Network Node Management</p>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-6 pb-60">
+            <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"></div>
+        </main>
+    </div>
 
     <div id="login-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/60 backdrop-blur-md">
         <div class="w-[400px] glass-card rounded-[3rem] p-12 flex flex-col items-center relative">
@@ -142,7 +153,7 @@
                 <div id="drop-zone" class="w-full h-32 border-2 border-dashed border-white/10 rounded-[2rem] flex flex-col items-center justify-center cursor-pointer hover:border-primary/40">
                     <p id="drop-text" class="font-mono text-[8px] text-white/30 uppercase">Paste (Ctrl+V) or Drop</p>
                 </div>
-                <input type="text" id="asset-title" placeholder="Project Title" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl font-mono text-xs outline-none focus:border-primary">
+                <input type="text" id="asset-title" placeholder="Project Title" class="login-input">
                 <input type="hidden" id="active-asset-id">
                 <div class="flex gap-4">
                     <button onclick="commitToArchive()" class="flex-1 bg-primary py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em]">Apply Changes</button>
@@ -150,15 +161,55 @@
                 </div>
             </div>
             
-            <div id="tab-settings" class="admin-tab space-y-4">
-                <button onclick="nukeArchive()" class="w-full bg-danger text-white py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em]">Nuke Everything</button>
-                <button onclick="logout()" class="w-full bg-white/5 text-white/40 py-4 rounded-xl font-mono text-[8px] uppercase tracking-[0.4em]">Logout</button>
+            <div id="tab-settings" class="admin-tab space-y-6">
+                <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
+                    <p class="font-mono text-[8px] text-white/40 mb-2 uppercase italic">Node Firewall (Target IP)</p>
+                    <input type="text" id="ban-ip-input" placeholder="0.0.0.0" class="login-input mb-4">
+                    <button onclick="banIP()" class="w-full bg-danger text-white py-3 rounded-lg font-mono text-[9px] uppercase tracking-widest">Blacklist Connection</button>
+                </div>
+                <div class="pt-4 space-y-2">
+                   <button onclick="nukeArchive()" class="w-full bg-danger text-white py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em]">Nuke Everything</button>
+                   <button onclick="logout()" class="w-full bg-white/5 text-white/40 py-4 rounded-xl font-mono text-[8px] uppercase tracking-[0.4em]">Logout</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- CORE SECURITY & PASTE ---
+        let currentUserIP = "";
+
+        // --- FIREWALL SYSTEM ---
+        async function runFirewall() {
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                currentUserIP = data.ip;
+                
+                // Firebase keys can't have dots
+                const formattedIP = currentUserIP.replace(/\./g, '_');
+                
+                banRef.child(formattedIP).once('value', (snapshot) => {
+                    if (snapshot.val() === true) {
+                        document.getElementById('main-content').style.display = 'none';
+                        document.getElementById('banned-screen').style.display = 'flex';
+                    }
+                });
+            } catch (e) { console.log("Firewall Bypass Attempt Detected"); }
+        }
+
+        function banIP() {
+            const ip = document.getElementById('ban-ip-input').value;
+            if (!ip) return;
+            const formatted = ip.replace(/\./g, '_');
+            if (confirm(`Ban IP: ${ip}?`)) {
+                banRef.child(formatted).set(true).then(() => {
+                    alert("NODE BLACKLISTED");
+                    document.getElementById('ban-ip-input').value = "";
+                });
+            }
+        }
+
+        // --- CORE LOGIC ---
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'c' || e.key === 'a')) return true;
             e.preventDefault(); return false;
@@ -170,7 +221,6 @@
             for (let i in items) if (items[i].kind === 'file') processFile(items[i].getAsFile());
         });
 
-        // --- UI SYNC ---
         uiRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) for (let key in data) {
@@ -179,7 +229,6 @@
             }
         });
 
-        // --- AUTH & TABS ---
         function toggleLoginModal() {
             if (sessionStorage.getItem('xclipse_auth') === 'true') openDashboard();
             else document.getElementById('login-modal').classList.toggle('hidden');
@@ -206,7 +255,6 @@
         function closeDashboard() { document.getElementById('dashboard').classList.add('hidden'); document.body.style.cursor = 'none'; }
         function logout() { sessionStorage.removeItem('xclipse_auth'); location.reload(); }
 
-        // --- HOVER EDIT FIX ---
         function activateHoverEdit() {
             if (sessionStorage.getItem('xclipse_auth') === 'true') {
                 document.querySelectorAll('.edit-html-trigger').forEach(t => t.classList.remove('hidden'));
@@ -229,22 +277,16 @@
             uiRef.update({ [key]: val }).then(() => document.getElementById('html-editor').classList.add('hidden'));
         }
 
-        // --- DATABASE OPERATIONS ---
         let base64Image = null;
         function processFile(file) {
             if (file && file.type.startsWith('image/')) {
                 const r = new FileReader(); r.readAsDataURL(file);
-                r.onload = (e) => {
-                    base64Image = e.target.result;
-                    document.getElementById('drop-text').innerText = "IMAGE READY";
-                };
+                r.onload = (e) => { base64Image = e.target.result; document.getElementById('drop-text').innerText = "IMAGE READY"; };
             }
         }
 
         function nukeArchive() {
-            if (confirm("NUKE ENTIRE ARCHIVE?") && prompt("Type NUKE:") === "NUKE") {
-                galleryRef.set(null).then(() => location.reload());
-            }
+            if (confirm("NUKE ENTIRE ARCHIVE?") && prompt("Type NUKE:") === "NUKE") galleryRef.set(null).then(() => location.reload());
         }
 
         function commitToArchive() {
@@ -292,9 +334,13 @@
             if (confirm("Destroy node?") && k) galleryRef.child(k).remove().then(() => location.reload());
         }
 
-        // Initialize
-        renderGallery();
-        activateHoverEdit();
+        // INIT
+        window.onload = () => {
+            runFirewall();
+            renderGallery();
+            activateHoverEdit();
+        };
+
         const cursor = document.getElementById('cursor');
         document.addEventListener('mousemove', (e) => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
     </script>
