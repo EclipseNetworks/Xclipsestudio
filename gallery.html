@@ -41,22 +41,22 @@
     <style>
       ::-webkit-scrollbar { width: 4px; }
       ::-webkit-scrollbar-track { background: #050811; }
-      ::-webkit-scrollbar-thumb { background: #ec4899; box-shadow: 0 0 10px #ec4899; }
+      ::-webkit-scrollbar-thumb { background: #ec4899; border-radius: 10px; box-shadow: 0 0 10px #ec4899; }
 
       * { -webkit-user-select: none; user-select: none; -webkit-user-drag: none; outline: none !important; }
       body { background: #050811; color: white; cursor: none; overflow-x: hidden; scroll-behavior: smooth; }
       
-      .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.05); }
       #cursor { width: 8px; height: 8px; background: #ec4899; border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999999; mix-blend-mode: difference; }
       
       #scroll-progress {
         position: fixed; top: 0; left: 0; width: 0%; height: 2px;
-        background: linear-gradient(to right, #ec4899, #ff5500);
-        z-index: 1000000;
-        box-shadow: 0 0 15px #ec4899;
+        background: linear-gradient(to right, #ec4899, #1db954, #ff5500);
+        z-index: 1000000; box-shadow: 0 0 15px #ec4899;
       }
 
       .mesh-bg { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, #0d1226 0%, #050811 100%); }
+      
+      .edit-overlay { background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); }
     </style>
   </head>
   <body oncontextmenu="return false;">
@@ -66,8 +66,8 @@
     <div class="mesh-bg"></div>
 
     <header class="py-32 px-6 text-center">
-        <h1 class="font-display text-5xl md:text-8xl italic tracking-tighter mb-6">SoundCloud Music</h1>
-        <p class="font-mono text-[8px] tracking-[1em] text-white/20 uppercase italic">Visual & Audio Node</p>
+        <h1 class="font-display text-5xl md:text-8xl italic tracking-tighter mb-6">ARCHIVE</h1>
+        <p class="font-mono text-[8px] tracking-[1em] text-white/20 uppercase italic">Xclipse Security Node</p>
     </header>
 
     <main class="max-w-7xl mx-auto px-6 pb-60">
@@ -75,52 +75,67 @@
     </main>
 
     <button onclick="triggerAuth()" class="fixed bottom-10 right-10 w-14 h-14 glass rounded-full flex items-center justify-center text-white/10 hover:text-primary transition-all z-50">
-        <i class="fas fa-lock"></i>
+        <i class="fas fa-terminal"></i>
     </button>
 
-    <div id="admin-panel" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/98 backdrop-blur-2xl">
+    <div id="admin-panel" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-6 edit-overlay">
         <div class="w-full max-w-xl glass p-10 rounded-[3rem] border-primary/20 relative">
             <button onclick="closeAdmin()" class="absolute top-8 right-8 text-white/20 hover:text-white"><i class="fas fa-times"></i></button>
-            <h2 class="font-display text-primary text-[10px] tracking-[0.5em] uppercase mb-8 italic">SoundCloud Uplink</h2>
+            <h2 id="panel-title" class="font-display text-primary text-[10px] tracking-[0.5em] uppercase mb-8 italic text-center">Archive Uplink</h2>
+            
             <div class="space-y-4">
-                <div id="drop-zone" class="w-full h-44 border-2 border-dashed border-white/10 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer">
+                <input type="hidden" id="edit-key">
+                <div id="drop-zone" class="w-full h-40 border-2 border-dashed border-white/10 rounded-[2rem] flex flex-col items-center justify-center cursor-pointer group hover:border-primary/50 transition-all">
                     <div id="drop-content" class="text-center">
-                        <i class="fas fa-cloud-upload-alt text-3xl text-white/10 mb-4"></i>
-                        <p class="font-mono text-[9px] text-white/40 uppercase">Drop Visual</p>
+                        <i class="fas fa-cloud-upload-alt text-2xl text-white/10 group-hover:text-primary mb-3"></i>
+                        <p class="font-mono text-[8px] text-white/40 uppercase">Drag Visual</p>
                     </div>
                     <input type="file" id="file-input" class="hidden" accept="image/*">
                 </div>
-                <input type="text" id="img-title" placeholder="Project Name" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl font-mono text-xs outline-none">
-                <input type="text" id="sc-link" placeholder="SoundCloud URL (Optional)" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl font-mono text-xs outline-none text-[#ff5500]">
-                <button onclick="saveImage()" id="push-btn" class="w-full bg-primary text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.4em]">Push to Database</button>
+
+                <input type="text" id="img-title" placeholder="Visual Title" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl font-mono text-xs outline-none focus:border-primary">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="spotify-link" placeholder="Spotify URL" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl font-mono text-xs text-[#1db954] outline-none">
+                    <input type="text" id="soundcloud-link" placeholder="SoundCloud URL" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl font-mono text-xs text-[#ff5500] outline-none">
+                </div>
+
+                <button onclick="saveData()" id="push-btn" class="w-full bg-primary text-white py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em] hover:shadow-[0_0_20px_#ec4899] transition-all">Commit Changes</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Security: Block Keyboards
+        // --- MAXIMUM SECURITY ---
         document.addEventListener('keydown', (e) => { e.preventDefault(); return false; }, true);
 
-        // Scroll Progress
-        window.onscroll = () => {
-            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            document.getElementById("scroll-progress").style.width = (winScroll / height * 100) + "%";
-        };
-
-        // Firebase Logic
+        // --- GLOBAL STATE ---
         let droppedImageData = null;
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
 
         function triggerAuth() {
             const u = prompt("ID:"), p = prompt("Key:");
-            if(u === "admin" && p === "xclipse2026") document.getElementById('admin-panel').classList.remove('hidden');
+            if(u === "admin" && p === "xclipse2026") {
+                document.getElementById('admin-panel').classList.remove('hidden');
+                document.body.style.cursor = 'auto'; // Allow interaction in admin
+            }
         }
 
-        function closeAdmin() { document.getElementById('admin-panel').classList.add('hidden'); }
+        function closeAdmin() { 
+            document.getElementById('admin-panel').classList.add('hidden'); 
+            document.getElementById('edit-key').value = "";
+            document.getElementById('panel-title').innerText = "Archive Uplink";
+            document.body.style.cursor = 'none';
+        }
+
+        // --- FILE HANDLING ---
         dropZone.onclick = () => fileInput.click();
         fileInput.onchange = (e) => handleFiles(e.target.files);
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => {
+            dropZone.addEventListener(e, (ev) => { ev.preventDefault(); ev.stopPropagation(); });
+        });
+        dropZone.ondrop = (e) => handleFiles(e.dataTransfer.files);
 
         function handleFiles(files) {
             const file = files[0];
@@ -134,17 +149,38 @@
             }
         }
 
-        function saveImage() {
-            const t = document.getElementById('img-title').value;
-            const sc = document.getElementById('sc-link').value;
-            if (!droppedImageData) return;
-            document.getElementById('push-btn').disabled = true;
-            galleryRef.push({ 
-                url: droppedImageData, 
-                title: t || "Studio Session", 
-                soundcloud: sc || null,
-                timestamp: Date.now() 
-            }).then(() => location.reload());
+        // --- DATABASE OPERATIONS ---
+        function openEdit(key, title, spotify, soundcloud) {
+            document.getElementById('edit-key').value = key;
+            document.getElementById('img-title').value = title;
+            document.getElementById('spotify-link').value = spotify || "";
+            document.getElementById('soundcloud-link').value = soundcloud || "";
+            document.getElementById('panel-title').innerText = "Edit Protocol";
+            document.getElementById('admin-panel').classList.remove('hidden');
+        }
+
+        function saveData() {
+            const key = document.getElementById('edit-key').value;
+            const payload = {
+                title: document.getElementById('img-title').value || "Studio Session",
+                spotify: document.getElementById('spotify-link').value || null,
+                soundcloud: document.getElementById('soundcloud-link').value || null,
+                timestamp: Date.now()
+            };
+
+            const btn = document.getElementById('push-btn');
+            btn.disabled = true;
+            btn.innerText = "SYNCHRONIZING...";
+
+            if(key) {
+                // UPDATE MODE
+                galleryRef.child(key).update(payload).then(() => location.reload());
+            } else {
+                // UPLOAD MODE
+                if(!droppedImageData) return alert("Visual Data Required");
+                payload.url = droppedImageData;
+                galleryRef.push(payload).then(() => location.reload());
+            }
         }
 
         galleryRef.on('value', (s) => {
@@ -152,21 +188,23 @@
             g.innerHTML = '';
             s.forEach((c) => {
                 const d = c.val();
-                const scBtn = d.soundcloud ? `
-                    <a href="${d.soundcloud}" target="_blank" class="w-10 h-10 rounded-full bg-[#ff5500] flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform">
-                        <i class="fab fa-soundcloud text-xl"></i>
-                    </a>` : '';
+                const k = c.key;
                 
+                const spotifyBtn = d.spotify ? `<a href="${d.spotify}" target="_blank" class="w-10 h-10 rounded-full bg-[#1db954] flex items-center justify-center text-black hover:scale-110 transition-transform"><i class="fab fa-spotify text-xl"></i></a>` : '';
+                const soundcloudBtn = d.soundcloud ? `<a href="${d.soundcloud}" target="_blank" class="w-10 h-10 rounded-full bg-[#ff5500] flex items-center justify-center text-white hover:scale-110 transition-transform"><i class="fab fa-soundcloud text-xl"></i></a>` : '';
+                
+                // Secret Edit Trigger (Only visible to admin)
+                const editTrigger = `<button onclick="openEdit('${k}', '${d.title}', '${d.spotify}', '${d.soundcloud}')" class="absolute top-5 right-5 text-white/5 hover:text-primary transition-all text-xs font-mono">EDIT_NODE</button>`;
+
                 g.insertAdjacentHTML('afterbegin', `
                     <div class="glass relative overflow-hidden rounded-[3rem] aspect-[4/5] group transition-all duration-700">
-                        <img src="${d.url}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100">
+                        <img src="${d.url}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000">
+                        ${editTrigger}
                         <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 p-10 flex flex-col justify-end">
-                            <div class="flex justify-between items-end">
-                                <div>
-                                    <span class="text-primary font-display text-[10px] tracking-widest uppercase italic">${d.title}</span>
-                                    <p class="text-[7px] font-mono text-white/30 mt-1 uppercase">Xclipse Audio Unit</p>
-                                </div>
-                                ${scBtn}
+                            <span class="text-primary font-display text-[10px] tracking-widest uppercase italic mb-2">${d.title}</span>
+                            <div class="flex gap-3">
+                                ${spotifyBtn}
+                                ${soundcloudBtn}
                             </div>
                         </div>
                     </div>
@@ -174,8 +212,15 @@
             });
         });
 
+        // UI Interactions
+        window.onscroll = () => {
+            let s = document.body.scrollTop || document.documentElement.scrollTop;
+            let h = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            document.getElementById("scroll-progress").style.width = (s / h * 100) + "%";
+        };
+
+        const c = document.getElementById('cursor');
         document.addEventListener('mousemove', (e) => {
-            const c = document.getElementById('cursor');
             c.style.left = e.clientX + 'px';
             c.style.top = e.clientY + 'px';
         });
