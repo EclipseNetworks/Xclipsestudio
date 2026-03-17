@@ -185,7 +185,7 @@
 
         function updateClock() {
             const now = new Date();
-            const options = { timeZone: 'Australia/Adelaide', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const options = { timeZone: 'Australia/Adelaide', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
             const timeStr = new Intl.DateTimeFormat('en-AU', options).format(now);
             
             document.getElementById('clock').innerText = timeStr;
