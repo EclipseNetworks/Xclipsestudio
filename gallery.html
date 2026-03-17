@@ -27,6 +27,7 @@
       firebase.initializeApp(firebaseConfig);
       const db = firebase.database();
       const galleryRef = db.ref('studio_gallery');
+      const uiRef = db.ref('ui_settings'); // New node for UI text/html
 
       tailwind.config = {
         theme: {
@@ -48,9 +49,14 @@
       .mesh-bg { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, #0d1226 0%, #050811 100%); }
       .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.05); }
       
-      /* Dashboard Sections */
-      .admin-tab { display: none; }
-      .admin-tab.active { display: block; }
+      /* Hover Edit Styles */
+      .editable-container { position: relative; display: inline-block; width: 100%; }
+      .edit-html-trigger { 
+          position: absolute; top: -20px; right: 50%; transform: translateX(50%);
+          font-size: 8px; background: #ec4899; color: white; padding: 4px 10px;
+          border-radius: 4px; opacity: 0; transition: 0.3s; cursor: pointer; z-index: 50;
+      }
+      .editable-container:hover .edit-html-trigger { opacity: 1; top: -30px; }
     </style>
   </head>
   <body oncontextmenu="return false;">
@@ -66,67 +72,53 @@
     </nav>
 
     <header class="py-40 px-6 text-center">
-        <h1 class="font-display text-4xl md:text-7xl italic tracking-tighter mb-4 text-white">ARCHIVE</h1>
-        <p class="font-mono text-[8px] tracking-[1em] text-white/30 uppercase italic">Network Node Management</p>
+        <div class="editable-container" data-ui-key="main_header">
+            <div id="html-trigger" class="edit-html-trigger hidden">EDIT HTML</div>
+            <h1 id="main_header" class="font-display text-4xl md:text-7xl italic tracking-tighter mb-4 text-white">ARCHIVE</h1>
+        </div>
+        
+        <div class="editable-container" data-ui-key="sub_header">
+            <div id="sub-trigger" class="edit-html-trigger hidden">EDIT HTML</div>
+            <p id="sub_header" class="font-mono text-[8px] tracking-[1em] text-white/30 uppercase italic">Network Node Management</p>
+        </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-6 pb-60">
         <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"></div>
     </main>
 
-    <div id="dashboard" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/95 backdrop-blur-3xl">
-        <div class="w-full max-w-2xl glass p-10 rounded-[3rem] border-white/5 relative">
+    <div id="html-editor" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-6 bg-black/95 backdrop-blur-3xl">
+        <div class="w-full max-w-lg glass p-8 rounded-[2rem] border-white/5 relative">
+            <h2 class="font-display text-primary text-[10px] tracking-widest uppercase italic mb-6">HTML Override Protocol</h2>
+            <input type="hidden" id="editing-ui-key">
+            <textarea id="html-input" class="w-full h-48 bg-white/5 border border-white/10 p-4 rounded-xl font-mono text-xs text-primary outline-none focus:border-primary/50 mb-6" spellcheck="false"></textarea>
+            <div class="flex gap-4">
+                <button onclick="saveHTML()" class="flex-1 bg-primary text-white py-4 rounded-xl font-black text-[9px] uppercase tracking-widest">Update Source</button>
+                <button onclick="document.getElementById('html-editor').classList.add('hidden')" class="px-6 bg-white/5 text-white/20 rounded-xl font-mono text-[9px] uppercase">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboard" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/90 backdrop-blur-3xl">
+        <div class="w-full max-w-2xl glass p-10 rounded-[3rem] relative">
             <button onclick="closeDashboard()" class="absolute top-8 right-8 text-white/10 hover:text-white"><i class="fas fa-times"></i></button>
-            
             <div class="flex gap-6 mb-10 border-b border-white/5 pb-4">
                 <button onclick="switchTab('uplink')" class="font-display text-[9px] tracking-widest uppercase italic text-primary">Media Uplink</button>
-                <button onclick="switchTab('settings')" class="font-display text-[9px] tracking-widest uppercase italic text-white/20 hover:text-white transition-all">Security Settings</button>
+                <button onclick="switchTab('settings')" class="font-display text-[9px] tracking-widest uppercase italic text-white/20 hover:text-white">Security Settings</button>
             </div>
-
-            <div id="tab-uplink" class="admin-tab active space-y-5">
-                <div class="mb-4">
-                    <h2 id="dash-mode-text" class="font-display text-primary text-[10px] tracking-[0.4em] uppercase italic">System Uplink</h2>
-                    <p id="asset-id-display" class="font-mono text-[7px] text-white/20 uppercase tracking-widest mt-1">Awaiting Data Injection</p>
-                </div>
-
+            
+            <div id="tab-uplink" class="admin-tab active space-y-4">
                 <input type="hidden" id="active-asset-id">
-                
-                <div id="drop-zone" class="w-full h-32 border-2 border-dashed border-white/10 rounded-[2rem] flex flex-col items-center justify-center transition-all group hover:border-primary/40 cursor-pointer">
-                    <div id="drop-content" class="text-center">
-                        <i class="fas fa-paste text-xl text-white/10 group-hover:text-primary mb-2 transition-all"></i>
-                        <p class="font-mono text-[8px] text-white/30 uppercase">Paste (Ctrl+V) or Drop</p>
-                    </div>
-                    <input type="file" id="file-input" class="hidden" accept="image/*">
+                <div id="drop-zone" class="w-full h-32 border-2 border-dashed border-white/10 rounded-[2rem] flex items-center justify-center cursor-pointer hover:border-primary/40">
+                    <p class="font-mono text-[8px] text-white/30 uppercase">Paste or Drop Image</p>
                 </div>
-
-                <input type="text" id="asset-title" placeholder="Asset Title" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl font-mono text-xs outline-none focus:border-primary">
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="asset-spotify" placeholder="Spotify Link" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl font-mono text-xs outline-none text-spotify">
-                    <input type="text" id="asset-soundcloud" placeholder="SoundCloud Link" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl font-mono text-xs outline-none text-soundcloud">
-                </div>
-
-                <div class="flex gap-4">
-                    <button onclick="commitToArchive()" id="commit-btn" class="flex-1 bg-primary text-white py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em]">Apply Changes</button>
-                    <button id="delete-btn" onclick="deleteAsset()" class="hidden bg-danger/10 text-danger border border-danger/20 px-8 rounded-xl font-mono text-[8px] uppercase hover:bg-danger hover:text-white transition-all">Destroy</button>
-                </div>
+                <input type="text" id="asset-title" placeholder="Title" class="w-full bg-white/5 p-4 rounded-xl font-mono text-xs outline-none focus:border-primary">
+                <button onclick="commitToArchive()" class="w-full bg-primary py-4 rounded-xl font-black text-[9px] uppercase tracking-widest">Synchronize</button>
             </div>
 
-            <div id="tab-settings" class="admin-tab space-y-8">
-                <div>
-                    <h2 class="font-display text-danger text-[10px] tracking-[0.4em] uppercase italic mb-2">Danger Zone</h2>
-                    <p class="font-mono text-[7px] text-white/20 uppercase tracking-widest italic">Global Archive Override</p>
-                </div>
-
-                <div class="bg-danger/5 border border-danger/20 p-8 rounded-[2rem]">
-                    <h3 class="font-display text-[9px] text-white mb-4 italic">Nuke Archive Protocol</h3>
-                    <p class="font-mono text-[8px] text-white/40 leading-relaxed mb-6">
-                        Executing this command will permanently erase all nodes currently stored in the database. This action is instantaneous and cannot be reversed.
-                    </p>
-                    <button onclick="nukeArchive()" class="w-full bg-danger text-white py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em] hover:shadow-[0_0_30px_rgba(239,68,68,0.4)] transition-all">Erase All Data</button>
-                </div>
-
-                <button onclick="logout()" class="w-full bg-white/5 text-white/40 py-4 rounded-xl font-mono text-[8px] uppercase tracking-[0.4em] hover:bg-white/10 transition-all">Terminate Admin Session</button>
+            <div id="tab-settings" class="admin-tab space-y-4">
+                <button onclick="nukeArchive()" class="w-full bg-danger text-white py-4 rounded-xl font-black text-[9px] uppercase">Erase All Data</button>
+                <button onclick="logout()" class="w-full bg-white/5 text-white/40 py-4 rounded-xl font-mono text-[8px] uppercase">Terminate Session</button>
             </div>
         </div>
     </div>
@@ -139,17 +131,19 @@
             return false; 
         }, true);
 
-        // --- CLIPBOARD ---
-        document.addEventListener('paste', (event) => {
-            if (document.getElementById('dashboard').classList.contains('hidden')) return;
-            const items = (event.clipboardData || event.originalEvent.clipboardData).items;
-            for (let index in items) {
-                const item = items[index];
-                if (item.kind === 'file') processFile(item.getAsFile());
+        // --- UI SYNC ---
+        // Load custom HTML from Firebase
+        uiRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                for (let key in data) {
+                    const el = document.getElementById(key);
+                    if (el) el.innerHTML = data[key];
+                }
             }
         });
 
-        // --- SESSION & TABS ---
+        // --- HOVER EDITING ---
         function checkSessionAndOpen() {
             if (sessionStorage.getItem('xclipse_auth') === 'true') {
                 openDashboard();
@@ -158,125 +152,76 @@
                 if(u === "admin" && k === "xclipse2026") {
                     sessionStorage.setItem('xclipse_auth', 'true');
                     document.getElementById('login-icon').classList.add('text-primary');
-                    renderGallery(); 
+                    activateHoverEdit();
                     openDashboard();
                 }
             }
         }
 
+        function activateHoverEdit() {
+            if (sessionStorage.getItem('xclipse_auth') === 'true') {
+                document.querySelectorAll('.edit-html-trigger').forEach(t => t.classList.remove('hidden'));
+                document.querySelectorAll('.editable-container').forEach(c => {
+                    c.querySelector('.edit-html-trigger').onclick = () => {
+                        const key = c.getAttribute('data-ui-key');
+                        const currentHTML = document.getElementById(key).innerHTML;
+                        document.getElementById('editing-ui-key').value = key;
+                        document.getElementById('html-input').value = currentHTML;
+                        document.getElementById('html-editor').classList.remove('hidden');
+                    };
+                });
+            }
+        }
+
+        function saveHTML() {
+            const key = document.getElementById('editing-ui-key').value;
+            const newHTML = document.getElementById('html-input').value;
+            uiRef.update({ [key]: newHTML }).then(() => {
+                document.getElementById('html-editor').classList.add('hidden');
+            });
+        }
+
+        // --- DASHBOARD WRAPPERS ---
+        function openDashboard() { document.getElementById('dashboard').classList.remove('hidden'); document.body.style.cursor = 'auto'; }
+        function closeDashboard() { document.getElementById('dashboard').classList.add('hidden'); document.body.style.cursor = 'none'; }
         function switchTab(tabId) {
             document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
         }
-
         function logout() { sessionStorage.removeItem('xclipse_auth'); location.reload(); }
-        function openDashboard() { document.getElementById('dashboard').classList.remove('hidden'); document.body.style.cursor = 'auto'; }
-        function closeDashboard() { 
-            document.getElementById('dashboard').classList.add('hidden'); 
-            document.body.style.cursor = 'none';
-            switchTab('uplink'); // Reset to default tab
-        }
 
-        // --- MASTER WIPE (NUKE) ---
-        function nukeArchive() {
-            const confirm1 = confirm("WARNING: You are about to wipe the entire archive. Proceed?");
-            if (confirm1) {
-                const verification = prompt("Type 'NUKE' to confirm destruction:");
-                if (verification === "NUKE") {
-                    galleryRef.set(null).then(() => {
-                        alert("Archive Purged.");
-                        location.reload();
-                    });
-                } else {
-                    alert("Verification Failed. Aborting.");
-                }
-            }
-        }
-
-        // --- DATA OPERATIONS ---
+        // --- ASSET LOGIC (SIMPLIFIED) ---
         let base64Image = null;
-        const dropZone = document.getElementById('drop-zone');
-        const fileInput = document.getElementById('file-input');
-
-        dropZone.onclick = () => fileInput.click();
-        fileInput.onchange = (e) => processFile(e.target.files[0]);
-        ['dragover', 'drop'].forEach(ev => dropZone.addEventListener(ev, e => e.preventDefault()));
-        dropZone.ondrop = (e) => { e.preventDefault(); processFile(e.dataTransfer.files[0]); };
-
-        function processFile(file) {
-            if (file && file.type.startsWith('image/')) {
-                const r = new FileReader();
-                r.readAsDataURL(file);
-                r.onload = () => {
-                    base64Image = r.result;
-                    document.getElementById('drop-content').innerHTML = `<i class="fas fa-check text-primary"></i> <span class="text-primary text-[8px] font-mono">READY</span>`;
-                };
+        document.addEventListener('paste', (e) => {
+            if (document.getElementById('dashboard').classList.contains('hidden')) return;
+            const items = e.clipboardData.items;
+            for (let i in items) if (items[i].kind === 'file') {
+                const reader = new FileReader();
+                reader.readAsDataURL(items[i].getAsFile());
+                reader.onload = (ev) => base64Image = ev.target.result;
             }
-        }
-
-        function initiateEdit(key, title, spot, sound) {
-            document.getElementById('active-asset-id').value = key;
-            document.getElementById('asset-title').value = (title === 'null' ? "" : title);
-            document.getElementById('asset-spotify').value = (spot === "null" ? "" : spot);
-            document.getElementById('asset-soundcloud').value = (sound === "null" ? "" : sound);
-            document.getElementById('dash-mode-text').innerText = "Edit Protocol";
-            document.getElementById('asset-id-display').innerText = "Node: " + key;
-            document.getElementById('delete-btn').classList.remove('hidden');
-            openDashboard();
-        }
-
-        function deleteAsset() {
-            const k = document.getElementById('active-asset-id').value;
-            if (k && confirm("Destroy this node?")) {
-                galleryRef.child(k).remove().then(() => location.reload());
-            }
-        }
+        });
 
         function commitToArchive() {
-            const k = document.getElementById('active-asset-id').value;
-            const data = {
-                title: document.getElementById('asset-title').value || "Entry",
-                spotify: document.getElementById('asset-spotify').value || null,
-                soundcloud: document.getElementById('asset-soundcloud').value || null,
-            };
-
-            if (k) {
-                if (base64Image) data.url = base64Image;
-                galleryRef.child(k).update(data).then(() => location.reload());
-            } else {
-                if (!base64Image) return alert("Visual Core Missing");
-                data.url = base64Image;
-                galleryRef.push(data).then(() => location.reload());
-            }
+            const data = { title: document.getElementById('asset-title').value, url: base64Image };
+            if (!base64Image) return alert("Visual Core Empty");
+            galleryRef.push(data).then(() => location.reload());
         }
 
         function renderGallery() {
             galleryRef.on('value', (s) => {
                 const g = document.getElementById('gallery-grid');
-                const auth = sessionStorage.getItem('xclipse_auth') === 'true';
                 g.innerHTML = '';
                 s.forEach((c) => {
                     const item = c.val();
-                    const k = c.key;
-                    const editTrigger = auth ? `<button onclick="initiateEdit('${k}', '${item.title}', '${item.spotify}', '${item.soundcloud}')" class="absolute top-8 left-8 w-10 h-10 glass rounded-full flex items-center justify-center text-white/40 hover:text-primary transition-all z-20"><i class="fas fa-pen-nib"></i></button>` : '';
-                    g.insertAdjacentHTML('afterbegin', `
-                        <div class="glass relative overflow-hidden rounded-[3rem] aspect-[4/5] group transition-all duration-700">
-                            <img src="${item.url}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000">
-                            ${editTrigger}
-                            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 p-10 flex flex-col justify-end">
-                                <h3 class="font-display text-primary text-[10px] tracking-widest uppercase italic mb-3">${item.title}</h3>
-                                <div class="flex gap-4">
-                                    ${item.spotify ? `<a href="${item.spotify}" target="_blank" class="text-spotify text-xl"><i class="fab fa-spotify"></i></a>` : ''}
-                                    ${item.soundcloud ? `<a href="${item.soundcloud}" target="_blank" class="text-soundcloud text-xl"><i class="fab fa-soundcloud"></i></a>` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    `);
+                    g.insertAdjacentHTML('afterbegin', `<div class="glass relative overflow-hidden rounded-[3rem] aspect-[4/5] group"><img src="${item.url}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000"><div class="absolute inset-0 p-10 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-all"><h3 class="font-display text-primary text-[10px] uppercase italic">${item.title}</h3></div></div>`);
                 });
             });
         }
 
         renderGallery();
+        activateHoverEdit(); // Run check on load
+
         const cursor = document.getElementById('cursor');
         document.addEventListener('mousemove', (e) => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
     </script>
