@@ -31,7 +31,7 @@
       tailwind.config = {
         theme: {
           extend: {
-            colors: { primary: '#ec4899', dark: '#050811', spotify: '#1db954', danger: '#ef4444' },
+            colors: { primary: '#ec4899', dark: '#050811', spotify: '#1db954', danger: '#ef4444', success: '#22c55e' },
             fontFamily: { display: ['Syncopate', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }
           }
         }
@@ -57,6 +57,9 @@
       .node-card { border-left: 2px solid rgba(255,255,255,0.05); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
       .node-card:hover { border-left-color: #ec4899; transform: translateX(5px); background: rgba(255,255,255,0.03); }
       .node-card.github:hover { border-left-color: #1db954; }
+
+      .admin-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: white; width: 100%; outline: none; }
+      .admin-input:focus { border-color: #ec4899; }
     </style>
 </head>
 <body>
@@ -88,9 +91,32 @@
     </main>
 
     <div id="login-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/80 backdrop-blur-xl">
-        <div class="w-[350px] glass-card p-10 rounded-[2rem]">
-            <input type="password" id="admin-key" placeholder="SECURE_KEY" class="w-full bg-transparent border-b border-white/10 py-4 mb-8 text-center font-mono text-sm outline-none focus:border-primary">
-            <button onclick="executeLogin()" class="w-full py-4 bg-primary/10 border border-primary/20 text-primary font-display text-[9px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all">Verify Access</button>
+        <div class="w-[380px] glass-card p-10 rounded-[2rem] border border-white/10 max-h-[90vh] overflow-y-auto">
+            
+            <div id="admin-login-fields">
+                <h2 class="font-display text-[10px] text-center mb-8 tracking-widest text-white/40 uppercase">System Authentication</h2>
+                <input type="password" id="admin-key" placeholder="SECURE_KEY" class="w-full bg-transparent border-b border-white/10 py-4 mb-8 text-center font-mono text-sm outline-none focus:border-primary text-white">
+                <button onclick="executeLogin()" class="w-full py-4 bg-primary/10 border border-primary/20 text-primary font-display text-[9px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all">Verify Access</button>
+            </div>
+
+            <div id="admin-controls" class="hidden space-y-6">
+                <h2 class="font-display text-[10px] text-center tracking-widest text-primary uppercase italic">Admin Command Center</h2>
+                
+                <button onclick="forceRefreshSystem()" id="refresh-btn" class="w-full py-4 bg-spotify/10 border border-spotify/20 text-spotify font-display text-[9px] uppercase tracking-widest hover:bg-spotify hover:text-white transition-all flex items-center justify-center gap-3">
+                    <i class="fas fa-sync-alt" id="sync-icon"></i> Force System Update
+                </button>
+
+                <div class="space-y-3 pt-4 border-t border-white/5">
+                    <p class="font-mono text-[7px] text-white/30 uppercase tracking-widest">Post Manual Entry</p>
+                    <input type="text" id="manual-log-title" placeholder="ENTRY TITLE..." class="admin-input">
+                    <textarea id="manual-log-desc" placeholder="TECHNICAL DESCRIPTION..." class="admin-input h-20 resize-none"></textarea>
+                    <button onclick="postManualLog()" class="w-full py-3 bg-primary/10 border border-primary/20 text-primary font-display text-[8px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all">Broadcast Log</button>
+                </div>
+
+                <button onclick="logoutAdmin()" class="w-full py-3 bg-white/5 text-white/20 font-mono text-[8px] uppercase tracking-widest hover:text-danger transition-all">Terminate Session</button>
+            </div>
+            
+            <button onclick="toggleLoginModal()" class="mt-8 w-full text-center font-mono text-[7px] text-white/10 uppercase tracking-widest hover:text-white transition-all">Close Terminal</button>
         </div>
     </div>
 
@@ -104,17 +130,16 @@
         const GITHUB_OWNER = 'EclipseNetworks';
         const GITHUB_REPO = 'Xclipsestudio';
 
+        // MAIN UPDATE FETCHER
         async function syncUpdates() {
             const feed = document.getElementById('main-update-feed');
             
-            // 1. Fetch Firebase Manual Logs
             const firebaseSnap = await systemLogsRef.orderByChild('timestamp').once('value');
             const manualLogs = [];
             firebaseSnap.forEach(child => {
                 manualLogs.push({ ...child.val(), type: 'MANUAL' });
             });
 
-            // 2. Fetch GitHub Commits
             let gitCommits = [];
             try {
                 const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/commits?per_page=30`);
@@ -128,7 +153,6 @@
                 }));
             } catch (e) { console.error("GitHub Uplink Offline"); }
 
-            // 3. Merge & Display
             const all = [...manualLogs, ...gitCommits].sort((a, b) => b.timestamp - a.timestamp);
             feed.innerHTML = '';
 
@@ -158,17 +182,75 @@
             });
         }
 
-        function toggleLoginModal() { document.getElementById('login-modal').classList.toggle('hidden'); }
+        // POST LOG LOGIC
+        function postManualLog() {
+            const title = document.getElementById('manual-log-title').value;
+            const desc = document.getElementById('manual-log-desc').value;
+
+            if (!title) return alert("TITLE_REQUIRED");
+
+            systemLogsRef.push({
+                title: title.toUpperCase(),
+                desc: desc,
+                timestamp: Date.now(),
+                date: new Date().toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })
+            }).then(() => {
+                document.getElementById('manual-log-title').value = '';
+                document.getElementById('manual-log-desc').value = '';
+                syncUpdates();
+                alert("BROADCAST_SUCCESSFUL");
+            });
+        }
+
+        // ADMIN LOGIC
+        function checkAuth() {
+            if (sessionStorage.getItem('xclipse_auth') === 'true') {
+                document.getElementById('admin-login-fields').classList.add('hidden');
+                document.getElementById('admin-controls').classList.remove('hidden');
+            } else {
+                document.getElementById('admin-login-fields').classList.remove('hidden');
+                document.getElementById('admin-controls').classList.add('hidden');
+            }
+        }
+
+        function toggleLoginModal() { 
+            const modal = document.getElementById('login-modal');
+            modal.classList.toggle('hidden');
+            if(!modal.classList.contains('hidden')) checkAuth();
+        }
         
         function executeLogin() {
             if(document.getElementById('admin-key').value === "xclipse2026") {
                 sessionStorage.setItem('xclipse_auth', 'true');
-                alert("ACCESS_GRANTED");
-                location.reload();
+                checkAuth();
+            } else {
+                alert("ACCESS_DENIED");
             }
         }
 
-        window.onload = syncUpdates;
+        function logoutAdmin() {
+            sessionStorage.removeItem('xclipse_auth');
+            location.reload();
+        }
+
+        async function forceRefreshSystem() {
+            const btn = document.getElementById('refresh-btn');
+            const icon = document.getElementById('sync-icon');
+            btn.disabled = true;
+            icon.classList.add('fa-spin');
+            btn.innerHTML = `<i class="fas fa-sync-alt fa-spin"></i> SYNCING...`;
+            await syncUpdates();
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-check text-success"></i> COMPLETE`;
+                setTimeout(() => { btn.innerHTML = `<i class="fas fa-sync-alt"></i> Force System Update`; }, 2000);
+            }, 800);
+        }
+
+        window.onload = () => {
+            syncUpdates();
+            checkAuth();
+        };
     </script>
 </body>
 </html>
