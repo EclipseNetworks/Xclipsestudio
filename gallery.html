@@ -47,8 +47,6 @@
       #cursor { width: 8px; height: 8px; background: #ec4899; border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999999; mix-blend-mode: difference; }
       .mesh-bg { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, #0d1226 0%, #050811 100%); }
       .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.05); }
-      
-      #dashboard { transition: all 0.5s ease; }
     </style>
   </head>
   <body oncontextmenu="return false;">
@@ -56,29 +54,35 @@
     <div id="cursor"></div>
     <div class="mesh-bg"></div>
 
-    <header class="py-24 px-6 text-center">
+    <nav class="fixed top-0 left-0 w-full p-8 flex justify-between items-center z-[60]">
+        <div class="font-display text-[10px] tracking-[0.5em] text-white/20 italic">XCLIPSE_GALLERY</div>
+        <button onclick="checkSessionAndOpen()" class="w-12 h-12 glass rounded-full flex items-center justify-center text-white/20 hover:text-primary hover:scale-110 transition-all">
+            <i class="fas fa-user-circle text-xl"></i>
+        </button>
+    </nav>
+
+    <header class="py-40 px-6 text-center">
         <h1 class="font-display text-4xl md:text-7xl italic tracking-tighter mb-4">ARCHIVE</h1>
-        <p class="font-mono text-[8px] tracking-[1em] text-white/30 uppercase italic">Maximum Security Session Active</p>
+        <p class="font-mono text-[8px] tracking-[1em] text-white/30 uppercase italic">Visuals & Network Core</p>
     </header>
 
     <main class="max-w-7xl mx-auto px-6 pb-60">
         <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"></div>
     </main>
 
-    <button onclick="checkSessionAndOpen()" class="fixed bottom-10 right-10 w-16 h-16 glass rounded-full flex items-center justify-center text-primary border border-primary/20 transition-all z-50">
-        <i class="fas fa-terminal text-xl"></i>
-    </button>
-
-    <div id="dashboard" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/90 backdrop-blur-3xl">
+    <div id="dashboard" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/95 backdrop-blur-3xl">
         <div class="w-full max-w-2xl glass p-10 rounded-[3rem] border-white/5 relative">
             <button onclick="closeDashboard()" class="absolute top-8 right-8 text-white/10 hover:text-white"><i class="fas fa-times"></i></button>
             
-            <div class="mb-8 flex justify-between items-start">
+            <div class="mb-8 flex justify-between items-center">
                 <div>
-                    <h2 id="dash-mode-text" class="font-display text-primary text-[10px] tracking-[0.4em] uppercase mb-1 italic">Uplink Mode</h2>
-                    <p id="dash-sub-text" class="font-mono text-[7px] text-white/20 uppercase tracking-widest italic">Session Authenticated</p>
+                    <h2 id="dash-mode-text" class="font-display text-primary text-[10px] tracking-[0.4em] uppercase italic">System Uplink</h2>
+                    <p class="font-mono text-[7px] text-white/20 uppercase tracking-widest mt-1">Session Active until Exit</p>
                 </div>
-                <button id="delete-btn" onclick="deleteAsset()" class="hidden bg-danger/10 text-danger border border-danger/20 px-4 py-2 rounded-full font-mono text-[8px] uppercase tracking-widest hover:bg-danger hover:text-white transition-all">Destroy Asset</button>
+                <div class="flex gap-4">
+                    <button id="delete-btn" onclick="deleteAsset()" class="hidden bg-danger/10 text-danger border border-danger/20 px-4 py-2 rounded-full font-mono text-[8px] uppercase tracking-widest hover:bg-danger hover:text-white transition-all">Destroy</button>
+                    <button onclick="logout()" class="bg-white/5 text-white/40 px-4 py-2 rounded-full font-mono text-[8px] uppercase hover:bg-white/10 transition-all">Exit Session</button>
+                </div>
             </div>
 
             <input type="hidden" id="active-asset-id">
@@ -86,8 +90,8 @@
             <div class="space-y-5">
                 <div id="drop-zone" class="w-full h-36 border-2 border-dashed border-white/10 rounded-[2rem] flex flex-col items-center justify-center transition-all group hover:border-primary/40 cursor-pointer">
                     <div id="drop-content" class="text-center">
-                        <i class="fas fa-image text-xl text-white/10 group-hover:text-primary mb-2"></i>
-                        <p class="font-mono text-[8px] text-white/30 uppercase">Drop Visual Core</p>
+                        <i class="fas fa-plus text-xl text-white/10 group-hover:text-primary mb-2"></i>
+                        <p class="font-mono text-[8px] text-white/30 uppercase">Uplink Visual Core</p>
                     </div>
                     <input type="file" id="file-input" class="hidden" accept="image/*">
                 </div>
@@ -95,22 +99,21 @@
                 <input type="text" id="asset-title" placeholder="Project Name" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl font-mono text-xs outline-none focus:border-primary">
                 
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="asset-spotify" placeholder="Spotify Link" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl font-mono text-xs outline-none focus:border-spotify/40 text-spotify">
-                    <input type="text" id="asset-soundcloud" placeholder="SoundCloud Link" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl font-mono text-xs outline-none focus:border-soundcloud/40 text-soundcloud">
+                    <input type="text" id="asset-spotify" placeholder="Spotify URL" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl font-mono text-xs outline-none text-spotify">
+                    <input type="text" id="asset-soundcloud" placeholder="SoundCloud URL" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl font-mono text-xs outline-none text-soundcloud">
                 </div>
 
-                <button onclick="commitToArchive()" id="commit-btn" class="w-full bg-primary text-white py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em]">Synchronize Archive</button>
+                <button onclick="commitToArchive()" id="commit-btn" class="w-full bg-primary text-white py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em]">Execute Synchronization</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- SECURITY: BLOCK KEYBOARD ---
+        // --- MAXIMUM SECURITY ---
         document.addEventListener('keydown', (e) => { e.preventDefault(); return false; }, true);
 
-        // --- SESSION LOGIC ---
+        // --- SESSION MANAGEMENT ---
         function checkSessionAndOpen() {
-            // Check if "xclipse_auth" exists in SessionStorage
             if (sessionStorage.getItem('xclipse_auth') === 'true') {
                 openDashboard();
             } else {
@@ -119,10 +122,16 @@
                 if(u === "admin" && k === "xclipse2026") {
                     sessionStorage.setItem('xclipse_auth', 'true');
                     openDashboard();
+                    location.reload(); // Reload to show edit buttons
                 } else {
-                    alert("ACCESS DENIED: Unauthorized Signature.");
+                    alert("Unauthorized access signature.");
                 }
             }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('xclipse_auth');
+            location.reload();
         }
 
         function openDashboard() {
@@ -134,96 +143,86 @@
             document.getElementById('dashboard').classList.add('hidden');
             document.getElementById('active-asset-id').value = "";
             document.getElementById('delete-btn').classList.add('hidden');
-            document.getElementById('dash-mode-text').innerText = "Uplink Mode";
-            document.getElementById('asset-title').value = "";
-            document.getElementById('asset-spotify').value = "";
-            document.getElementById('asset-soundcloud').value = "";
-            base64Image = null;
+            document.getElementById('dash-mode-text').innerText = "System Uplink";
             document.body.style.cursor = 'none';
         }
 
-        // --- DASHBOARD OPERATIONS ---
+        // --- CORE FUNCTIONS ---
         let base64Image = null;
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
 
         dropZone.onclick = () => fileInput.click();
         fileInput.onchange = (e) => processFile(e.target.files[0]);
-        ['dragover', 'drop'].forEach(ev => dropZone.addEventListener(ev, e => { e.preventDefault(); }));
+        ['dragover', 'drop'].forEach(ev => dropZone.addEventListener(ev, e => e.preventDefault()));
         dropZone.ondrop = (e) => { e.preventDefault(); processFile(e.dataTransfer.files[0]); };
 
         function processFile(file) {
             if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => {
-                    base64Image = reader.result;
+                const r = new FileReader();
+                r.readAsDataURL(file);
+                r.onload = () => {
+                    base64Image = r.result;
                     document.getElementById('drop-content').innerHTML = `<i class="fas fa-check text-primary"></i>`;
                 };
             }
         }
 
         function initiateEdit(key, title, spot, sound) {
-            // Check session before allowing edit trigger
-            if (sessionStorage.getItem('xclipse_auth') !== 'true') return checkSessionAndOpen();
-            
             document.getElementById('active-asset-id').value = key;
             document.getElementById('asset-title').value = title;
             document.getElementById('asset-spotify').value = spot !== "null" ? spot : "";
             document.getElementById('asset-soundcloud').value = sound !== "null" ? sound : "";
-            
-            document.getElementById('dash-mode-text').innerText = "Edit Mode";
+            document.getElementById('dash-mode-text').innerText = "Edit Protocol";
             document.getElementById('delete-btn').classList.remove('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            document.body.style.cursor = 'auto';
+            openDashboard();
         }
 
         function deleteAsset() {
-            const key = document.getElementById('active-asset-id').value;
-            if (confirm("Permanently destroy this asset from the archive?")) {
-                galleryRef.child(key).remove().then(() => location.reload());
+            const k = document.getElementById('active-asset-id').value;
+            if (confirm("Permanently wipe this node?")) {
+                galleryRef.child(k).remove().then(() => location.reload());
             }
         }
 
         function commitToArchive() {
-            const assetKey = document.getElementById('active-asset-id').value;
+            const k = document.getElementById('active-asset-id').value;
             const data = {
-                title: document.getElementById('asset-title').value || "Studio Session",
+                title: document.getElementById('asset-title').value || "Archive Entry",
                 spotify: document.getElementById('asset-spotify').value || null,
                 soundcloud: document.getElementById('asset-soundcloud').value || null,
             };
 
-            if (assetKey) {
+            if (k) {
                 if (base64Image) data.url = base64Image;
-                galleryRef.child(assetKey).update(data).then(() => location.reload());
+                galleryRef.child(k).update(data).then(() => location.reload());
             } else {
-                if (!base64Image) return alert("Visual Core Required");
+                if (!base64Image) return alert("Visual Core Empty");
                 data.url = base64Image;
                 galleryRef.push(data).then(() => location.reload());
             }
         }
 
-        // --- RENDER ---
-        galleryRef.on('value', (snapshot) => {
-            const grid = document.getElementById('gallery-grid');
-            grid.innerHTML = '';
-            snapshot.forEach((child) => {
-                const item = child.val();
-                const key = child.key;
+        // --- RENDER GALLERY ---
+        galleryRef.on('value', (s) => {
+            const g = document.getElementById('gallery-grid');
+            const auth = sessionStorage.getItem('xclipse_auth') === 'true';
+            g.innerHTML = '';
+            s.forEach((c) => {
+                const item = c.val();
+                const k = c.key;
                 
-                grid.insertAdjacentHTML('afterbegin', `
+                const editBtn = auth ? `<button onclick="initiateEdit('${k}', '${item.title}', '${item.spotify}', '${item.soundcloud}')" class="absolute top-8 left-8 w-8 h-8 glass rounded-full flex items-center justify-center text-[10px] text-white/30 hover:text-primary transition-all"><i class="fas fa-pen"></i></button>` : '';
+
+                g.insertAdjacentHTML('afterbegin', `
                     <div class="glass relative overflow-hidden rounded-[3rem] aspect-[4/5] group transition-all duration-700">
                         <img src="${item.url}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000">
-                        
-                        <button onclick="initiateEdit('${key}', '${item.title}', '${item.spotify}', '${item.soundcloud}')" class="absolute top-8 left-8 w-8 h-8 glass rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] text-white/20 hover:text-primary transition-all">
-                            <i class="fas fa-edit"></i>
-                        </button>
-
+                        ${editBtn}
                         <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 p-10 flex flex-col justify-end">
                             <h3 class="font-display text-primary text-[10px] tracking-widest uppercase italic mb-3">${item.title}</h3>
                             <div class="flex gap-3">
-                                ${item.spotify ? `<a href="${item.spotify}" target="_blank" class="text-spotify hover:scale-110 transition-transform"><i class="fab fa-spotify text-xl"></i></a>` : ''}
-                                ${item.soundcloud ? `<a href="${item.soundcloud}" target="_blank" class="text-soundcloud hover:scale-110 transition-transform"><i class="fab fa-soundcloud text-xl"></i></a>` : ''}
+                                ${item.spotify ? `<a href="${item.spotify}" target="_blank" class="text-spotify text-xl hover:scale-110 transition-transform"><i class="fab fa-spotify"></i></a>` : ''}
+                                ${item.soundcloud ? `<a href="${item.soundcloud}" target="_blank" class="text-soundcloud text-xl hover:scale-110 transition-transform"><i class="fab fa-soundcloud"></i></a>` : ''}
                             </div>
                         </div>
                     </div>
@@ -231,7 +230,6 @@
             });
         });
 
-        // Cursor
         const cursor = document.getElementById('cursor');
         document.addEventListener('mousemove', (e) => {
             cursor.style.left = e.clientX + 'px';
