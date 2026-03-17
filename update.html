@@ -26,7 +26,12 @@
       
       firebase.initializeApp(firebaseConfig);
       const db = firebase.database();
+      
+      // Global Network Nodes
       const systemLogsRef = db.ref('system_logs');
+      const blacklistRef = db.ref('blacklist');
+      const securityRef = db.ref('security_status');
+      const broadcastRef = db.ref('global_broadcast');
 
       tailwind.config = {
         theme: {
@@ -41,15 +46,14 @@
     <style>
       ::-webkit-scrollbar { width: 4px; }
       ::-webkit-scrollbar-thumb { background: #ec4899; }
-      * { -webkit-user-select: none; user-select: none; outline: none !important; }
-      body { background: #050811; color: white; cursor: none; overflow-x: hidden; font-family: 'Montserrat', sans-serif; }
+      * { -webkit-user-select: none; user-select: none; outline: none !important; cursor: none; }
+      body { background: #050811; color: white; overflow-x: hidden; font-family: 'Montserrat', sans-serif; }
       
-      #cursor { width: 8px; height: 8px; background: #ec4899; border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999999; mix-blend-mode: difference; }
+      #cursor { width: 8px; height: 8px; background: #ec4899; border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999999; mix-blend-mode: difference; transition: transform 0.1s ease; }
       .mesh-bg { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #050811 100%); }
       .grid-overlay { position: absolute; inset: 0; background-image: linear-gradient(rgba(236, 72, 153, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(236, 72, 153, 0.03) 1px, transparent 1px); background-size: 50px 50px; pointer-events: none; }
       
       .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
-      
       .announcement-container { width: 100%; overflow: hidden; background: rgba(236, 72, 153, 0.05); border-top: 1px solid rgba(236, 72, 153, 0.1); border-bottom: 1px solid rgba(236, 72, 153, 0.1); padding: 10px 0; }
       .announcement-text { display: inline-block; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.8em; color: #ec4899; animation: slideText 30s linear infinite; }
       @keyframes slideText { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
@@ -58,96 +62,122 @@
       .node-card:hover { border-left-color: #ec4899; transform: translateX(5px); background: rgba(255,255,255,0.03); }
       .node-card.github:hover { border-left-color: #1db954; }
 
-      .admin-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: white; width: 100%; outline: none; }
-      .admin-input:focus { border-color: #ec4899; }
+      #ban-overlay { display: none; background: black; color: #ef4444; z-index: 1000000; position: fixed; inset: 0; flex-direction: column; align-items: center; justify-content: center; font-family: 'Syncopate', sans-serif; text-align: center; }
     </style>
 </head>
 <body>
     
     <div id="cursor"></div>
+    <div id="ban-overlay">
+        <h1 class="text-4xl mb-4 italic tracking-tighter">ACCESS_TERMINATED</h1>
+        <p class="font-mono text-[10px] tracking-[1em] uppercase opacity-50">Your IP has been blacklisted by Xclipse Security</p>
+    </div>
+
     <div class="mesh-bg"></div>
     <div class="grid-overlay"></div>
 
     <nav class="fixed top-0 left-0 w-full p-8 flex justify-between items-center z-[60]">
-        <div class="font-display text-[9px] tracking-[0.5em] text-white/30 italic">XCLIPSE_UPDATE_PROTOCOL</div>
-        <button onclick="toggleLoginModal()" class="w-10 h-10 glass-card rounded-full flex items-center justify-center text-white/20 hover:text-primary transition-all">
-            <i class="fas fa-terminal"></i>
-        </button>
+        <div class="font-display text-[9px] tracking-[0.5em] text-white/30 italic">XCLIPSE_NETWORK_UPDATE</div>
+        <div class="flex items-center gap-6">
+            <div id="security-badge" class="font-mono text-[7px] border border-success/30 px-3 py-1 rounded-full text-success tracking-widest uppercase">Shield: Active</div>
+            <button onclick="toggleLoginModal()" class="w-10 h-10 glass-card rounded-full flex items-center justify-center text-white/20 hover:text-primary transition-all">
+                <i class="fas fa-terminal"></i>
+            </button>
+        </div>
     </nav>
 
     <div class="mt-24 announcement-container">
-        <div class="announcement-text uppercase italic">SYSTEM STATUS: ALL NODES OPERATIONAL // LIVE GITHUB PUSH SYNC // MASTER CONTROL ACTIVE</div>
+        <div id="global-marquee" class="announcement-text uppercase italic italic">INITIALIZING GLOBAL UPLINK...</div>
     </div>
 
     <header class="pt-24 pb-16 px-6 text-center">
         <h1 class="font-display text-4xl md:text-6xl italic tracking-tighter mb-4 text-white">SYSTEM_LOGS</h1>
-        <p class="font-mono text-[8px] tracking-[1em] text-white/20 uppercase italic">Infrastructure Deployment History</p>
+        <p class="font-mono text-[8px] tracking-[1em] text-white/20 uppercase italic">Network-Wide Infrastructure Events</p>
     </header>
 
     <main class="max-w-5xl mx-auto px-6 pb-40">
-        <div id="main-update-feed" class="space-y-6">
-            <div class="text-center font-mono text-[9px] text-white/10 uppercase animate-pulse">Syncing Repository...</div>
-        </div>
+        <div id="main-update-feed" class="space-y-6"></div>
     </main>
 
     <div id="login-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/80 backdrop-blur-xl">
         <div class="w-[380px] glass-card p-10 rounded-[2rem] border border-white/10 max-h-[90vh] overflow-y-auto">
             
             <div id="admin-login-fields">
-                <h2 class="font-display text-[10px] text-center mb-8 tracking-widest text-white/40 uppercase">Auth Required</h2>
+                <h2 class="font-display text-[10px] text-center mb-8 tracking-widest text-white/40 uppercase">Global Auth</h2>
                 <input type="password" id="admin-key" placeholder="SECURE_KEY" class="w-full bg-transparent border-b border-white/10 py-4 mb-8 text-center font-mono text-sm outline-none focus:border-primary text-white">
-                <button onclick="executeLogin()" class="w-full py-4 bg-primary/10 border border-primary/20 text-primary font-display text-[9px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all">Verify Signature</button>
+                <button onclick="executeLogin()" class="w-full py-4 bg-primary/10 border border-primary/20 text-primary font-display text-[9px] uppercase tracking-widest">Verify</button>
             </div>
 
             <div id="admin-controls" class="hidden space-y-6">
-                <h2 class="font-display text-[10px] text-center tracking-widest text-primary uppercase italic">Command Center</h2>
+                <h2 class="font-display text-[10px] text-center tracking-widest text-primary uppercase italic italic">Command Center</h2>
                 
-                <button onclick="forceRefreshSystem()" id="refresh-btn" class="w-full py-4 bg-spotify/10 border border-spotify/20 text-spotify font-display text-[9px] uppercase tracking-widest hover:bg-spotify hover:text-white transition-all flex items-center justify-center gap-3">
-                    <i class="fas fa-sync-alt" id="sync-icon"></i> Force System Update
+                <button onclick="toggleGlobalSecurity()" id="sec-toggle-btn" class="w-full py-4 bg-white/5 border border-white/10 text-[9px] font-display uppercase tracking-widest hover:bg-white/10 transition-all">
+                    Toggle Network Shield
+                </button>
+
+                <button onclick="forceRefreshSystem()" id="refresh-btn" class="w-full py-4 bg-spotify/10 border border-spotify/20 text-spotify font-display text-[9px] uppercase tracking-widest hover:bg-spotify hover:text-white transition-all">
+                    Force System Update
                 </button>
 
                 <div class="space-y-3 pt-4 border-t border-white/5">
-                    <p class="font-mono text-[7px] text-white/30 uppercase tracking-widest">Broadcast New Log</p>
-                    <input type="text" id="manual-log-title" placeholder="ENTRY TITLE..." class="admin-input">
-                    <textarea id="manual-log-desc" placeholder="DETAILS..." class="admin-input h-20 resize-none"></textarea>
-                    <button onclick="postManualLog()" class="w-full py-3 bg-primary/10 border border-primary/20 text-primary font-display text-[8px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all">Deploy Broadcast</button>
+                    <input type="text" id="manual-log-title" placeholder="ENTRY TITLE..." class="w-full bg-white/5 p-3 rounded-lg text-[10px] font-mono outline-none border border-white/10 focus:border-primary">
+                    <button onclick="postManualLog()" class="w-full py-3 bg-primary/10 border border-primary/20 text-primary font-display text-[8px] uppercase tracking-widest">Broadcast Log</button>
                 </div>
 
-                <div class="pt-4 border-t border-danger/20">
-                    <p class="font-mono text-[7px] text-danger/50 uppercase tracking-widest mb-3">Master Override</p>
-                    <button onclick="wipeSystemLogs()" class="w-full py-3 bg-danger/10 border border-danger/30 text-danger font-display text-[8px] uppercase tracking-widest hover:bg-danger hover:text-white transition-all">
-                        <i class="fas fa-skull-crossbones mr-2"></i> Wipe All Manual Logs
-                    </button>
-                </div>
+                <button onclick="wipeSystemLogs()" class="w-full py-3 bg-danger/10 border border-danger/30 text-danger font-display text-[8px] uppercase tracking-widest hover:bg-danger hover:text-white transition-all">
+                    Wipe Archive
+                </button>
 
-                <button onclick="logoutAdmin()" class="w-full py-3 bg-white/5 text-white/20 font-mono text-[8px] uppercase tracking-widest hover:text-danger transition-all">Terminate Session</button>
+                <button onclick="logoutAdmin()" class="w-full py-3 bg-white/5 text-white/20 font-mono text-[8px] uppercase tracking-widest">Logout</button>
             </div>
-            
-            <button onclick="toggleLoginModal()" class="mt-8 w-full text-center font-mono text-[7px] text-white/10 uppercase tracking-widest hover:text-white transition-all">Close Terminal</button>
         </div>
     </div>
 
     <script>
+        // CURSOR
         const cursor = document.getElementById('cursor');
         document.addEventListener('mousemove', (e) => {
             cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px';
         });
 
+        // 🛡️ FIREWALL & GLOBAL SYNC LOGIC
+        async function runSecurityCheck() {
+            const ipResponse = await fetch('https://api.ipify.org?format=json');
+            const ipData = await ipResponse.json();
+            const userIP = ipData.ip.replace(/\./g, '-');
+
+            // Listen for IP Ban
+            blacklistRef.child(userIP).on('value', snap => {
+                if (snap.val()) document.getElementById('ban-overlay').style.display = 'flex';
+            });
+
+            // Listen for Global Security Status
+            securityRef.on('value', snap => {
+                const status = snap.val() || 'Active';
+                const badge = document.getElementById('security-badge');
+                badge.innerText = `Shield: ${status}`;
+                badge.className = `font-mono text-[7px] border px-3 py-1 rounded-full tracking-widest uppercase ${status === 'Active' ? 'border-success/30 text-success' : 'border-danger/30 text-danger'}`;
+            });
+
+            // Listen for Global Broadcast (Marquee)
+            broadcastRef.on('value', snap => {
+                document.getElementById('global-marquee').innerText = snap.val() || "XCLIPSE STUDIO // SECURE NETWORK";
+            });
+        }
+
+        // 🔄 LOG FETCHING
         const GITHUB_OWNER = 'EclipseNetworks';
         const GITHUB_REPO = 'Xclipsestudio';
 
         async function syncUpdates() {
             const feed = document.getElementById('main-update-feed');
-            
             const firebaseSnap = await systemLogsRef.orderByChild('timestamp').once('value');
             const manualLogs = [];
-            firebaseSnap.forEach(child => {
-                manualLogs.push({ ...child.val(), type: 'MANUAL' });
-            });
+            firebaseSnap.forEach(child => { manualLogs.push({ ...child.val(), type: 'MANUAL' }); });
 
             let gitCommits = [];
             try {
-                const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/commits?per_page=40`);
+                const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/commits?per_page=30`);
                 const data = await response.json();
                 gitCommits = data.map(c => ({
                     title: c.commit.message,
@@ -156,7 +186,7 @@
                     type: 'GITHUB',
                     sha: c.sha.substring(0, 7)
                 }));
-            } catch (e) { console.error("Repo Uplink Failed"); }
+            } catch (e) { console.error("Git Offline"); }
 
             const all = [...manualLogs, ...gitCommits].sort((a, b) => b.timestamp - a.timestamp);
             feed.innerHTML = '';
@@ -164,51 +194,53 @@
             all.forEach(log => {
                 const isGit = log.type === 'GITHUB';
                 feed.insertAdjacentHTML('beforeend', `
-                    <div class="node-card glass-card p-6 md:p-8 rounded-xl ${isGit ? 'github' : 'manual'}">
-                        <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                    <div class="node-card glass-card p-8 rounded-xl ${isGit ? 'github' : 'manual'}">
+                        <div class="flex justify-between items-center">
                             <div>
-                                <div class="flex items-center gap-3 mb-3">
-                                    <span class="w-1.5 h-1.5 rounded-full ${isGit ? 'bg-spotify shadow-[0_0_8px_#1db954]' : 'bg-primary shadow-[0_0_8px_#ec4899]'}"></span>
-                                    <span class="font-mono text-[7px] tracking-[0.4em] text-white/30 uppercase italic">${log.date} // ${isGit ? 'GITHUB_PUSH' : 'ADMIN_LOG'}</span>
-                                </div>
-                                <h2 class="font-display text-[11px] md:text-[13px] text-white/90 tracking-widest uppercase italic leading-relaxed">
-                                    ${log.title}
-                                </h2>
-                                ${log.desc ? `<p class="mt-4 font-mono text-[9px] text-white/40 leading-relaxed uppercase">${log.desc}</p>` : ''}
+                                <span class="font-mono text-[7px] text-white/20 tracking-widest uppercase mb-2 block">${log.date} // ${isGit ? 'GITHUB' : 'BROADCAST'}</span>
+                                <h2 class="font-display text-[12px] uppercase italic text-white/90">${log.title}</h2>
+                                ${log.desc ? `<p class="mt-4 font-mono text-[9px] text-white/40 uppercase">${log.desc}</p>` : ''}
                             </div>
-                            <div class="text-right">
-                                <span class="font-mono text-[8px] px-3 py-1 border border-white/5 rounded-full text-white/20 uppercase tracking-widest">
-                                    ${isGit ? `ID: ${log.sha}` : 'AUTHORIZED'}
-                                </span>
-                            </div>
+                            <span class="font-mono text-[8px] text-white/10 border border-white/5 px-3 py-1 rounded-full uppercase">
+                                ${isGit ? log.sha : 'STABLE'}
+                            </span>
                         </div>
                     </div>
                 `);
             });
         }
 
+        // 🕹️ ADMIN ACTIONS
+        function toggleGlobalSecurity() {
+            securityRef.once('value', snap => {
+                const current = snap.val();
+                securityRef.set(current === 'Active' ? 'Compromised' : 'Active');
+            });
+        }
+
         function postManualLog() {
             const title = document.getElementById('manual-log-title').value;
-            const desc = document.getElementById('manual-log-desc').value;
-            if (!title) return alert("EMPTY_LOG_TITLE");
-
+            if (!title) return;
             systemLogsRef.push({
                 title: title.toUpperCase(),
-                desc: desc,
                 timestamp: Date.now(),
                 date: new Date().toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })
             }).then(() => {
                 document.getElementById('manual-log-title').value = '';
-                document.getElementById('manual-log-desc').value = '';
                 syncUpdates();
             });
         }
 
         function wipeSystemLogs() {
-            if (confirm("INITIATE MASTER WIPE? All manual logs will be permanently erased.")) {
-                if (confirm("SECOND AUTH REQUIRED: Confirm total archive deletion?")) {
-                    systemLogsRef.remove().then(() => syncUpdates());
-                }
+            if(confirm("Wipe all manual logs across the network?")) {
+                systemLogsRef.remove().then(() => syncUpdates());
+            }
+        }
+
+        function executeLogin() {
+            if(document.getElementById('admin-key').value === "xclipse2026") {
+                sessionStorage.setItem('xclipse_auth', 'true');
+                checkAuth();
             }
         }
 
@@ -219,16 +251,9 @@
             }
         }
 
-        function toggleLoginModal() { 
+        function toggleLoginModal() {
             document.getElementById('login-modal').classList.toggle('hidden');
             checkAuth();
-        }
-        
-        function executeLogin() {
-            if(document.getElementById('admin-key').value === "xclipse2026") {
-                sessionStorage.setItem('xclipse_auth', 'true');
-                checkAuth();
-            }
         }
 
         function logoutAdmin() {
@@ -238,12 +263,16 @@
 
         async function forceRefreshSystem() {
             const btn = document.getElementById('refresh-btn');
-            btn.innerHTML = `<i class="fas fa-sync-alt fa-spin"></i> SYNCING...`;
+            btn.innerText = "SYNCING...";
             await syncUpdates();
-            setTimeout(() => { btn.innerHTML = `<i class="fas fa-check text-success"></i> COMPLETE`; }, 600);
+            setTimeout(() => { btn.innerText = "Force System Update"; }, 1000);
         }
 
-        window.onload = () => { syncUpdates(); checkAuth(); };
+        window.onload = () => {
+            runSecurityCheck();
+            syncUpdates();
+            checkAuth();
+        };
     </script>
 </body>
 </html>
