@@ -38,7 +38,7 @@
       tailwind.config = {
         theme: {
           extend: {
-            colors: { primary: '#ec4899', dark: '#050811', spotify: '#1db954', soundcloud: '#ff5500', danger: '#ef4444', success: '#22c55e' },
+            colors: { primary: '#ec4899', dark: '#050811', spotify: '#1db954', danger: '#ef4444', success: '#22c55e' },
             fontFamily: { display: ['Syncopate', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }
           }
         }
@@ -48,31 +48,28 @@
     <style>
       ::-webkit-scrollbar { width: 4px; }
       ::-webkit-scrollbar-thumb { background: #ec4899; box-shadow: 0 0 10px #ec4899; }
-      * { -webkit-user-select: none; user-select: none; -webkit-user-drag: none; outline: none !important; }
-      body { background: #050811; color: white; cursor: none; overflow-x: hidden; scroll-behavior: smooth; font-family: 'Montserrat', sans-serif; }
+      * { -webkit-user-select: none; user-select: none; outline: none !important; }
+      body { background: #050811; color: white; cursor: none; overflow-x: hidden; font-family: 'Montserrat', sans-serif; }
       
       #cursor { width: 8px; height: 8px; background: #ec4899; border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999999; mix-blend-mode: difference; }
       .mesh-bg { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #050811 100%); }
       
       .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 0.1); }
-
-      /* Grid & Scanlines for Updates */
       .grid-overlay { position: absolute; inset: 0; background-image: linear-gradient(rgba(236, 72, 153, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(236, 72, 153, 0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: -1; }
 
-      .announcement-container { width: 100%; overflow: hidden; background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); border-top: 1px solid rgba(255, 255, 255, 0.05); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 12px 0; z-index: 55; position: relative; }
-      .announcement-text { display: inline-block; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.6em; color: #ec4899; animation: slideLeftToRight 20s linear infinite; }
+      .announcement-container { width: 100%; overflow: hidden; background: rgba(255, 255, 255, 0.02); border-top: 1px solid rgba(255, 255, 255, 0.05); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 12px 0; z-index: 55; position: relative; }
+      .announcement-text { display: inline-block; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.6em; color: #ec4899; animation: slideLeftToRight 25s linear infinite; }
       @keyframes slideLeftToRight { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
       .login-input { background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.2); width: 100%; padding: 12px 0; font-size: 14px; color: white; outline: none; transition: 0.3s; }
       .login-input:focus { border-bottom-color: #ec4899; }
-      .btn-gradient { background: linear-gradient(90deg, #4c0519 0%, #3b82f6 100%); transition: 0.3s; }
-
+      
       .admin-tab { display: none; }
       .admin-tab.active { display: block; }
 
-      .update-node { border-left: 1px solid rgba(236, 72, 153, 0.2); padding-left: 2rem; position: relative; transition: 0.3s; }
-      .update-node:hover { border-left-color: #ec4899; background: rgba(236, 72, 153, 0.02); }
-      .update-node::before { content: ''; position: absolute; left: -4px; top: 0; width: 8px; height: 8px; background: #ec4899; border-radius: 50%; box-shadow: 0 0 10px #ec4899; }
+      .update-node { border-left: 1px solid rgba(255, 255, 255, 0.1); padding-left: 2rem; position: relative; transition: 0.3s; }
+      .update-node:hover { border-left-color: #ec4899; background: rgba(255, 255, 255, 0.01); }
+      .update-node::before { content: ''; position: absolute; left: -4px; top: 0; width: 8px; height: 8px; background: currentColor; border-radius: 50%; }
       
       .status-pulse { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 8px; animation: pulseStatus 2s infinite; }
       @keyframes pulseStatus { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
@@ -82,12 +79,6 @@
     
     <div id="cursor"></div>
     <div class="mesh-bg"></div>
-
-    <div id="banned-screen" class="fixed inset-0 bg-black z-[9999999] hidden flex-col items-center justify-center text-center">
-        <i class="fas fa-biohazard text-danger text-7xl mb-8 animate-pulse"></i>
-        <h1 class="font-display text-2xl tracking-[0.5em] text-white italic">ACCESS_TERMINATED</h1>
-        <p class="font-mono text-[10px] text-white/40 mt-4 uppercase tracking-widest">Global Lockdown Engaged by Administrator</p>
-    </div>
 
     <div id="main-content">
         <nav class="fixed top-0 left-0 w-full p-8 flex justify-between items-center z-[60]">
@@ -105,12 +96,8 @@
         </div>
 
         <header class="py-32 px-6 text-center">
-            <div class="editable-container" data-ui-key="main_header">
-                <h1 id="main_header" class="font-display text-4xl md:text-7xl italic tracking-tighter mb-4">ARCHIVE</h1>
-            </div>
-            <div class="editable-container" data-ui-key="sub_header">
-                <p id="sub_header" class="font-mono text-[8px] tracking-[1em] text-white/30 uppercase italic">Network Node Management</p>
-            </div>
+            <h1 id="main_header" class="font-display text-4xl md:text-7xl italic tracking-tighter mb-4">ARCHIVE</h1>
+            <p id="sub_header" class="font-mono text-[8px] tracking-[1em] text-white/30 uppercase italic">Network Node Management</p>
         </header>
 
         <main class="max-w-7xl mx-auto px-6 pb-60">
@@ -124,28 +111,31 @@
             <div class="flex justify-between items-start mb-20">
                 <div>
                     <h2 class="font-display text-3xl italic tracking-tighter text-primary mb-2">DEV_LOG</h2>
-                    <p class="font-mono text-[8px] tracking-[0.8em] text-white/20 uppercase mb-8">Manual System Synchronization</p>
-                    <div class="flex items-center">
-                        <span id="firebase-status-dot" class="status-pulse bg-success shadow-[0_0_10px_#22c55e]"></span>
-                        <span class="font-mono text-[7px] text-white/30 uppercase tracking-[0.2em]">Firebase Core: <span id="firebase-status-text" class="text-success">Operational</span></span>
+                    <p class="font-mono text-[8px] tracking-[0.8em] text-white/20 uppercase mb-8">GitHub & Manual Sync</p>
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center">
+                            <span class="status-pulse bg-success"></span>
+                            <span class="font-mono text-[7px] text-white/30 uppercase">Database: Operational</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="status-pulse bg-spotify"></span>
+                            <span class="font-mono text-[7px] text-white/30 uppercase">GitHub: Linked</span>
+                        </div>
                     </div>
                 </div>
                 <button onclick="toggleUpdatesPage()" class="text-white/20 hover:text-white"><i class="fas fa-times text-2xl"></i></button>
             </div>
-            <div id="manual-log-feed" class="space-y-16">
+            <div id="combined-feed" class="space-y-16">
                 <div class="animate-pulse font-mono text-[10px] text-white/10 uppercase italic">Reading Archive Logs...</div>
             </div>
         </div>
     </div>
 
     <div id="login-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/60 backdrop-blur-md">
-        <div class="w-[400px] glass-card rounded-[3rem] p-12 flex flex-col items-center relative">
-            <button onclick="toggleLoginModal()" class="absolute top-8 right-8 text-white/20 hover:text-white"><i class="fas fa-times"></i></button>
-            <div class="w-full space-y-6 mb-10">
-                <input type="text" id="admin-id" placeholder="Email ID" class="login-input">
-                <input type="password" id="admin-key" placeholder="Password" class="login-input">
-            </div>
-            <button onclick="executeLogin()" class="w-full py-5 rounded-2xl btn-gradient text-white font-display text-[10px] tracking-[0.3em] uppercase italic">Execute Login</button>
+        <div class="w-[400px] glass-card rounded-[3rem] p-12 flex flex-col items-center">
+            <input type="text" id="admin-id" placeholder="Email ID" class="login-input mb-6">
+            <input type="password" id="admin-key" placeholder="Password" class="login-input mb-10">
+            <button onclick="executeLogin()" class="w-full py-5 rounded-2xl bg-white/5 text-white font-display text-[10px] tracking-[0.3em] uppercase italic hover:bg-primary transition-all">Execute Login</button>
         </div>
     </div>
 
@@ -158,161 +148,117 @@
                 <button onclick="switchTab('settings')" id="btn-settings" class="font-display text-[9px] tracking-widest uppercase italic text-white/20">Security</button>
             </div>
 
-            <div id="tab-uplink" class="admin-tab active space-y-5">
-                <div id="drop-zone" class="w-full h-32 border-2 border-dashed border-white/10 rounded-[2rem] flex items-center justify-center cursor-pointer">
-                    <p id="drop-text" class="font-mono text-[8px] text-white/30 uppercase">Paste Image to Upload</p>
-                </div>
-                <input type="text" id="asset-title" placeholder="Project Title" class="login-input">
-                <button onclick="commitToArchive()" class="w-full bg-primary py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em]">Apply Changes</button>
-            </div>
-
             <div id="tab-logs" class="admin-tab space-y-6">
-                <p class="font-mono text-[8px] text-white/40 mb-4 uppercase italic">Transmit New System Log</p>
-                <input type="text" id="log-title" placeholder="Update Title (e.g. 2026 Grid Upgrade)" class="login-input">
-                <textarea id="log-desc" placeholder="Technical Description..." class="login-input h-24 bg-white/5 p-4 rounded-xl"></textarea>
-                <div class="grid grid-cols-2 gap-4">
-                    <select id="log-tag" class="bg-dark border border-white/10 text-[10px] text-white/40 uppercase p-4 rounded-xl">
-                        <option value="STABLE">STABLE</option>
-                        <option value="PATCH">PATCH</option>
-                        <option value="SECURITY">SECURITY</option>
-                        <option value="ALPHA">ALPHA</option>
-                    </select>
-                    <button onclick="publishSystemLog()" class="bg-primary py-4 rounded-xl font-black text-[9px] uppercase tracking-widest">Post Update</button>
-                </div>
-                <div class="border-t border-white/5 pt-6">
-                    <div id="admin-logs-list" class="space-y-2 max-h-48 overflow-y-auto"></div>
-                </div>
+                <input type="text" id="log-title" placeholder="Log Title" class="login-input">
+                <textarea id="log-desc" placeholder="Details..." class="login-input h-24 bg-white/5 p-4 rounded-xl"></textarea>
+                <button onclick="publishSystemLog()" class="w-full bg-primary py-4 rounded-xl font-black text-[9px] uppercase tracking-widest">Post Log</button>
+                <div id="admin-logs-list" class="space-y-2 mt-10"></div>
             </div>
 
-            <div id="tab-settings" class="admin-tab space-y-6">
-                <button onclick="toggleGlobalLock()" id="global-lock-btn" class="w-full py-4 rounded-xl border border-white/10 font-display text-[9px] uppercase tracking-widest">Lock Status...</button>
-                <div id="access-logs-container" class="bg-white/5 p-6 rounded-2xl border border-white/10 space-y-2 max-h-64 overflow-y-auto font-mono text-[7px] uppercase italic"></div>
+            <div id="tab-uplink" class="admin-tab active">
+                <p class="font-mono text-[10px] text-white/20 uppercase">Media controls active.</p>
+            </div>
+
+            <div id="tab-settings" class="admin-tab">
                 <button onclick="logout()" class="w-full bg-white/5 text-white/40 py-4 rounded-xl font-mono text-[8px] uppercase">Logout</button>
             </div>
         </div>
     </div>
 
     <script>
-        // CURSOR LOGIC
-        const cursor = document.getElementById('cursor');
+        // CURSOR
         document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
+            const c = document.getElementById('cursor');
+            c.style.left = e.clientX + 'px'; c.style.top = e.clientY + 'px';
         });
 
-        // SYSTEM LOGS LOGIC (MANUAL)
-        function publishSystemLog() {
-            const title = document.getElementById('log-title').value;
-            const desc = document.getElementById('log-desc').value;
-            const tag = document.getElementById('log-tag').value;
-            const date = new Date().toLocaleString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' });
+        const GITHUB_OWNER = 'EclipseNetworks';
+        const GITHUB_REPO = 'Xclipsestudio';
 
-            if (!title || !desc) return;
-            systemLogsRef.push({ title: title.toUpperCase(), desc: desc, tag: tag, date: date, timestamp: Date.now() }).then(() => {
-                document.getElementById('log-title').value = '';
-                document.getElementById('log-desc').value = '';
+        // FETCH ALL DATA
+        async function fetchSystemUpdates() {
+            const feed = document.getElementById('combined-feed');
+            feed.innerHTML = '';
+            
+            // 1. Fetch Manual Firebase Logs
+            const firebaseSnap = await systemLogsRef.orderByChild('timestamp').once('value');
+            const manualLogs = [];
+            firebaseSnap.forEach(child => {
+                manualLogs.push({ ...child.val(), type: 'MANUAL' });
+            });
+
+            // 2. Fetch GitHub Commits
+            let gitCommits = [];
+            try {
+                const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/commits?per_page=100`);
+                const data = await response.json();
+                gitCommits = data.map(c => ({
+                    title: c.commit.message,
+                    date: new Date(c.commit.author.date).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' }),
+                    timestamp: new Date(c.commit.author.date).getTime(),
+                    type: 'GITHUB',
+                    sha: c.sha.substring(0, 7)
+                }));
+            } catch (e) { console.error("GitHub Offline"); }
+
+            // 3. Merge and Sort
+            const allUpdates = [...manualLogs, ...gitCommits].sort((a, b) => b.timestamp - a.timestamp);
+
+            allUpdates.forEach(log => {
+                const isGit = log.type === 'GITHUB';
+                const accent = isGit ? 'text-spotify' : 'text-primary';
+                const label = isGit ? 'GITHUB_PUSH' : 'NODE_UPDATE';
+                
+                feed.insertAdjacentHTML('beforeend', `
+                    <div class="update-node" style="color: ${isGit ? '#1db954' : '#ec4899'}">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="font-mono text-[7px] text-white/10 tracking-[0.5em] block uppercase italic">${log.date} // ${label}</span>
+                            <span class="font-mono text-[7px] ${accent} border border-white/5 px-2 py-1 uppercase tracking-widest">${isGit ? 'COMMITTED' : 'STABLE'}</span>
+                        </div>
+                        <h3 class="font-display text-[11px] text-white/80 tracking-widest uppercase italic mb-3 leading-relaxed">${log.title}</h3>
+                        ${log.desc ? `<p class="font-mono text-[9px] text-white/30 uppercase leading-relaxed max-w-2xl">${log.desc}</p>` : ''}
+                        ${isGit ? `<p class="font-mono text-[7px] text-white/10 uppercase mt-2">ID: ${log.sha}</p>` : ''}
+                    </div>
+                `);
             });
         }
 
-        function fetchManualLogs() {
-            const feed = document.getElementById('manual-log-feed');
-            systemLogsRef.orderByChild('timestamp').on('value', (snap) => {
-                feed.innerHTML = '';
-                const data = snap.val();
-                if (data) {
-                    Object.values(data).reverse().forEach(log => {
-                        let color = log.tag === 'PATCH' ? 'text-success' : (log.tag === 'SECURITY' ? 'text-danger' : 'text-white/40');
-                        feed.insertAdjacentHTML('beforeend', `
-                            <div class="update-node group">
-                                <div class="flex justify-between items-center mb-4">
-                                    <span class="font-mono text-[7px] text-white/10 tracking-[0.5em] block uppercase italic">${log.date} // NODE_UPDATE</span>
-                                    <span class="font-mono text-[7px] ${color} border border-white/5 px-2 py-1 uppercase tracking-widest">${log.tag}</span>
-                                </div>
-                                <h3 class="font-display text-[11px] text-white/80 tracking-widest uppercase italic mb-3 leading-relaxed">${log.title}</h3>
-                                <p class="font-mono text-[9px] text-white/30 uppercase leading-relaxed max-w-2xl">${log.desc}</p>
-                            </div>
-                        `);
-                    });
-                }
-            });
-        }
-
-        // FIREBASE STATUS
-        function monitorFirebase() {
-            db.ref(".info/connected").on("value", (snap) => {
-                const dot = document.getElementById('firebase-status-dot');
-                const txt = document.getElementById('firebase-status-text');
-                if (snap.val() === true) {
-                    dot.className = "status-pulse bg-success shadow-[0_0_10px_#22c55e]";
-                    txt.innerText = "Operational";
-                    txt.className = "text-success";
-                } else {
-                    dot.className = "status-pulse bg-danger shadow-[0_0_10px_#ef4444]";
-                    txt.innerText = "Lost Connection";
-                    txt.className = "text-danger";
-                }
-            });
-        }
-
-        // CORE UI LOGIC
         function toggleUpdatesPage() {
             const p = document.getElementById('updates-page');
             p.classList.toggle('hidden');
-            if (!p.classList.contains('hidden')) { fetchManualLogs(); monitorFirebase(); }
+            if (!p.classList.contains('hidden')) fetchSystemUpdates();
         }
 
-        function switchTab(id) {
-            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + id).classList.add('active');
-            document.querySelectorAll('[id^="btn-"]').forEach(b => b.classList.replace('text-primary', 'text-white/20'));
-            document.getElementById('btn-' + id).classList.replace('text-white/20', 'text-primary');
-        }
-
+        // AUTH & TABS
         function executeLogin() {
             if(document.getElementById('admin-id').value === "admin" && document.getElementById('admin-key').value === "xclipse2026") {
                 sessionStorage.setItem('xclipse_auth', 'true');
                 location.reload();
-            } else alert("INVALID_SIGNATURE");
+            }
         }
-
         function toggleLoginModal() {
             if (sessionStorage.getItem('xclipse_auth') === 'true') openDashboard();
             else document.getElementById('login-modal').classList.toggle('hidden');
         }
-
         function openDashboard() { document.getElementById('dashboard').classList.remove('hidden'); document.body.style.cursor = 'auto'; }
         function closeDashboard() { document.getElementById('dashboard').classList.add('hidden'); document.body.style.cursor = 'none'; }
         function logout() { sessionStorage.removeItem('xclipse_auth'); location.reload(); }
-
-        // ADMIN LOG LISTING
-        systemLogsRef.on('value', (snap) => {
-            const list = document.getElementById('admin-logs-list');
-            if(!list) return;
-            list.innerHTML = '';
-            const data = snap.val();
-            if(data) Object.keys(data).forEach(key => {
-                list.insertAdjacentHTML('beforeend', `<div class="flex justify-between items-center bg-white/5 p-3 rounded-lg mb-2"><span class="font-mono text-[8px] text-white/40 uppercase">${data[key].title}</span><button onclick="db.ref('system_logs/${key}').remove()" class="text-danger text-[8px] uppercase">[ WIPE ]</button></div>`);
-            });
-        });
-
-        // FIREWALL 
-        async function runFirewall() {
-            try {
-                const res = await fetch('https://api.ipify.org?format=json');
-                const data = await res.json();
-                const userIP = data.ip.replace(/\./g, '_');
-                const isAdmin = sessionStorage.getItem('xclipse_auth') === 'true';
-                if (isAdmin) return;
-
-                const banSnap = await banRef.child(userIP).once('value');
-                if (banSnap.val() === true) {
-                    document.getElementById('main-content').style.display = 'none';
-                    document.getElementById('banned-screen').style.display = 'flex';
-                }
-            } catch (e) { console.log("Security Uplink Error"); }
+        function switchTab(id) {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
         }
 
-        window.onload = runFirewall;
+        function publishSystemLog() {
+            const title = document.getElementById('log-title').value;
+            const desc = document.getElementById('log-desc').value;
+            if (!title) return;
+            systemLogsRef.push({
+                title: title.toUpperCase(),
+                desc: desc,
+                date: new Date().toLocaleDateString('en-AU', { day: '2-digit', month: 'short' }),
+                timestamp: Date.now()
+            }).then(() => location.reload());
+        }
     </script>
 </body>
 </html>
