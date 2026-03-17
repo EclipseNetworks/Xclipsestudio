@@ -39,46 +39,44 @@
     </script>
 
     <style>
-      /* Prevent text selection and cursor visibility */
+      /* --- GLOBAL SECURITY STYLING --- */
       * { 
         -webkit-user-select: none; 
         user-select: none; 
         -webkit-user-drag: none; 
         outline: none !important;
+        -webkit-tap-highlight-color: transparent;
       }
-      body { background: #050811; color: white; cursor: none; overflow-x: hidden; }
+      body { background: #050811; color: white; cursor: none; overflow: hidden; }
+      
+      /* TOP-RIGHT SHIELD (Blocks interaction near browser menu) */
+      .ui-shield {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        z-index: 999999;
+        pointer-events: all;
+        background: transparent;
+      }
+
       .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.05); }
-      #cursor { width: 8px; height: 8px; background: #ec4899; border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; mix-blend-mode: difference; }
+      #cursor { width: 8px; height: 8px; background: #ec4899; border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999999; mix-blend-mode: difference; }
       .mesh-bg { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, #0d1226 0%, #050811 100%); }
-      img { pointer-events: none; }
     </style>
   </head>
-  <body oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
+  <body oncontextmenu="return false;">
+    
+    <div class="ui-shield" title="Security Active"></div>
+    
     <div id="cursor"></div>
     <div class="mesh-bg"></div>
-
-    <div id="admin-panel" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/98 backdrop-blur-2xl">
-        <div class="w-full max-w-xl glass p-10 rounded-[3rem] border-primary/20 shadow-2xl relative">
-            <button onclick="closeAdmin()" class="absolute top-8 right-8 text-white/20 hover:text-white transition-colors"><i class="fas fa-times"></i></button>
-            <h2 class="font-display text-primary text-[10px] tracking-[0.5em] uppercase mb-8 italic">Archive Uplink</h2>
-            
-            <div class="space-y-6">
-                <div id="drop-zone" class="w-full h-56 border-2 border-dashed border-white/10 rounded-[2.5rem] flex flex-col items-center justify-center transition-all duration-500 cursor-pointer group">
-                    <div id="drop-content" class="text-center">
-                        <i class="fas fa-cloud-upload-alt text-4xl text-white/10 group-hover:text-primary transition-colors mb-4"></i>
-                        <p class="font-mono text-[9px] text-white/40 uppercase tracking-widest">Drag & Drop Image</p>
-                    </div>
-                    <input type="file" id="file-input" class="hidden" accept="image/*">
-                </div>
-                <input type="text" id="img-title" placeholder="Project / Track Name" class="w-full bg-white/5 border border-white/10 p-5 rounded-2xl font-mono text-xs outline-none focus:border-primary transition-all">
-                <button id="push-btn" onclick="saveImage()" class="w-full bg-primary text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.4em] hover:shadow-[0_0_30px_#ec4899] transition-all active:scale-95">Push to Database</button>
-            </div>
-        </div>
-    </div>
 
     <header class="py-24 px-6 text-center">
         <h1 class="font-display text-5xl md:text-8xl italic tracking-tighter mb-6">ARCHIVE</h1>
         <p class="font-mono text-[8px] tracking-[1em] text-white/20 uppercase italic">Maximum Security Node</p>
+        <button onclick="toggleFullscreen()" class="mt-8 font-mono text-[7px] text-primary/50 border border-primary/20 px-4 py-2 rounded-full uppercase tracking-widest hover:bg-primary hover:text-white transition-all">Enable Fullscreen Guard</button>
     </header>
 
     <main class="max-w-7xl mx-auto px-6 pb-40">
@@ -89,47 +87,54 @@
         <i class="fas fa-lock"></i>
     </button>
 
+    <div id="admin-panel" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/98 backdrop-blur-2xl">
+        <div class="w-full max-w-xl glass p-10 rounded-[3rem] border-primary/20 relative">
+            <button onclick="closeAdmin()" class="absolute top-8 right-8 text-white/20 hover:text-white"><i class="fas fa-times"></i></button>
+            <h2 class="font-display text-primary text-[10px] tracking-[0.5em] uppercase mb-8 italic">Archive Uplink</h2>
+            <div class="space-y-6">
+                <div id="drop-zone" class="w-full h-56 border-2 border-dashed border-white/10 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer">
+                    <div id="drop-content" class="text-center">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-white/10 mb-4"></i>
+                        <p class="font-mono text-[9px] text-white/40 uppercase">Drag Image</p>
+                    </div>
+                    <input type="file" id="file-input" class="hidden" accept="image/*">
+                </div>
+                <input type="text" id="img-title" placeholder="Project Name" class="w-full bg-white/5 border border-white/10 p-5 rounded-2xl font-mono text-xs outline-none">
+                <button onclick="saveImage()" id="push-btn" class="w-full bg-primary text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.4em]">Push to Database</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // --- MAXIMUM SECURITY: TOTAL KEYBOARD LOCKDOWN ---
+        // --- BROWSER UI SUPPRESSION ---
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // --- KEYBOARD & SOURCE LOCKDOWN ---
         document.addEventListener('keydown', (e) => {
-            // Kill every single key stroke
             e.preventDefault();
             e.stopPropagation();
-            console.warn("KEY_INPUT_DENIED");
             return false;
         }, true);
 
-        // Disable PrintScreen / Snip behavior (partial)
-        document.addEventListener('keyup', (e) => {
-            if (e.key === 'PrintScreen') {
-                navigator.clipboard.writeText('');
-                alert("XCLIPSE SECURITY: Screenshot Attempt Blocked.");
-            }
-        });
-
-        // Debugger Trap
-        setInterval(() => {
-            const start = performance.now();
-            debugger;
-            if (performance.now() - start > 50) { window.location.reload(); }
-        }, 100);
-
-        // --- DATABASE & HOVER LOGIC ---
+        // --- DATABASE LOGIC ---
         let droppedImageData = null;
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
 
         function triggerAuth() {
-            // Note: Since keyboard is blocked, use the prompt's native window
-            const u = prompt("Authorized ID:");
-            const p = prompt("Encryption Key:");
-            if(u === "admin" && p === "xclipse2026") {
-                document.getElementById('admin-panel').classList.remove('hidden');
-            }
+            const u = prompt("ID:"), p = prompt("Key:");
+            if(u === "admin" && p === "xclipse2026") document.getElementById('admin-panel').classList.remove('hidden');
         }
 
         function closeAdmin() { document.getElementById('admin-panel').classList.add('hidden'); }
-
         dropZone.onclick = () => fileInput.click();
         fileInput.onchange = (e) => handleFiles(e.target.files);
 
@@ -146,7 +151,7 @@
                 r.readAsDataURL(file);
                 r.onload = () => {
                     droppedImageData = r.result;
-                    document.getElementById('drop-content').innerHTML = `<i class="fas fa-check-circle text-primary text-3xl"></i>`;
+                    document.getElementById('drop-content').innerHTML = `<i class="fas fa-check text-primary"></i>`;
                 };
             }
         }
@@ -155,7 +160,7 @@
             const t = document.getElementById('img-title').value;
             if (!droppedImageData) return;
             galleryRef.push({ url: droppedImageData, title: t || "Secured Archive", timestamp: Date.now() })
-            .then(() => { location.reload(); });
+            .then(() => location.reload());
         }
 
         galleryRef.on('value', (s) => {
@@ -164,17 +169,13 @@
             s.forEach((c) => {
                 const d = c.val();
                 g.insertAdjacentHTML('afterbegin', `
-                    <div class="glass group relative overflow-hidden rounded-[2.5rem] aspect-square transition-all duration-700">
-                        <img src="${d.url}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 scale-110 group-hover:scale-100 transition-all duration-1000">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent p-10 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-all">
-                            <span class="text-primary font-display text-[9px] tracking-widest uppercase italic">${d.title}</span>
-                        </div>
+                    <div class="glass relative overflow-hidden rounded-[2.5rem] aspect-square transition-all duration-700">
+                        <img src="${d.url}" class="w-full h-full object-cover grayscale transition-all duration-1000">
                     </div>
                 `);
             });
         });
 
-        // CUSTOM CURSOR MOTION (The only allowed interaction)
         document.addEventListener('mousemove', (e) => {
             const c = document.getElementById('cursor');
             c.style.left = e.clientX + 'px';
