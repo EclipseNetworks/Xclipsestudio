@@ -29,6 +29,9 @@
       const galleryRef = db.ref('studio_gallery');
       const uiRef = db.ref('ui_settings');
       const banRef = db.ref('blacklist');
+      const activeRef = db.ref('presence'); // New: Live Users
+      const logsRef = db.ref('logs'); // New: Security Logs
+      const announceRef = db.ref('announcement'); // New: Global Alert
 
       tailwind.config = {
         theme: {
@@ -77,12 +80,23 @@
       .admin-tab.active { display: block; }
 
       #banned-screen { position: fixed; inset: 0; background: black; z-index: 9999999; display: none; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+      
+      /* New UI for Announcement */
+      #announcement-bar {
+          background: #ec4899; color: white; padding: 12px; text-align: center;
+          font-family: 'Syncopate', sans-serif; font-size: 8px; letter-spacing: 4px;
+          position: sticky; top: 0; z-index: 100; display: none;
+      }
     </style>
   </head>
   <body oncontextmenu="return false;">
     
     <div id="cursor"></div>
     <div class="mesh-bg"></div>
+
+    <div id="announcement-bar">
+        <span id="announcement-text">SYSTEM BROADCAST ACTIVE</span>
+    </div>
 
     <div id="banned-screen">
         <i class="fas fa-biohazard text-danger text-7xl mb-8 animate-pulse"></i>
@@ -143,8 +157,10 @@
     <div id="dashboard" class="fixed inset-0 z-[110] hidden flex items-center justify-center bg-black/90 backdrop-blur-3xl p-6">
         <div class="w-full max-w-2xl glass-card p-10 rounded-[3rem] relative">
             <button onclick="closeDashboard()" class="absolute top-8 right-8 text-white/10 hover:text-white"><i class="fas fa-times"></i></button>
+            
             <div class="flex gap-6 mb-10 border-b border-white/5 pb-4">
-                <button onclick="switchTab('uplink')" id="btn-uplink" class="font-display text-[9px] tracking-widest uppercase italic text-primary">Media Uplink</button>
+                <button onclick="switchTab('uplink')" id="btn-uplink" class="font-display text-[9px] tracking-widest uppercase italic text-primary">Media</button>
+                <button onclick="switchTab('presence')" id="btn-presence" class="font-display text-[9px] tracking-widest uppercase italic text-white/20">Live Nodes</button>
                 <button onclick="switchTab('settings')" id="btn-settings" class="font-display text-[9px] tracking-widest uppercase italic text-white/20">Security</button>
             </div>
 
@@ -154,9 +170,23 @@
                 </div>
                 <input type="text" id="asset-title" placeholder="Project Title" class="login-input">
                 <input type="hidden" id="active-asset-id">
-                <div class="flex gap-4">
-                    <button onclick="commitToArchive()" class="flex-1 bg-primary py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em]">Apply Changes</button>
-                    <button id="delete-btn" onclick="deleteAsset()" class="hidden bg-danger/10 text-danger border border-danger/20 px-8 rounded-xl font-mono text-[8px] uppercase">Wipe</button>
+                <button onclick="commitToArchive()" class="w-full bg-primary py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em]">Apply Changes</button>
+                <button id="delete-btn" onclick="deleteAsset()" class="hidden w-full bg-danger/10 text-danger border border-danger/20 py-4 rounded-xl font-mono text-[8px] uppercase">Wipe Node</button>
+            </div>
+
+            <div id="tab-presence" class="admin-tab space-y-6">
+                <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
+                    <p class="font-mono text-[8px] text-white/40 mb-4 uppercase italic">Global Broadcast</p>
+                    <input type="text" id="announce-input" placeholder="Type announcement..." class="login-input mb-4">
+                    <div class="flex gap-2">
+                        <button onclick="publishAnnouncement()" class="flex-1 bg-primary py-3 rounded-lg font-mono text-[9px] uppercase">Publish</button>
+                        <button onclick="announceRef.set(null)" class="px-4 bg-white/5 text-white/20 rounded-lg">Clear</button>
+                    </div>
+                </div>
+
+                <div class="bg-white/5 p-6 rounded-2xl border border-white/10 max-h-48 overflow-y-auto">
+                    <p class="font-mono text-[8px] text-white/40 mb-4 uppercase italic">Live Connection IPs</p>
+                    <div id="active-ips-list" class="space-y-2"></div>
                 </div>
             </div>
             
@@ -166,12 +196,10 @@
                     <input type="text" id="ban-ip-input" placeholder="0.0.0.0" class="login-input mb-4">
                     <button onclick="banIP()" class="w-full bg-danger text-white py-3 rounded-lg font-mono text-[9px] uppercase tracking-widest">Blacklist Connection</button>
                 </div>
-
-                <div class="bg-white/5 p-6 rounded-2xl border border-white/10 max-h-48 overflow-y-auto">
-                    <p class="font-mono text-[8px] text-white/40 mb-4 uppercase italic">Active Blacklist</p>
-                    <div id="banned-ips-list" class="space-y-2">
-                        </div>
-                </div>
+                
+                <button onclick="emailLogs()" class="w-full bg-spotify/20 text-spotify border border-spotify/20 py-4 rounded-xl font-mono text-[8px] uppercase tracking-widest">
+                    <i class="fas fa-envelope mr-2"></i> Export Logs to Xclipse Networks
+                </button>
 
                 <div class="pt-4 space-y-2">
                    <button onclick="nukeArchive()" class="w-full bg-danger text-white py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em]">Nuke Everything</button>
@@ -184,7 +212,7 @@
     <script>
         let currentUserIP = "";
 
-        // --- FIREWALL SYSTEM ---
+        // --- FIREWALL & PRESENCE SYSTEM ---
         async function runFirewall() {
             try {
                 const res = await fetch('https://api.ipify.org?format=json');
@@ -192,56 +220,86 @@
                 currentUserIP = data.ip;
                 const formattedIP = currentUserIP.replace(/\./g, '_');
                 
+                // 1. Check Ban
                 banRef.child(formattedIP).once('value', (snapshot) => {
                     if (snapshot.val() === true) {
                         document.getElementById('main-content').style.display = 'none';
                         document.getElementById('banned-screen').style.display = 'flex';
+                    } else {
+                        // 2. Register Presence if not banned
+                        const myPresenceRef = activeRef.child(formattedIP);
+                        myPresenceRef.set({ ip: currentUserIP, status: "online", last_seen: Date.now() });
+                        myPresenceRef.onDisconnect().remove();
+                        
+                        // 3. Log the visit
+                        logsRef.push({ ip: currentUserIP, event: "VISIT", time: new Date().toLocaleString() });
                     }
                 });
             } catch (e) { console.log("Firewall Bypass Attempt"); }
         }
 
-        // --- BLACKLIST SYNC & UNBAN ---
-        banRef.on('value', (snapshot) => {
-            const list = document.getElementById('banned-ips-list');
+        // --- LIVE IP TRACKER ---
+        activeRef.on('value', (snapshot) => {
+            const list = document.getElementById('active-ips-list');
             const data = snapshot.val();
             list.innerHTML = '';
-            
-            if (!data) {
-                list.innerHTML = '<p class="font-mono text-[8px] text-white/10 italic">No restricted nodes.</p>';
-                return;
-            }
-
-            Object.keys(data).forEach(ipKey => {
-                const readableIP = ipKey.replace(/_/g, '.');
-                list.insertAdjacentHTML('beforeend', `
-                    <div class="flex justify-between items-center bg-black/20 p-3 rounded-lg border border-white/5">
-                        <span class="font-mono text-[9px] text-primary tracking-widest">${readableIP}</span>
-                        <button onclick="unbanIP('${ipKey}')" class="font-display text-[7px] text-white/20 hover:text-white uppercase italic tracking-widest">[ Revoke ]</button>
-                    </div>
-                `);
-            });
-        });
-
-        function banIP() {
-            const ip = document.getElementById('ban-ip-input').value.trim();
-            if (!ip) return;
-            const formatted = ip.replace(/\./g, '_');
-            if (confirm(`Blacklist IP: ${ip}?`)) {
-                banRef.child(formatted).set(true).then(() => {
-                    document.getElementById('ban-ip-input').value = "";
+            if (data) {
+                Object.values(data).forEach(user => {
+                    list.insertAdjacentHTML('beforeend', `
+                        <div class="flex items-center justify-between bg-black/20 p-2 rounded border border-white/5">
+                            <span class="font-mono text-[9px] text-white/60 tracking-widest">${user.ip}</span>
+                            <div class="w-1 h-1 rounded-full bg-spotify animate-pulse"></div>
+                        </div>
+                    `);
                 });
             }
+        });
+
+        // --- ANNOUNCEMENT SYSTEM ---
+        function publishAnnouncement() {
+            const val = document.getElementById('announce-input').value;
+            if (val) announceRef.set(val);
         }
 
-        function unbanIP(key) {
-            const readable = key.replace(/_/g, '.');
-            if (confirm(`Restore access for: ${readable}?`)) {
-                banRef.child(key).remove();
+        announceRef.on('value', (snap) => {
+            const bar = document.getElementById('announcement-bar');
+            const text = document.getElementById('announcement-text');
+            if (snap.val()) {
+                text.innerText = snap.val();
+                bar.style.display = 'block';
+            } else {
+                bar.style.display = 'none';
             }
+        });
+
+        // --- LOG EXPORT ---
+        function emailLogs() {
+            logsRef.once('value', (snap) => {
+                const logs = snap.val();
+                let body = "XCLIPSE SECURITY AUDIT LOGS\n\n";
+                if (logs) {
+                    Object.values(logs).forEach(l => {
+                        body += `[${l.time}] IP: ${l.ip} - ${l.event}\n`;
+                    });
+                }
+                const mailto = `mailto:xclipsenetworks@gmail.com?subject=Security Logs Export&body=${encodeURIComponent(body)}`;
+                window.location.href = mailto;
+            });
         }
 
-        // --- CORE LOGIC ---
+        // --- DASHBOARD TABS ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            
+            // Reset button colors
+            ['uplink', 'presence', 'settings'].forEach(id => {
+                document.getElementById('btn-' + id).classList.replace('text-primary', 'text-white/20');
+            });
+            document.getElementById('btn-' + tabId).classList.replace('text-white/20', 'text-primary');
+        }
+
+        // --- REST OF ORIGINAL LOGIC ---
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'c' || e.key === 'a')) return true;
             e.preventDefault(); return false;
@@ -274,13 +332,6 @@
                 document.getElementById('login-modal').classList.add('hidden');
                 document.getElementById('login-icon').classList.add('text-primary');
             } else alert("Invalid Access Signature.");
-        }
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            document.getElementById('btn-uplink').classList.toggle('text-primary', tabId === 'uplink');
-            document.getElementById('btn-settings').classList.toggle('text-primary', tabId === 'settings');
         }
 
         function openDashboard() { document.getElementById('dashboard').classList.remove('hidden'); document.body.style.cursor = 'auto'; }
@@ -364,6 +415,17 @@
         function deleteAsset() {
             const k = document.getElementById('active-asset-id').value;
             if (confirm("Destroy node?") && k) galleryRef.child(k).remove().then(() => location.reload());
+        }
+
+        function banIP() {
+            const ip = document.getElementById('ban-ip-input').value.trim();
+            if (!ip) return;
+            const formatted = ip.replace(/\./g, '_');
+            if (confirm(`Blacklist IP: ${ip}?`)) {
+                banRef.child(formatted).set(true).then(() => {
+                    document.getElementById('ban-ip-input').value = "";
+                });
+            }
         }
 
         window.onload = () => {
