@@ -29,13 +29,15 @@
       const galleryRef = db.ref('studio_gallery');
       const uiRef = db.ref('ui_settings');
       const banRef = db.ref('blacklist');
+      const whiteRef = db.ref('whitelist');
+      const logRef = db.ref('access_logs'); // NEW: Logs reference
       const broadcastRef = db.ref('global_broadcast');
-      const securityRef = db.ref('security_status'); // NEW: For global lock
+      const securityRef = db.ref('security_status');
 
       tailwind.config = {
         theme: {
           extend: {
-            colors: { primary: '#ec4899', dark: '#050811', spotify: '#1db954', soundcloud: '#ff5500', danger: '#ef4444' },
+            colors: { primary: '#ec4899', dark: '#050811', spotify: '#1db954', soundcloud: '#ff5500', danger: '#ef4444', success: '#22c55e' },
             fontFamily: { display: ['Syncopate', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }
           }
         }
@@ -57,7 +59,6 @@
           border: 1px solid rgba(255, 255, 255, 0.1); 
       }
 
-      /* --- ANNOUNCEMENT SYSTEM --- */
       .announcement-container {
           width: 100%; overflow: hidden; background: rgba(255, 255, 255, 0.02);
           backdrop-filter: blur(12px); border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -72,7 +73,6 @@
       }
       @keyframes slideLeftToRight { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
-      /* Alert Mode Pulsing */
       .announcement-container.alert-active { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); }
       .alert-active .announcement-text { color: #ef4444; text-shadow: 0 0 15px rgba(239, 68, 68, 0.6); }
       
@@ -156,7 +156,7 @@
     </div>
 
     <div id="dashboard" class="fixed inset-0 z-[110] hidden flex items-center justify-center bg-black/90 backdrop-blur-3xl p-6">
-        <div class="w-full max-w-2xl glass-card p-10 rounded-[3rem] relative">
+        <div class="w-full max-w-4xl glass-card p-10 rounded-[3rem] relative overflow-y-auto max-h-[90vh]">
             <button onclick="closeDashboard()" class="absolute top-8 right-8 text-white/10 hover:text-white"><i class="fas fa-times"></i></button>
             <div class="flex gap-6 mb-10 border-b border-white/5 pb-4">
                 <button onclick="switchTab('uplink')" id="btn-uplink" class="font-display text-[9px] tracking-widest uppercase italic text-primary">Media Uplink</button>
@@ -181,7 +181,30 @@
                     <button onclick="toggleGlobalLock()" id="global-lock-btn" class="w-full py-4 rounded-xl border border-white/10 font-display text-[9px] uppercase tracking-widest transition-all">
                         Fetching Status...
                     </button>
-                    <p class="font-mono text-[7px] text-white/20 mt-2 text-center uppercase">Enables site-wide blacklist for all non-admin users</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
+                        <p class="font-mono text-[8px] text-white/40 mb-2 uppercase italic text-danger">Firewall (Blacklist)</p>
+                        <input type="text" id="ban-ip-input" placeholder="0.0.0.0" class="login-input mb-4">
+                        <button onclick="updateAccess('blacklist', 'ban-ip-input')" class="w-full bg-danger/20 text-danger border border-danger/30 py-3 rounded-lg font-mono text-[9px] uppercase tracking-widest mb-4">Add to Blacklist</button>
+                        <div id="banned-ips-list" class="space-y-2 border-t border-white/5 pt-4 max-h-32 overflow-y-auto"></div>
+                    </div>
+
+                    <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
+                        <p class="font-mono text-[8px] text-white/40 mb-2 uppercase italic text-success">Whitelist (Safe IPs)</p>
+                        <input type="text" id="white-ip-input" placeholder="0.0.0.0" class="login-input mb-4">
+                        <button onclick="updateAccess('whitelist', 'white-ip-input')" class="w-full bg-success/20 text-success border border-success/30 py-3 rounded-lg font-mono text-[9px] uppercase tracking-widest mb-4">Add to Whitelist</button>
+                        <div id="white-ips-list" class="space-y-2 border-t border-white/5 pt-4 max-h-32 overflow-y-auto"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
+                    <p class="font-mono text-[8px] text-white/40 mb-4 uppercase italic">Access Uplink Logs</p>
+                    <div id="access-logs-container" class="space-y-2 max-h-64 overflow-y-auto font-mono text-[7px] uppercase tracking-widest">
+                        <p class="text-white/10 italic">Initializing stream...</p>
+                    </div>
+                    <button onclick="clearLogs()" class="mt-4 text-white/10 hover:text-danger text-[7px] uppercase tracking-widest">Wipe Data History</button>
                 </div>
 
                 <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
@@ -197,13 +220,6 @@
                         </div>
                     </div>
                     <button onclick="publishBroadcast()" class="w-full bg-primary text-white py-4 rounded-xl font-black text-[9px] uppercase tracking-[0.3em]">Transmit Update</button>
-                </div>
-
-                <div class="bg-white/5 p-6 rounded-2xl border border-white/10 max-h-48 overflow-y-auto">
-                    <p class="font-mono text-[8px] text-white/40 mb-2 uppercase italic">Firewall Uplink (IP)</p>
-                    <input type="text" id="ban-ip-input" placeholder="0.0.0.0" class="login-input mb-4">
-                    <button onclick="banIP()" class="w-full bg-danger text-white py-3 rounded-lg font-mono text-[9px] uppercase tracking-widest mb-4">Blacklist</button>
-                    <div id="banned-ips-list" class="space-y-2 border-t border-white/5 pt-4"></div>
                 </div>
 
                 <button onclick="logout()" class="w-full bg-white/5 text-white/40 py-4 rounded-xl font-mono text-[8px] uppercase tracking-[0.4em]">Logout</button>
@@ -232,7 +248,7 @@
             const data = snapshot.val();
             globalLock = data ? data.lock_active : false;
             updateLockButtonUI();
-            checkGlobalSecurity();
+            runFirewall();
         });
 
         function updateLockButtonUI() {
@@ -253,12 +269,106 @@
             });
         }
 
-        function checkGlobalSecurity() {
-            const isAdmin = sessionStorage.getItem('xclipse_auth') === 'true';
-            if (globalLock && !isAdmin) {
-                document.getElementById('main-content').style.display = 'none';
-                document.getElementById('banned-screen').style.display = 'flex';
+        // --- ACCESS LOGS LOGIC ---
+        function addAccessLog(ip, status) {
+            const time = new Date().toLocaleString('en-AU', { timeZone: 'Australia/Adelaide' });
+            logRef.push({
+                ip: ip.replace(/_/g, '.'),
+                status: status,
+                time: time
+            });
+        }
+
+        function clearLogs() {
+            if (confirm("Destroy all access records?")) logRef.remove();
+        }
+
+        logRef.limitToLast(20).on('value', (snapshot) => {
+            const container = document.getElementById('access-logs-container');
+            const data = snapshot.val();
+            container.innerHTML = '';
+            if (data) {
+                Object.values(data).reverse().forEach(log => {
+                    let color = 'text-white/40';
+                    if (log.status.includes('GRANTED')) color = 'text-success';
+                    if (log.status.includes('DENIED')) color = 'text-danger';
+                    
+                    container.insertAdjacentHTML('beforeend', `
+                        <div class="flex justify-between border-b border-white/5 py-1">
+                            <span class="${color}">${log.ip}</span>
+                            <span class="text-white/10">${log.status}</span>
+                            <span class="text-white/5">${log.time}</span>
+                        </div>
+                    `);
+                });
+            } else {
+                container.innerHTML = '<p class="text-white/10 italic">No access records found.</p>';
             }
+        });
+
+        // --- FIREWALL & AUTH ---
+        async function runFirewall() {
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                const userIP = data.ip.replace(/\./g, '_');
+                const isAdmin = sessionStorage.getItem('xclipse_auth') === 'true';
+
+                const whiteSnap = await whiteRef.child(userIP).once('value');
+                const isWhitelisted = whiteSnap.val() === true;
+
+                if (isAdmin || isWhitelisted) {
+                    document.getElementById('main-content').style.display = 'block';
+                    document.getElementById('banned-screen').style.display = 'none';
+                    if (!isAdmin) addAccessLog(userIP, 'GRANTED (WHITELIST)');
+                    return;
+                }
+
+                if (globalLock) {
+                    addAccessLog(userIP, 'DENIED (GLOBAL LOCK)');
+                    lockAccess();
+                    return;
+                }
+
+                const banSnap = await banRef.child(userIP).once('value');
+                if (banSnap.val() === true) {
+                    addAccessLog(userIP, 'DENIED (BLACKLIST)');
+                    lockAccess();
+                } else {
+                    addAccessLog(userIP, 'GRANTED (PUBLIC)');
+                }
+            } catch (e) { console.log("Security Check Fault"); }
+        }
+
+        function lockAccess() {
+            document.getElementById('main-content').style.display = 'none';
+            document.getElementById('banned-screen').style.display = 'flex';
+        }
+
+        function updateAccess(type, inputId) {
+            const ref = type === 'whitelist' ? whiteRef : banRef;
+            const ip = document.getElementById(inputId).value.trim();
+            if (ip) ref.child(ip.replace(/\./g, '_')).set(true).then(() => { 
+                document.getElementById(inputId).value = ""; 
+            });
+        }
+
+        function revokeAccess(type, key) {
+            const ref = type === 'whitelist' ? whiteRef : banRef;
+            if (confirm("Revoke permission for this node?")) ref.child(key).remove();
+        }
+
+        banRef.on('value', (s) => renderAccessList(s, 'banned-ips-list', 'blacklist', 'text-danger'));
+        whiteRef.on('value', (s) => renderAccessList(s, 'white-ips-list', 'whitelist', 'text-success'));
+
+        function renderAccessList(snapshot, elementId, type, colorClass) {
+            const list = document.getElementById(elementId);
+            const data = snapshot.val();
+            list.innerHTML = '';
+            if (data) Object.keys(data).forEach(ipKey => {
+                const readableIP = ipKey.replace(/_/g, '.');
+                list.insertAdjacentHTML('beforeend', `<div class="flex justify-between items-center bg-black/20 p-2 rounded border border-white/5"><span class="font-mono text-[8px] ${colorClass}">${readableIP}</span><button onclick="revokeAccess('${type}', '${ipKey}')" class="text-white/20 hover:text-white text-[7px]">[ X ]</button></div>`);
+            });
         }
 
         // --- BROADCAST SYSTEM ---
@@ -299,41 +409,6 @@
             });
         }
 
-        // --- FIREWALL & AUTH ---
-        async function runFirewall() {
-            // Priority 1: Check Global Lock first
-            checkGlobalSecurity();
-
-            // Priority 2: Check IP Blacklist
-            try {
-                const res = await fetch('https://api.ipify.org?format=json');
-                const data = await res.json();
-                const formattedIP = data.ip.replace(/\./g, '_');
-                banRef.child(formattedIP).once('value', (snapshot) => {
-                    if (snapshot.val() === true) {
-                        document.getElementById('main-content').style.display = 'none';
-                        document.getElementById('banned-screen').style.display = 'flex';
-                    }
-                });
-            } catch (e) { console.log("Firewall Bypass Attempt"); }
-        }
-
-        banRef.on('value', (snapshot) => {
-            const list = document.getElementById('banned-ips-list');
-            const data = snapshot.val();
-            list.innerHTML = '';
-            if (data) Object.keys(data).forEach(ipKey => {
-                const readableIP = ipKey.replace(/_/g, '.');
-                list.insertAdjacentHTML('beforeend', `<div class="flex justify-between items-center bg-black/20 p-3 rounded-lg border border-white/5"><span class="font-mono text-[9px] text-primary tracking-widest">${readableIP}</span><button onclick="unbanIP('${ipKey}')" class="font-display text-[7px] text-white/20 hover:text-white uppercase italic tracking-widest">[ Revoke ]</button></div>`);
-            });
-        });
-
-        function banIP() {
-            const ip = document.getElementById('ban-ip-input').value.trim();
-            if (ip) banRef.child(ip.replace(/\./g, '_')).set(true).then(() => { document.getElementById('ban-ip-input').value = ""; });
-        }
-        function unbanIP(key) { if (confirm("Restore access?")) banRef.child(key).remove(); }
-
         function executeLogin() {
             if(document.getElementById('admin-id').value === "admin" && document.getElementById('admin-key').value === "xclipse2026") {
                 sessionStorage.setItem('xclipse_auth', 'true');
@@ -357,7 +432,6 @@
         function closeDashboard() { document.getElementById('dashboard').classList.add('hidden'); document.body.style.cursor = 'none'; }
         function logout() { sessionStorage.removeItem('xclipse_auth'); location.reload(); }
 
-        // --- UI & GALLERY ---
         uiRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) for (let key in data) {
