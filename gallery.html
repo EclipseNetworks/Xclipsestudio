@@ -28,7 +28,7 @@
       const db = firebase.database();
       const galleryRef = db.ref('studio_gallery');
       const uiRef = db.ref('ui_settings');
-      const banRef = db.ref('blacklist'); // Firewall Node
+      const banRef = db.ref('blacklist');
 
       tailwind.config = {
         theme: {
@@ -76,7 +76,6 @@
       .admin-tab { display: none; }
       .admin-tab.active { display: block; }
 
-      /* Banned UI */
       #banned-screen { position: fixed; inset: 0; background: black; z-index: 9999999; display: none; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
     </style>
   </head>
@@ -163,10 +162,17 @@
             
             <div id="tab-settings" class="admin-tab space-y-6">
                 <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
-                    <p class="font-mono text-[8px] text-white/40 mb-2 uppercase italic">Node Firewall (Target IP)</p>
+                    <p class="font-mono text-[8px] text-white/40 mb-2 uppercase italic">Firewall Uplink (IP)</p>
                     <input type="text" id="ban-ip-input" placeholder="0.0.0.0" class="login-input mb-4">
                     <button onclick="banIP()" class="w-full bg-danger text-white py-3 rounded-lg font-mono text-[9px] uppercase tracking-widest">Blacklist Connection</button>
                 </div>
+
+                <div class="bg-white/5 p-6 rounded-2xl border border-white/10 max-h-48 overflow-y-auto">
+                    <p class="font-mono text-[8px] text-white/40 mb-4 uppercase italic">Active Blacklist</p>
+                    <div id="banned-ips-list" class="space-y-2">
+                        </div>
+                </div>
+
                 <div class="pt-4 space-y-2">
                    <button onclick="nukeArchive()" class="w-full bg-danger text-white py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em]">Nuke Everything</button>
                    <button onclick="logout()" class="w-full bg-white/5 text-white/40 py-4 rounded-xl font-mono text-[8px] uppercase tracking-[0.4em]">Logout</button>
@@ -184,8 +190,6 @@
                 const res = await fetch('https://api.ipify.org?format=json');
                 const data = await res.json();
                 currentUserIP = data.ip;
-                
-                // Firebase keys can't have dots
                 const formattedIP = currentUserIP.replace(/\./g, '_');
                 
                 banRef.child(formattedIP).once('value', (snapshot) => {
@@ -194,18 +198,46 @@
                         document.getElementById('banned-screen').style.display = 'flex';
                     }
                 });
-            } catch (e) { console.log("Firewall Bypass Attempt Detected"); }
+            } catch (e) { console.log("Firewall Bypass Attempt"); }
         }
 
+        // --- BLACKLIST SYNC & UNBAN ---
+        banRef.on('value', (snapshot) => {
+            const list = document.getElementById('banned-ips-list');
+            const data = snapshot.val();
+            list.innerHTML = '';
+            
+            if (!data) {
+                list.innerHTML = '<p class="font-mono text-[8px] text-white/10 italic">No restricted nodes.</p>';
+                return;
+            }
+
+            Object.keys(data).forEach(ipKey => {
+                const readableIP = ipKey.replace(/_/g, '.');
+                list.insertAdjacentHTML('beforeend', `
+                    <div class="flex justify-between items-center bg-black/20 p-3 rounded-lg border border-white/5">
+                        <span class="font-mono text-[9px] text-primary tracking-widest">${readableIP}</span>
+                        <button onclick="unbanIP('${ipKey}')" class="font-display text-[7px] text-white/20 hover:text-white uppercase italic tracking-widest">[ Revoke ]</button>
+                    </div>
+                `);
+            });
+        });
+
         function banIP() {
-            const ip = document.getElementById('ban-ip-input').value;
+            const ip = document.getElementById('ban-ip-input').value.trim();
             if (!ip) return;
             const formatted = ip.replace(/\./g, '_');
-            if (confirm(`Ban IP: ${ip}?`)) {
+            if (confirm(`Blacklist IP: ${ip}?`)) {
                 banRef.child(formatted).set(true).then(() => {
-                    alert("NODE BLACKLISTED");
                     document.getElementById('ban-ip-input').value = "";
                 });
+            }
+        }
+
+        function unbanIP(key) {
+            const readable = key.replace(/_/g, '.');
+            if (confirm(`Restore access for: ${readable}?`)) {
+                banRef.child(key).remove();
             }
         }
 
@@ -334,7 +366,6 @@
             if (confirm("Destroy node?") && k) galleryRef.child(k).remove().then(() => location.reload());
         }
 
-        // INIT
         window.onload = () => {
             runFirewall();
             renderGallery();
