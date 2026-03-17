@@ -29,6 +29,7 @@
       const galleryRef = db.ref('studio_gallery');
       const uiRef = db.ref('ui_settings');
       const banRef = db.ref('blacklist');
+      const broadcastRef = db.ref('global_broadcast');
 
       tailwind.config = {
         theme: {
@@ -55,31 +56,24 @@
           border: 1px solid rgba(255, 255, 255, 0.1); 
       }
 
-      /* --- ANNOUNCEMENT SLIDER --- */
+      /* --- ANNOUNCEMENT SYSTEM --- */
       .announcement-container {
-          width: 100%;
-          overflow: hidden;
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(10px);
-          border-top: 1px solid rgba(255, 255, 255, 0.05);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-          padding: 12px 0;
-          z-index: 55;
+          width: 100%; overflow: hidden; background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(12px); border-top: 1px solid rgba(255, 255, 255, 0.05);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 12px 0; z-index: 55;
+          position: relative; transition: all 0.5s ease;
       }
       .announcement-text {
-          display: inline-block;
-          white-space: nowrap;
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 9px;
-          letter-spacing: 0.6em;
-          color: #ec4899;
+          display: inline-block; white-space: nowrap; font-family: 'JetBrains Mono', monospace;
+          font-size: 9px; letter-spacing: 0.6em; color: #ec4899;
           text-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
           animation: slideLeftToRight 20s linear infinite;
       }
-      @keyframes slideLeftToRight {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-      }
+      @keyframes slideLeftToRight { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+      /* Alert Mode Pulsing */
+      .announcement-container.alert-active { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); }
+      .alert-active .announcement-text { color: #ef4444; text-shadow: 0 0 15px rgba(239, 68, 68, 0.6); }
       
       .login-input {
           background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -113,7 +107,6 @@
     <div id="banned-screen">
         <i class="fas fa-biohazard text-danger text-7xl mb-8 animate-pulse"></i>
         <h1 class="font-display text-2xl tracking-[0.5em] text-white italic">ACCESS_TERMINATED</h1>
-        <p class="font-mono text-[8px] text-white/20 mt-6 uppercase tracking-[0.5em]">Your IP signature has been blacklisted.</p>
     </div>
 
     <div id="main-content">
@@ -125,8 +118,8 @@
         </nav>
 
         <div class="mt-28 announcement-container">
-            <div class="announcement-text uppercase italic">
-                XCLIPSE STUDIO // ARCHIVE NODE CONNECTED // SYSTEM STATUS: STABLE // ENCRYPTED UPLINK 2026 //
+            <div id="global-announcement" class="announcement-text uppercase italic">
+                ESTABLISHING SECURE UPLINK...
             </div>
         </div>
 
@@ -160,6 +153,54 @@
         </div>
     </div>
 
+    <div id="dashboard" class="fixed inset-0 z-[110] hidden flex items-center justify-center bg-black/90 backdrop-blur-3xl p-6">
+        <div class="w-full max-w-2xl glass-card p-10 rounded-[3rem] relative">
+            <button onclick="closeDashboard()" class="absolute top-8 right-8 text-white/10 hover:text-white"><i class="fas fa-times"></i></button>
+            <div class="flex gap-6 mb-10 border-b border-white/5 pb-4">
+                <button onclick="switchTab('uplink')" id="btn-uplink" class="font-display text-[9px] tracking-widest uppercase italic text-primary">Media Uplink</button>
+                <button onclick="switchTab('settings')" id="btn-settings" class="font-display text-[9px] tracking-widest uppercase italic text-white/20">Security</button>
+            </div>
+
+            <div id="tab-uplink" class="admin-tab active space-y-5">
+                <div id="drop-zone" class="w-full h-32 border-2 border-dashed border-white/10 rounded-[2rem] flex flex-col items-center justify-center cursor-pointer hover:border-primary/40">
+                    <p id="drop-text" class="font-mono text-[8px] text-white/30 uppercase">Paste Image to Upload</p>
+                </div>
+                <input type="text" id="asset-title" placeholder="Project Title" class="login-input">
+                <input type="hidden" id="active-asset-id">
+                <div class="flex gap-4">
+                    <button onclick="commitToArchive()" class="flex-1 bg-primary py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em]">Apply Changes</button>
+                    <button id="delete-btn" onclick="deleteAsset()" class="hidden bg-danger/10 text-danger border border-danger/20 px-8 rounded-xl font-mono text-[8px] uppercase">Wipe</button>
+                </div>
+            </div>
+            
+            <div id="tab-settings" class="admin-tab space-y-6">
+                <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
+                    <p class="font-mono text-[8px] text-white/40 mb-4 uppercase italic">Global Broadcast Uplink</p>
+                    <input type="text" id="broadcast-input" placeholder="Enter custom message..." class="login-input mb-4">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="font-mono text-[7px] text-white/20 mb-2 uppercase">Speed (sec)</p>
+                            <input type="number" id="broadcast-speed" value="20" class="login-input text-center">
+                        </div>
+                        <div class="flex flex-col justify-end">
+                            <button onclick="toggleAlertMode()" id="alert-toggle-btn" class="w-full py-3 rounded-lg border border-white/10 font-mono text-[8px] uppercase tracking-widest text-white/40">Alert Mode: OFF</button>
+                        </div>
+                    </div>
+                    <button onclick="publishBroadcast()" class="w-full bg-primary text-white py-4 rounded-xl font-black text-[9px] uppercase tracking-[0.3em]">Transmit Update</button>
+                </div>
+
+                <div class="bg-white/5 p-6 rounded-2xl border border-white/10 max-h-48 overflow-y-auto">
+                    <p class="font-mono text-[8px] text-white/40 mb-2 uppercase italic">Firewall Uplink (IP)</p>
+                    <input type="text" id="ban-ip-input" placeholder="0.0.0.0" class="login-input mb-4">
+                    <button onclick="banIP()" class="w-full bg-danger text-white py-3 rounded-lg font-mono text-[9px] uppercase tracking-widest mb-4">Blacklist</button>
+                    <div id="banned-ips-list" class="space-y-2 border-t border-white/5 pt-4"></div>
+                </div>
+
+                <button onclick="logout()" class="w-full bg-white/5 text-white/40 py-4 rounded-xl font-mono text-[8px] uppercase tracking-[0.4em]">Logout</button>
+            </div>
+        </div>
+    </div>
+
     <div id="html-editor" class="fixed inset-0 z-[120] hidden flex items-center justify-center p-6 bg-black/95 backdrop-blur-3xl">
         <div class="w-full max-w-lg glass-card p-8 rounded-[2rem] border-white/5">
             <h2 class="font-display text-primary text-[10px] tracking-widest uppercase italic mb-6">Source Protocol</h2>
@@ -172,56 +213,53 @@
         </div>
     </div>
 
-    <div id="dashboard" class="fixed inset-0 z-[110] hidden flex items-center justify-center bg-black/90 backdrop-blur-3xl p-6">
-        <div class="w-full max-w-2xl glass-card p-10 rounded-[3rem] relative">
-            <button onclick="closeDashboard()" class="absolute top-8 right-8 text-white/10 hover:text-white"><i class="fas fa-times"></i></button>
-            <div class="flex gap-6 mb-10 border-b border-white/5 pb-4">
-                <button onclick="switchTab('uplink')" id="btn-uplink" class="font-display text-[9px] tracking-widest uppercase italic text-primary">Media Uplink</button>
-                <button onclick="switchTab('settings')" id="btn-settings" class="font-display text-[9px] tracking-widest uppercase italic text-white/20">Security</button>
-            </div>
-
-            <div id="tab-uplink" class="admin-tab active space-y-5">
-                <div id="drop-zone" class="w-full h-32 border-2 border-dashed border-white/10 rounded-[2rem] flex flex-col items-center justify-center cursor-pointer hover:border-primary/40">
-                    <p id="drop-text" class="font-mono text-[8px] text-white/30 uppercase">Paste (Ctrl+V) or Drop</p>
-                </div>
-                <input type="text" id="asset-title" placeholder="Project Title" class="login-input">
-                <input type="hidden" id="active-asset-id">
-                <div class="flex gap-4">
-                    <button onclick="commitToArchive()" class="flex-1 bg-primary py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em]">Apply Changes</button>
-                    <button id="delete-btn" onclick="deleteAsset()" class="hidden bg-danger/10 text-danger border border-danger/20 px-8 rounded-xl font-mono text-[8px] uppercase">Wipe</button>
-                </div>
-            </div>
-            
-            <div id="tab-settings" class="admin-tab space-y-6">
-                <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
-                    <p class="font-mono text-[8px] text-white/40 mb-2 uppercase italic">Firewall Uplink (IP)</p>
-                    <input type="text" id="ban-ip-input" placeholder="0.0.0.0" class="login-input mb-4">
-                    <button onclick="banIP()" class="w-full bg-danger text-white py-3 rounded-lg font-mono text-[9px] uppercase tracking-widest">Blacklist Connection</button>
-                </div>
-
-                <div class="bg-white/5 p-6 rounded-2xl border border-white/10 max-h-48 overflow-y-auto">
-                    <p class="font-mono text-[8px] text-white/40 mb-4 uppercase italic">Active Blacklist</p>
-                    <div id="banned-ips-list" class="space-y-2"></div>
-                </div>
-
-                <div class="pt-4 space-y-2">
-                   <button onclick="nukeArchive()" class="w-full bg-danger text-white py-5 rounded-xl font-black text-[10px] uppercase tracking-[0.4em]">Nuke Everything</button>
-                   <button onclick="logout()" class="w-full bg-white/5 text-white/40 py-4 rounded-xl font-mono text-[8px] uppercase tracking-[0.4em]">Logout</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // --- ALL JAVASCRIPT LOGIC ---
-        let currentUserIP = "";
+        let alertMode = false;
 
+        // --- BROADCAST SYSTEM ---
+        broadcastRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            const display = document.getElementById('global-announcement');
+            const container = document.querySelector('.announcement-container');
+
+            if (data) {
+                display.innerText = data.msg;
+                display.style.animationDuration = (data.speed || 20) + 's';
+                data.alert ? container.classList.add('alert-active') : container.classList.remove('alert-active');
+            } else {
+                display.innerText = "XCLIPSE STUDIO // ARCHIVE NODE ACTIVE // 2026 //";
+            }
+        });
+
+        function toggleAlertMode() {
+            alertMode = !alertMode;
+            const btn = document.getElementById('alert-toggle-btn');
+            btn.innerText = `Alert Mode: ${alertMode ? 'ON' : 'OFF'}`;
+            btn.classList.toggle('text-danger', alertMode);
+            btn.classList.toggle('border-danger', alertMode);
+        }
+
+        function publishBroadcast() {
+            const msg = document.getElementById('broadcast-input').value.trim();
+            const speed = document.getElementById('broadcast-speed').value || 20;
+            if (!msg) return alert("System requires a message string.");
+
+            broadcastRef.set({
+                msg: msg.toUpperCase() + " // ",
+                speed: speed,
+                alert: alertMode
+            }).then(() => {
+                document.getElementById('broadcast-input').value = "";
+                alert("Transmission Successful.");
+            });
+        }
+
+        // --- FIREWALL & AUTH ---
         async function runFirewall() {
             try {
                 const res = await fetch('https://api.ipify.org?format=json');
                 const data = await res.json();
-                currentUserIP = data.ip;
-                const formattedIP = currentUserIP.replace(/\./g, '_');
+                const formattedIP = data.ip.replace(/\./g, '_');
                 banRef.child(formattedIP).once('value', (snapshot) => {
                     if (snapshot.val() === true) {
                         document.getElementById('main-content').style.display = 'none';
@@ -235,60 +273,28 @@
             const list = document.getElementById('banned-ips-list');
             const data = snapshot.val();
             list.innerHTML = '';
-            if (!data) { list.innerHTML = '<p class="font-mono text-[8px] text-white/10 italic">No restricted nodes.</p>'; return; }
-            Object.keys(data).forEach(ipKey => {
+            if (data) Object.keys(data).forEach(ipKey => {
                 const readableIP = ipKey.replace(/_/g, '.');
-                list.insertAdjacentHTML('beforeend', `
-                    <div class="flex justify-between items-center bg-black/20 p-3 rounded-lg border border-white/5">
-                        <span class="font-mono text-[9px] text-primary tracking-widest">${readableIP}</span>
-                        <button onclick="unbanIP('${ipKey}')" class="font-display text-[7px] text-white/20 hover:text-white uppercase italic tracking-widest">[ Revoke ]</button>
-                    </div>
-                `);
+                list.insertAdjacentHTML('beforeend', `<div class="flex justify-between items-center bg-black/20 p-3 rounded-lg border border-white/5"><span class="font-mono text-[9px] text-primary tracking-widest">${readableIP}</span><button onclick="unbanIP('${ipKey}')" class="font-display text-[7px] text-white/20 hover:text-white uppercase italic tracking-widest">[ Revoke ]</button></div>`);
             });
         });
 
         function banIP() {
             const ip = document.getElementById('ban-ip-input').value.trim();
-            if (!ip) return;
-            const formatted = ip.replace(/\./g, '_');
-            if (confirm(`Blacklist IP: ${ip}?`)) {
-                banRef.child(formatted).set(true).then(() => { document.getElementById('ban-ip-input').value = ""; });
-            }
+            if (ip) banRef.child(ip.replace(/\./g, '_')).set(true).then(() => { document.getElementById('ban-ip-input').value = ""; });
         }
+        function unbanIP(key) { if (confirm("Restore access?")) banRef.child(key).remove(); }
 
-        function unbanIP(key) {
-            const readable = key.replace(/_/g, '.');
-            if (confirm(`Restore access for: ${readable}?`)) { banRef.child(key).remove(); }
+        function executeLogin() {
+            if(document.getElementById('admin-id').value === "admin" && document.getElementById('admin-key').value === "xclipse2026") {
+                sessionStorage.setItem('xclipse_auth', 'true');
+                location.reload();
+            } else alert("Invalid Access Signature.");
         }
-
-        // KEYBOARD BLOCKER BYPASS
-        document.addEventListener('keydown', (e) => {
-            if (sessionStorage.getItem('xclipse_auth') === 'true') return true;
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'c' || e.key === 'a')) return true;
-            e.preventDefault(); return false;
-        }, true);
-
-        uiRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) for (let key in data) {
-                const el = document.getElementById(key);
-                if (el) el.innerHTML = data[key];
-            }
-        });
 
         function toggleLoginModal() {
             if (sessionStorage.getItem('xclipse_auth') === 'true') openDashboard();
             else document.getElementById('login-modal').classList.toggle('hidden');
-        }
-
-        function executeLogin() {
-            const u = document.getElementById('admin-id').value, k = document.getElementById('admin-key').value;
-            if(u === "admin" && k === "xclipse2026") {
-                sessionStorage.setItem('xclipse_auth', 'true');
-                activateHoverEdit();
-                document.getElementById('login-modal').classList.add('hidden');
-                document.getElementById('login-icon').classList.add('text-primary');
-            } else alert("Invalid Access Signature.");
         }
 
         function switchTab(tabId) {
@@ -301,6 +307,15 @@
         function openDashboard() { document.getElementById('dashboard').classList.remove('hidden'); document.body.style.cursor = 'auto'; }
         function closeDashboard() { document.getElementById('dashboard').classList.add('hidden'); document.body.style.cursor = 'none'; }
         function logout() { sessionStorage.removeItem('xclipse_auth'); location.reload(); }
+
+        // --- UI & GALLERY ---
+        uiRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) for (let key in data) {
+                const el = document.getElementById(key);
+                if (el) el.innerHTML = data[key];
+            }
+        });
 
         function activateHoverEdit() {
             if (sessionStorage.getItem('xclipse_auth') === 'true') {
@@ -324,7 +339,6 @@
             uiRef.update({ [key]: val }).then(() => document.getElementById('html-editor').classList.add('hidden'));
         }
 
-        // --- IMAGE HANDLING & GALLERY RENDERING ---
         let base64Image = null;
         document.addEventListener('paste', (e) => {
             if (document.getElementById('dashboard').classList.contains('hidden')) return;
@@ -359,15 +373,7 @@
                 s.forEach((c) => {
                     const item = c.val(), k = c.key;
                     const pen = auth ? `<button onclick="event.stopPropagation(); initiateEdit('${k}', '${item.title}')" class="absolute top-6 left-6 w-8 h-8 glass-card rounded-full flex items-center justify-center text-[10px] text-white/40 hover:text-primary z-30"><i class="fas fa-pen"></i></button>` : '';
-                    g.insertAdjacentHTML('afterbegin', `
-                        <div class="glass-card relative overflow-hidden rounded-[2.5rem] aspect-[4/5] group transition-all duration-700">
-                            <img src="${item.url}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000">
-                            ${pen}
-                            <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 p-8 flex flex-col justify-end">
-                                <h3 class="font-display text-primary text-[10px] tracking-widest uppercase italic">${item.title}</h3>
-                            </div>
-                        </div>
-                    `);
+                    g.insertAdjacentHTML('afterbegin', `<div class="glass-card relative overflow-hidden rounded-[2.5rem] aspect-[4/5] group transition-all duration-700"><img src="${item.url}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000">${pen}<div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 p-8 flex flex-col justify-end"><h3 class="font-display text-primary text-[10px] tracking-widest uppercase italic">${item.title}</h3></div></div>`);
                 });
             });
         }
@@ -385,12 +391,8 @@
         }
 
         window.onload = () => {
-            runFirewall();
-            renderGallery();
-            activateHoverEdit();
-            if (sessionStorage.getItem('xclipse_auth') === 'true') {
-                document.getElementById('login-icon').classList.add('text-primary');
-            }
+            runFirewall(); renderGallery(); activateHoverEdit();
+            if (sessionStorage.getItem('xclipse_auth') === 'true') document.getElementById('login-icon').classList.add('text-primary');
         };
 
         const cursor = document.getElementById('cursor');
