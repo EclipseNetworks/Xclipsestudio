@@ -54,6 +54,32 @@
           backdrop-filter: blur(40px); 
           border: 1px solid rgba(255, 255, 255, 0.1); 
       }
+
+      /* --- ANNOUNCEMENT SLIDER --- */
+      .announcement-container {
+          width: 100%;
+          overflow: hidden;
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(10px);
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          padding: 12px 0;
+          z-index: 55;
+      }
+      .announcement-text {
+          display: inline-block;
+          white-space: nowrap;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 9px;
+          letter-spacing: 0.6em;
+          color: #ec4899;
+          text-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
+          animation: slideLeftToRight 20s linear infinite;
+      }
+      @keyframes slideLeftToRight {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+      }
       
       .login-input {
           background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -98,7 +124,13 @@
             </button>
         </nav>
 
-        <header class="py-40 px-6 text-center">
+        <div class="mt-28 announcement-container">
+            <div class="announcement-text uppercase italic">
+                XCLIPSE STUDIO // ARCHIVE NODE CONNECTED // SYSTEM STATUS: STABLE // ENCRYPTED UPLINK 2026 //
+            </div>
+        </div>
+
+        <header class="py-32 px-6 text-center">
             <div class="editable-container" data-ui-key="main_header">
                 <div class="edit-html-trigger hidden">EDIT HTML</div>
                 <h1 id="main_header" class="font-display text-4xl md:text-7xl italic tracking-tighter mb-4">ARCHIVE</h1>
@@ -169,8 +201,7 @@
 
                 <div class="bg-white/5 p-6 rounded-2xl border border-white/10 max-h-48 overflow-y-auto">
                     <p class="font-mono text-[8px] text-white/40 mb-4 uppercase italic">Active Blacklist</p>
-                    <div id="banned-ips-list" class="space-y-2">
-                        </div>
+                    <div id="banned-ips-list" class="space-y-2"></div>
                 </div>
 
                 <div class="pt-4 space-y-2">
@@ -182,16 +213,15 @@
     </div>
 
     <script>
+        // --- ALL JAVASCRIPT LOGIC ---
         let currentUserIP = "";
 
-        // --- FIREWALL SYSTEM ---
         async function runFirewall() {
             try {
                 const res = await fetch('https://api.ipify.org?format=json');
                 const data = await res.json();
                 currentUserIP = data.ip;
                 const formattedIP = currentUserIP.replace(/\./g, '_');
-                
                 banRef.child(formattedIP).once('value', (snapshot) => {
                     if (snapshot.val() === true) {
                         document.getElementById('main-content').style.display = 'none';
@@ -201,17 +231,11 @@
             } catch (e) { console.log("Firewall Bypass Attempt"); }
         }
 
-        // --- BLACKLIST SYNC & UNBAN ---
         banRef.on('value', (snapshot) => {
             const list = document.getElementById('banned-ips-list');
             const data = snapshot.val();
             list.innerHTML = '';
-            
-            if (!data) {
-                list.innerHTML = '<p class="font-mono text-[8px] text-white/10 italic">No restricted nodes.</p>';
-                return;
-            }
-
+            if (!data) { list.innerHTML = '<p class="font-mono text-[8px] text-white/10 italic">No restricted nodes.</p>'; return; }
             Object.keys(data).forEach(ipKey => {
                 const readableIP = ipKey.replace(/_/g, '.');
                 list.insertAdjacentHTML('beforeend', `
@@ -228,37 +252,21 @@
             if (!ip) return;
             const formatted = ip.replace(/\./g, '_');
             if (confirm(`Blacklist IP: ${ip}?`)) {
-                banRef.child(formatted).set(true).then(() => {
-                    document.getElementById('ban-ip-input').value = "";
-                });
+                banRef.child(formatted).set(true).then(() => { document.getElementById('ban-ip-input').value = ""; });
             }
         }
 
         function unbanIP(key) {
             const readable = key.replace(/_/g, '.');
-            if (confirm(`Restore access for: ${readable}?`)) {
-                banRef.child(key).remove();
-            }
+            if (confirm(`Restore access for: ${readable}?`)) { banRef.child(key).remove(); }
         }
 
-        // --- KEYBOARD & PROTECTION ---
+        // KEYBOARD BLOCKER BYPASS
         document.addEventListener('keydown', (e) => {
-            // UNLOCK IF LOGGED IN
             if (sessionStorage.getItem('xclipse_auth') === 'true') return true;
-
-            // ALLOW BASIC SHORTCUTS FOR GUESTS
             if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'c' || e.key === 'a')) return true;
-
-            // BLOCK EVERYTHING ELSE
-            e.preventDefault(); 
-            return false;
+            e.preventDefault(); return false;
         }, true);
-
-        document.addEventListener('paste', (e) => {
-            if (document.getElementById('dashboard').classList.contains('hidden')) return;
-            const items = e.clipboardData.items;
-            for (let i in items) if (items[i].kind === 'file') processFile(items[i].getAsFile());
-        });
 
         uiRef.on('value', (snapshot) => {
             const data = snapshot.val();
@@ -280,7 +288,6 @@
                 activateHoverEdit();
                 document.getElementById('login-modal').classList.add('hidden');
                 document.getElementById('login-icon').classList.add('text-primary');
-                console.log("Admin Protocol Engaged: Keyboard Restrictions Lifted.");
             } else alert("Invalid Access Signature.");
         }
 
@@ -317,16 +324,19 @@
             uiRef.update({ [key]: val }).then(() => document.getElementById('html-editor').classList.add('hidden'));
         }
 
+        // --- IMAGE HANDLING & GALLERY RENDERING ---
         let base64Image = null;
+        document.addEventListener('paste', (e) => {
+            if (document.getElementById('dashboard').classList.contains('hidden')) return;
+            const items = e.clipboardData.items;
+            for (let i in items) if (items[i].kind === 'file') processFile(items[i].getAsFile());
+        });
+
         function processFile(file) {
             if (file && file.type.startsWith('image/')) {
                 const r = new FileReader(); r.readAsDataURL(file);
                 r.onload = (e) => { base64Image = e.target.result; document.getElementById('drop-text').innerText = "IMAGE READY"; };
             }
-        }
-
-        function nukeArchive() {
-            if (confirm("NUKE ENTIRE ARCHIVE?") && prompt("Type NUKE:") === "NUKE") galleryRef.set(null).then(() => location.reload());
         }
 
         function commitToArchive() {
