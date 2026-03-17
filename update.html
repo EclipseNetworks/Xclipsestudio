@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>★》 Update | XCLIPSE STUDIO 《★</title>
+    <title>★》 Archive Dashboard | XCLIPSE STUDIO 《★</title>
     
     <link rel="icon" type="image/png" href="logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -99,7 +99,6 @@
 
       #banned-screen { position: fixed; inset: 0; background: black; z-index: 9999999; display: none; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
 
-      /* NEW: Updates Section Styling */
       .update-node {
           border-left: 1px solid rgba(236, 72, 153, 0.2);
           padding-left: 2rem;
@@ -114,6 +113,16 @@
           border-radius: 50%;
           box-shadow: 0 0 10px #ec4899;
       }
+      
+      /* NEW: Status Indicator Styling */
+      .status-pulse {
+          width: 6px; height: 6px;
+          border-radius: 50%;
+          display: inline-block;
+          margin-right: 8px;
+          animation: pulseStatus 2s infinite;
+      }
+      @keyframes pulseStatus { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
   </head>
   <body oncontextmenu="return sessionStorage.getItem('xclipse_auth') === 'true';">
@@ -130,7 +139,7 @@
     <div id="main-content">
         <nav class="fixed top-0 left-0 w-full p-8 flex justify-between items-center z-[60]">
             <div class="font-display text-[10px] tracking-[0.5em] text-white/20 italic">XCLIPSE_SYSTEM</div>
-            <div class="flex gap-6">
+            <div class="flex gap-6 items-center">
                  <button onclick="toggleUpdatesPage()" class="font-mono text-[9px] tracking-widest text-white/40 hover:text-primary uppercase italic">System Updates</button>
                  <button onclick="toggleLoginModal()" id="login-icon" class="w-12 h-12 glass-card rounded-full flex items-center justify-center text-white/40 hover:text-primary transition-all">
                     <i class="fas fa-user-circle text-2xl"></i>
@@ -162,10 +171,21 @@
 
     <div id="updates-page" class="fixed inset-0 z-[80] hidden bg-black/95 backdrop-blur-3xl overflow-y-auto">
         <div class="max-w-4xl mx-auto px-8 py-32">
-            <div class="flex justify-between items-center mb-20">
+            <div class="flex justify-between items-start mb-20">
                 <div>
                     <h2 class="font-display text-3xl italic tracking-tighter text-primary mb-2">DEV_LOG</h2>
-                    <p class="font-mono text-[8px] tracking-[0.8em] text-white/20 uppercase">Live GitHub Synchronization</p>
+                    <p class="font-mono text-[8px] tracking-[0.8em] text-white/20 uppercase mb-8">Live GitHub Synchronization</p>
+                    
+                    <div class="flex flex-wrap gap-6 mt-4">
+                        <div class="flex items-center">
+                            <span id="firebase-status-dot" class="status-pulse bg-success shadow-[0_0_10px_#22c55e]"></span>
+                            <span class="font-mono text-[7px] text-white/30 uppercase tracking-[0.2em]">Firebase: <span id="firebase-status-text" class="text-success">Operational</span></span>
+                        </div>
+                        <div class="flex items-center">
+                            <span id="github-status-dot" class="status-pulse bg-success shadow-[0_0_10px_#22c55e]"></span>
+                            <span class="font-mono text-[7px] text-white/30 uppercase tracking-[0.2em]">GitHub API: <span id="github-status-text" class="text-success">Operational</span></span>
+                        </div>
+                    </div>
                 </div>
                 <button onclick="toggleUpdatesPage()" class="text-white/20 hover:text-white"><i class="fas fa-times text-2xl"></i></button>
             </div>
@@ -278,25 +298,29 @@
         let alertMode = false;
         let globalLock = false;
 
-        // --- GITHUB UPDATES SYSTEM ---
-        const GITHUB_USER = 'YOUR_GITHUB_USERNAME'; // REPLACE ME
-        const GITHUB_REPO = 'YOUR_REPO_NAME'; // REPLACE ME
+        // --- GITHUB & STATUS LOGIC ---
+        const GITHUB_USER = 'EclipseNetworks';
+        const GITHUB_REPO = 'Xclipsestudio';
 
         async function fetchGithubUpdates() {
             const feed = document.getElementById('github-feed');
+            const gDot = document.getElementById('github-status-dot');
+            const gText = document.getElementById('github-status-text');
+            
             try {
                 const response = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/commits`);
+                if (!response.ok) throw new Error();
                 const commits = await response.json();
                 
-                if (!commits || commits.length === 0) throw new Error();
+                // Set Status to Operational
+                gDot.className = "status-pulse bg-success shadow-[0_0_10px_#22c55e]";
+                gText.innerText = "Operational";
+                gText.className = "text-success";
 
                 feed.innerHTML = '';
                 commits.slice(0, 10).forEach(item => {
                     const msg = item.commit.message;
-                    const date = new Date(item.commit.author.date).toLocaleDateString('en-AU', {
-                        day: '2-digit', month: 'short', year: 'numeric'
-                    });
-                    
+                    const date = new Date(item.commit.author.date).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' });
                     let statusColor = "text-white/60";
                     if (msg.toLowerCase().includes('fix')) statusColor = "text-success";
                     if (msg.toLowerCase().includes('security')) statusColor = "text-danger";
@@ -313,17 +337,41 @@
                     `);
                 });
             } catch (e) {
-                feed.innerHTML = `<div class="font-mono text-[10px] text-danger uppercase italic">Protocol Error: Unable to sync with GitHub API. Ensure repository is public or credentials are correct.</div>`;
+                gDot.className = "status-pulse bg-danger shadow-[0_0_10px_#ef4444]";
+                gText.innerText = "Offline/Restricted";
+                gText.className = "text-danger";
+                feed.innerHTML = `<div class="font-mono text-[10px] text-danger uppercase italic">Protocol Error: Could not reach GitHub Node.</div>`;
             }
+        }
+
+        // FIREBASE STATUS HANDLER
+        function monitorFirebase() {
+            const fDot = document.getElementById('firebase-status-dot');
+            const fText = document.getElementById('firebase-status-text');
+            const connectedRef = db.ref(".info/connected");
+            connectedRef.on("value", (snap) => {
+                if (snap.val() === true) {
+                    fDot.className = "status-pulse bg-success shadow-[0_0_10px_#22c55e]";
+                    fText.innerText = "Operational";
+                    fText.className = "text-success";
+                } else {
+                    fDot.className = "status-pulse bg-danger shadow-[0_0_10px_#ef4444]";
+                    fText.innerText = "Connection Lost";
+                    fText.className = "text-danger";
+                }
+            });
         }
 
         function toggleUpdatesPage() {
             const page = document.getElementById('updates-page');
             page.classList.toggle('hidden');
-            if (!page.classList.contains('hidden')) fetchGithubUpdates();
+            if (!page.classList.contains('hidden')) {
+                fetchGithubUpdates();
+                monitorFirebase();
+            }
         }
 
-        // --- GLOBAL SECURITY STATUS ---
+        // --- SECURITY & CORE ---
         securityRef.on('value', (snapshot) => {
             const data = snapshot.val();
             globalLock = data ? data.lock_active : false;
@@ -343,19 +391,14 @@
             }
         }
 
-        function toggleGlobalLock() {
-            securityRef.set({ lock_active: !globalLock }).then(() => {
-                alert(`Global lockdown ${!globalLock ? 'engaged' : 'disengaged'}.`);
-            });
-        }
+        function toggleGlobalLock() { securityRef.set({ lock_active: !globalLock }); }
 
-        // --- ACCESS LOGS LOGIC ---
         function addAccessLog(ip, status) {
             const time = new Date().toLocaleString('en-AU', { timeZone: 'Australia/Adelaide' });
             logRef.push({ ip: ip.replace(/_/g, '.'), status: status, time: time });
         }
 
-        function clearLogs() { if (confirm("Destroy all access records?")) logRef.remove(); }
+        function clearLogs() { if (confirm("Destroy records?")) logRef.remove(); }
 
         logRef.limitToLast(20).on('value', (snapshot) => {
             const container = document.getElementById('access-logs-container');
@@ -366,14 +409,11 @@
                     let color = 'text-white/40';
                     if (log.status.includes('GRANTED')) color = 'text-success';
                     if (log.status.includes('DENIED')) color = 'text-danger';
-                    container.insertAdjacentHTML('beforeend', `<div class="flex justify-between border-b border-white/5 py-1"><span class="${color}">${log.ip}</span><span class="text-white/10">${log.status}</span><span class="text-white/5">${log.time}</span></div>`);
+                    container.insertAdjacentHTML('beforeend', `<div class="flex justify-between border-b border-white/5 py-1"><span class="${color}">${log.ip}</span><span class="text-white/10">${log.status}</span><span class="text-white/5 text-right">${log.time}</span></div>`);
                 });
-            } else {
-                container.innerHTML = '<p class="text-white/10 italic">No access records found.</p>';
             }
         });
 
-        // --- FIREWALL & AUTH ---
         async function runFirewall() {
             try {
                 const res = await fetch('https://api.ipify.org?format=json');
@@ -387,27 +427,14 @@
                     document.getElementById('banned-screen').style.display = 'none';
                     return;
                 }
-
-                if (globalLock) {
-                    addAccessLog(userIP, 'DENIED (GLOBAL LOCK)');
-                    lockAccess();
-                    return;
-                }
-
+                if (globalLock) { addAccessLog(userIP, 'DENIED (GLOBAL LOCK)'); lockAccess(); return; }
                 const banSnap = await banRef.child(userIP).once('value');
-                if (banSnap.val() === true) {
-                    addAccessLog(userIP, 'DENIED (BLACKLIST)');
-                    lockAccess();
-                } else {
-                    addAccessLog(userIP, 'GRANTED (PUBLIC)');
-                }
-            } catch (e) { console.log("Security Check Fault"); }
+                if (banSnap.val() === true) { addAccessLog(userIP, 'DENIED (BLACKLIST)'); lockAccess(); }
+                else { addAccessLog(userIP, 'GRANTED (PUBLIC)'); }
+            } catch (e) { console.log("Security Error"); }
         }
 
-        function lockAccess() {
-            document.getElementById('main-content').style.display = 'none';
-            document.getElementById('banned-screen').style.display = 'flex';
-        }
+        function lockAccess() { document.getElementById('main-content').style.display = 'none'; document.getElementById('banned-screen').style.display = 'flex'; }
 
         function updateAccess(type, inputId) {
             const ref = type === 'whitelist' ? whiteRef : banRef;
@@ -417,7 +444,7 @@
 
         function revokeAccess(type, key) {
             const ref = type === 'whitelist' ? whiteRef : banRef;
-            if (confirm("Revoke permission for this node?")) ref.child(key).remove();
+            if (confirm("Revoke permission?")) ref.child(key).remove();
         }
 
         banRef.on('value', (s) => renderAccessList(s, 'banned-ips-list', 'blacklist', 'text-danger'));
@@ -429,11 +456,10 @@
             list.innerHTML = '';
             if (data) Object.keys(data).forEach(ipKey => {
                 const readableIP = ipKey.replace(/_/g, '.');
-                list.insertAdjacentHTML('beforeend', `<div class="flex justify-between items-center bg-black/20 p-2 rounded border border-white/5"><span class="font-mono text-[8px] ${colorClass}">${readableIP}</span><button onclick="revokeAccess('${type}', '${ipKey}')" class="text-white/20 hover:text-white text-[7px]">[ X ]</button></div>`);
+                list.insertAdjacentHTML('beforeend', `<div class="flex justify-between items-center bg-black/20 p-2 rounded border border-white/5 mb-1"><span class="font-mono text-[8px] ${colorClass}">${readableIP}</span><button onclick="revokeAccess('${type}', '${ipKey}')" class="text-white/20 hover:text-white text-[7px]">[ X ]</button></div>`);
             });
         }
 
-        // --- BROADCAST SYSTEM ---
         broadcastRef.on('value', (snapshot) => {
             const data = snapshot.val();
             const display = document.getElementById('global-announcement');
@@ -442,8 +468,6 @@
                 display.innerText = data.msg;
                 display.style.animationDuration = (data.speed || 20) + 's';
                 data.alert ? container.classList.add('alert-active') : container.classList.remove('alert-active');
-            } else {
-                display.innerText = "XCLIPSE STUDIO // ARCHIVE NODE ACTIVE // 2026 //";
             }
         });
 
@@ -458,10 +482,9 @@
         function publishBroadcast() {
             const msg = document.getElementById('broadcast-input').value.trim();
             const speed = document.getElementById('broadcast-speed').value || 20;
-            if (!msg) return alert("System requires a message string.");
+            if (!msg) return;
             broadcastRef.set({ msg: msg.toUpperCase() + " // ", speed: speed, alert: alertMode }).then(() => {
                 document.getElementById('broadcast-input').value = "";
-                alert("Transmission Successful.");
             });
         }
 
@@ -469,7 +492,7 @@
             if(document.getElementById('admin-id').value === "admin" && document.getElementById('admin-key').value === "xclipse2026") {
                 sessionStorage.setItem('xclipse_auth', 'true');
                 location.reload();
-            } else alert("Invalid Access Signature.");
+            } else alert("Invalid Signature.");
         }
 
         function toggleLoginModal() {
@@ -522,15 +545,11 @@
         document.addEventListener('paste', (e) => {
             if (document.getElementById('dashboard').classList.contains('hidden')) return;
             const items = e.clipboardData.items;
-            for (let i in items) if (items[i].kind === 'file') processFile(items[i].getAsFile());
-        });
-
-        function processFile(file) {
-            if (file && file.type.startsWith('image/')) {
-                const r = new FileReader(); r.readAsDataURL(file);
+            for (let i in items) if (items[i].kind === 'file') {
+                const r = new FileReader(); r.readAsDataURL(items[i].getAsFile());
                 r.onload = (e) => { base64Image = e.target.result; document.getElementById('drop-text').innerText = "IMAGE READY"; };
             }
-        }
+        });
 
         function commitToArchive() {
             const id = document.getElementById('active-asset-id').value;
@@ -539,7 +558,7 @@
                 if (base64Image) data.url = base64Image;
                 galleryRef.child(id).update(data).then(() => location.reload());
             } else {
-                if (!base64Image) return alert("No image data");
+                if (!base64Image) return alert("No image");
                 data.url = base64Image;
                 galleryRef.push(data).then(() => location.reload());
             }
@@ -548,8 +567,7 @@
         function renderGallery() {
             galleryRef.on('value', (s) => {
                 const g = document.getElementById('gallery-grid'), auth = sessionStorage.getItem('xclipse_auth') === 'true';
-                if (!g) return;
-                g.innerHTML = '';
+                if (!g) return; g.innerHTML = '';
                 s.forEach((c) => {
                     const item = c.val(), k = c.key;
                     const pen = auth ? `<button onclick="event.stopPropagation(); initiateEdit('${k}', '${item.title}')" class="absolute top-6 left-6 w-8 h-8 glass-card rounded-full flex items-center justify-center text-[10px] text-white/40 hover:text-primary z-30"><i class="fas fa-pen"></i></button>` : '';
@@ -567,7 +585,7 @@
 
         function deleteAsset() {
             const k = document.getElementById('active-asset-id').value;
-            if (confirm("Destroy node?") && k) galleryRef.child(k).remove().then(() => location.reload());
+            if (k) galleryRef.child(k).remove().then(() => location.reload());
         }
 
         window.onload = () => {
