@@ -30,6 +30,7 @@
       const uiRef = db.ref('ui_settings');
       const banRef = db.ref('blacklist');
       const broadcastRef = db.ref('global_broadcast');
+      const securityRef = db.ref('security_status'); // NEW: For global lock
 
       tailwind.config = {
         theme: {
@@ -107,6 +108,7 @@
     <div id="banned-screen">
         <i class="fas fa-biohazard text-danger text-7xl mb-8 animate-pulse"></i>
         <h1 class="font-display text-2xl tracking-[0.5em] text-white italic">ACCESS_TERMINATED</h1>
+        <p class="font-mono text-[10px] text-white/40 mt-4 uppercase tracking-widest">Global Lockdown Engaged by Administrator</p>
     </div>
 
     <div id="main-content">
@@ -175,6 +177,14 @@
             
             <div id="tab-settings" class="admin-tab space-y-6">
                 <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
+                    <p class="font-mono text-[8px] text-white/40 mb-4 uppercase italic">Global Access Control</p>
+                    <button onclick="toggleGlobalLock()" id="global-lock-btn" class="w-full py-4 rounded-xl border border-white/10 font-display text-[9px] uppercase tracking-widest transition-all">
+                        Fetching Status...
+                    </button>
+                    <p class="font-mono text-[7px] text-white/20 mt-2 text-center uppercase">Enables site-wide blacklist for all non-admin users</p>
+                </div>
+
+                <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
                     <p class="font-mono text-[8px] text-white/40 mb-4 uppercase italic">Global Broadcast Uplink</p>
                     <input type="text" id="broadcast-input" placeholder="Enter custom message..." class="login-input mb-4">
                     <div class="grid grid-cols-2 gap-4 mb-4">
@@ -215,6 +225,41 @@
 
     <script>
         let alertMode = false;
+        let globalLock = false;
+
+        // --- GLOBAL SECURITY STATUS ---
+        securityRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            globalLock = data ? data.lock_active : false;
+            updateLockButtonUI();
+            checkGlobalSecurity();
+        });
+
+        function updateLockButtonUI() {
+            const btn = document.getElementById('global-lock-btn');
+            if (!btn) return;
+            if (globalLock) {
+                btn.innerText = "Blacklist: ACTIVE";
+                btn.className = "w-full py-4 rounded-xl border border-danger bg-danger/10 text-danger font-display text-[9px] uppercase tracking-widest transition-all";
+            } else {
+                btn.innerText = "Blacklist: DISABLED";
+                btn.className = "w-full py-4 rounded-xl border border-white/10 text-white/40 font-display text-[9px] uppercase tracking-widest transition-all";
+            }
+        }
+
+        function toggleGlobalLock() {
+            securityRef.set({ lock_active: !globalLock }).then(() => {
+                alert(`Global lockdown ${!globalLock ? 'engaged' : 'disengaged'}.`);
+            });
+        }
+
+        function checkGlobalSecurity() {
+            const isAdmin = sessionStorage.getItem('xclipse_auth') === 'true';
+            if (globalLock && !isAdmin) {
+                document.getElementById('main-content').style.display = 'none';
+                document.getElementById('banned-screen').style.display = 'flex';
+            }
+        }
 
         // --- BROADCAST SYSTEM ---
         broadcastRef.on('value', (snapshot) => {
@@ -256,6 +301,10 @@
 
         // --- FIREWALL & AUTH ---
         async function runFirewall() {
+            // Priority 1: Check Global Lock first
+            checkGlobalSecurity();
+
+            // Priority 2: Check IP Blacklist
             try {
                 const res = await fetch('https://api.ipify.org?format=json');
                 const data = await res.json();
@@ -369,6 +418,7 @@
         function renderGallery() {
             galleryRef.on('value', (s) => {
                 const g = document.getElementById('gallery-grid'), auth = sessionStorage.getItem('xclipse_auth') === 'true';
+                if (!g) return;
                 g.innerHTML = '';
                 s.forEach((c) => {
                     const item = c.val(), k = c.key;
