@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Login | Xclipse Studio</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #1a1a1a; color: white; }
+        .login-card { background: #2a2a2a; padding: 2rem; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .btn-roblox { background-color: #0084ff; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; transition: background 0.3s; }
+        .btn-roblox:hover { background-color: #0066cc; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h2>XCLIPSE STUDIO</h2>
+        <p>Access your account via Roblox</p>
+        <button id="loginBtn" class="btn-roblox">Login with Roblox</button>
+    </div>
+
+    <script>
+        const CLIENT_ID = "8889970521921216845";
+        // This MUST match exactly what you registered in the Roblox Creator Dashboard
+        const REDIRECT_URI = "https://your-website.com/callback"; 
+        const SCOPES = "openid profile"; // Standard scopes for identity
+
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            // 1. Generate security strings to prevent CSRF and Replay attacks
+            const state = btoa(Math.random().toString()).substring(0, 16);
+            const nonce = btoa(Math.random().toString()).substring(0, 16);
+
+            // 2. Store state in localStorage to verify it when the user returns
+            localStorage.setItem('oauth_state', state);
+
+            // 3. Construct the Authorization URL
+            const authUrl = new URL("https://apis.roblox.com/oauth/v1/authorize");
+            authUrl.searchParams.append("client_id", CLIENT_ID);
+            authUrl.searchParams.append("redirect_uri", REDIRECT_URI);
+            authUrl.searchParams.append("scope", SCOPES);
+            authUrl.searchParams.append("response_type", "code");
+            authUrl.searchParams.append("state", state);
+            authUrl.searchParams.append("nonce", nonce);
+
+            // 4. Redirect the user
+            window.location.href = authUrl.toString();
+        });
+    </script>
+</body>
+</html>
