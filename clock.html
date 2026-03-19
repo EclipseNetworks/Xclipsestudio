@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xclipse Studio | Time-Sync Engine</title>
+    <title>Xclipse Studio | Temporal Engine</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -14,7 +14,6 @@
           extend: {
             colors: {
               primary: '#ec4899', 
-              secondary: '#a855f7',
               dark: '#050811'
             },
             fontFamily: { 
@@ -47,27 +46,26 @@
         background: rgba(255, 255, 255, 0.01);
         backdrop-filter: blur(40px);
         border: 1px solid rgba(255, 255, 255, 0.05);
-        transition: 0.6s var(--transition-fluid);
+        transition: 0.8s var(--transition-fluid);
       }
 
       .glass-card:hover {
         border-color: rgba(236, 72, 153, 0.4);
-        transform: translateY(-5px);
         background: rgba(255, 255, 255, 0.02);
+        box-shadow: 0 0 80px rgba(236, 72, 153, 0.05);
       }
 
       .clock-text {
         font-variant-numeric: tabular-nums;
         text-shadow: 0 0 30px rgba(236, 72, 153, 0.2);
-        transition: text-shadow 0.5s ease;
       }
 
       .ampm {
         font-size: 0.25em;
         vertical-align: middle;
-        margin-left: 10px;
+        margin-left: 15px;
         opacity: 0.6;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.15em;
       }
 
       .no-select { user-select: none; }
@@ -78,45 +76,30 @@
     <canvas id="bg-canvas"></canvas>
     <div class="mesh-gradient" id="mesh"></div>
 
-    <div class="w-full max-w-6xl px-6 relative z-10">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="w-full max-w-4xl px-6 relative z-10">
+        
+        <div class="glass-card p-12 md:p-20 rounded-[4rem] text-center relative overflow-hidden group mx-auto">
+            <div class="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-3">
+                <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+                <span class="text-[9px] font-black uppercase tracking-[0.5em] text-gray-400">Live ACDT Signal</span>
+            </div>
             
-            <div class="glass-card p-10 md:p-14 rounded-[3rem] text-center relative overflow-hidden group">
-                <div class="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2">
-                    <span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
-                    <span class="text-[8px] font-black uppercase tracking-[0.4em] text-gray-500">Live ACDT</span>
-                </div>
-                
-                <h3 class="text-primary font-display text-[10px] tracking-[0.5em] uppercase mt-4 mb-8 italic opacity-80">Bordertown HQ</h3>
-                
-                <div id="bt-container" class="clock-text text-5xl md:text-7xl lg:text-8xl font-black italic tracking-tighter leading-none flex items-center justify-center">
-                    <span id="bt-time">00:00:00</span>
-                    <span id="bt-ampm" class="ampm font-display">--</span>
-                </div>
-                
-                <p class="mt-8 text-[9px] text-gray-600 uppercase font-black tracking-[0.4em]">South Australia</p>
+            <h3 class="text-primary font-display text-[11px] tracking-[0.7em] uppercase mt-6 mb-12 italic opacity-70">Bordertown HQ</h3>
+            
+            <div id="bt-container" class="clock-text text-6xl md:text-9xl font-black italic tracking-tighter leading-none flex items-center justify-center">
+                <span id="bt-time">00:00:00</span>
+                <span id="bt-ampm" class="ampm font-display">--</span>
             </div>
-
-            <div class="glass-card p-10 md:p-14 rounded-[3rem] text-center relative overflow-hidden group">
-                <div class="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2">
-                    <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
-                    <span class="text-[8px] font-black uppercase tracking-[0.4em] text-gray-500">Live AEST</span>
-                </div>
-
-                <h3 class="text-secondary font-display text-[10px] tracking-[0.5em] uppercase mt-4 mb-8 italic opacity-80">Gold Coast Distro</h3>
-                
-                <div id="gc-container" class="clock-text text-5xl md:text-7xl lg:text-8xl font-black italic tracking-tighter leading-none flex items-center justify-center" style="text-shadow: 0 0 30px rgba(168, 85, 247, 0.2);">
-                    <span id="gc-time">00:00:00</span>
-                    <span id="gc-ampm" class="ampm font-display text-secondary">--</span>
-                </div>
-                
-                <p class="mt-8 text-[9px] text-gray-600 uppercase font-black tracking-[0.4em]">Queensland</p>
+            
+            <div class="mt-12 flex justify-center gap-8 opacity-40">
+                <div class="h-[1px] w-12 bg-gradient-to-r from-transparent to-primary my-auto"></div>
+                <p class="text-[10px] text-gray-500 uppercase font-black tracking-[0.6em]">South Australia</p>
+                <div class="h-[1px] w-12 bg-gradient-to-l from-transparent to-primary my-auto"></div>
             </div>
-
         </div>
 
-        <div class="mt-12 text-center opacity-30">
-            <p class="font-display text-[8px] tracking-[1.2em] uppercase italic">Xclipse Studio | Temporal Engine 2.0</p>
+        <div class="mt-16 text-center opacity-25">
+            <p class="font-display text-[9px] tracking-[1.5em] uppercase italic">Xclipse Studio | Temporal Engine 2.0</p>
         </div>
     </div>
 
@@ -143,8 +126,8 @@
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 1.5 + 0.5;
-                this.speedY = Math.random() * -0.3 - 0.1;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedY = Math.random() * -0.4 - 0.1;
                 this.opacity = Math.random() * 0.4;
             }
             update() {
@@ -161,7 +144,7 @@
 
         function initParticles() {
             particles = [];
-            for (let i = 0; i < 60; i++) particles.push(new Particle());
+            for (let i = 0; i < 80; i++) particles.push(new Particle());
         }
 
         function animate() {
@@ -170,44 +153,34 @@
             requestAnimationFrame(animate);
         }
 
-        // 12-HOUR FORMATTING ENGINE
-        function updateStudioClocks() {
+        // CLOCK ENGINE
+        function updateStudioClock() {
             const now = new Date();
-            
-            // Format options for 12-hour time
             const options = { 
                 hour: 'numeric', 
                 minute: '2-digit', 
                 second: '2-digit', 
-                hour12: true 
+                hour12: true,
+                timeZone: 'Australia/Adelaide'
             };
 
-            const btString = now.toLocaleTimeString('en-AU', { ...options, timeZone: 'Australia/Adelaide' });
-            const gcString = now.toLocaleTimeString('en-AU', { ...options, timeZone: 'Australia/Brisbane' });
-
-            // Split the time from the AM/PM part
-            const formatTime = (str, timeId, ampmId) => {
-                const parts = str.split(' '); // ["10:30:05", "pm"]
-                document.getElementById(timeId).innerText = parts[0];
-                document.getElementById(ampmId).innerText = parts[1].toUpperCase();
-            };
-
-            formatTime(btString, 'bt-time', 'bt-ampm');
-            formatTime(gcString, 'gc-time', 'gc-ampm');
+            const timeString = now.toLocaleTimeString('en-AU', options);
+            const parts = timeString.split(' '); 
             
-            // Reactive pulse effect on the container every second
-            const containers = document.querySelectorAll('.clock-text');
-            containers.forEach(el => {
-                el.style.textShadow = `0 0 ${20 + Math.random() * 20}px rgba(236, 72, 153, 0.4)`;
-            });
+            document.getElementById('bt-time').innerText = parts[0];
+            document.getElementById('bt-ampm').innerText = parts[1].toUpperCase();
+
+            // Glow reaction
+            const clock = document.querySelector('.clock-text');
+            clock.style.textShadow = `0 0 ${25 + Math.random() * 15}px rgba(236, 72, 153, 0.4)`;
         }
 
         window.addEventListener('resize', resize);
         resize();
         initParticles();
         animate();
-        setInterval(updateStudioClocks, 1000);
-        updateStudioClocks();
+        setInterval(updateStudioClock, 1000);
+        updateStudioClock();
     </script>
 </body>
 </html>
