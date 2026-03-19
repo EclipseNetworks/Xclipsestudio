@@ -26,35 +26,35 @@
     </script>
 
     <style>
-      :root {
-        --mouse-x: 50%;
-        --mouse-y: 50%;
-        --tilt-x: 0deg;
-        --tilt-y: 0deg;
-      }
+      body { background: #050811; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: white; }
 
-      body { background: #050811; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: white; perspective: 1000px; }
-
+      /* AUTOMATED MESH BACKGROUND */
       .mesh-gradient {
         position: fixed; inset: 0; z-index: -1;
-        background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(236, 72, 153, 0.18) 0%, rgba(5, 8, 17, 1) 45%), 
-                    radial-gradient(circle at 50% 50%, #0d1226 0%, #050811 100%);
+        background: radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.12) 0%, rgba(5, 8, 17, 1) 60%), 
+                    radial-gradient(circle at 20% 30%, #0d1226 0%, #050811 100%);
+        animation: meshFlow 20s ease-in-out infinite alternate;
+      }
+
+      @keyframes meshFlow {
+        0% { transform: scale(1) translate(0, 0); }
+        100% { transform: scale(1.1) translate(2%, 2%); }
       }
 
       #bg-canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+
+      /* FLOATING ANIMATION FOR THE CARD */
+      @keyframes floatCard {
+        0%, 100% { transform: translateY(0) rotateX(2deg); }
+        50% { transform: translateY(-20px) rotateX(-2deg); }
+      }
 
       .glass-card {
         background: rgba(255, 255, 255, 0.01);
         backdrop-filter: blur(50px);
         border: 1px solid rgba(255, 255, 255, 0.05);
-        transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x));
-        transition: transform 0.1s ease-out, border-color 0.6s ease;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      }
-
-      .glass-card:hover {
-        border-color: rgba(236, 72, 153, 0.5);
-        background: rgba(255, 255, 255, 0.02);
+        animation: floatCard 8s ease-in-out infinite;
+        box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.7);
       }
 
       .clock-text {
@@ -63,11 +63,11 @@
         transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       }
 
-      /* Second-by-second Pulse */
+      /* AUTOMATED TICK PULSE */
       .tick-pulse {
-        transform: scale(1.02);
-        text-shadow: 0 0 60px rgba(236, 72, 153, 0.6);
-        filter: brightness(1.2);
+        transform: scale(1.03);
+        text-shadow: 0 0 70px rgba(236, 72, 153, 0.7);
+        filter: brightness(1.25);
       }
 
       .ampm {
@@ -84,16 +84,16 @@
 <body class="no-select">
 
     <canvas id="bg-canvas"></canvas>
-    <div class="mesh-gradient" id="mesh"></div>
+    <div class="mesh-gradient"></div>
 
     <div class="w-full max-w-4xl px-6 relative z-10">
         
-        <div id="main-card" class="glass-card p-12 md:p-24 rounded-[5rem] text-center relative overflow-hidden mx-auto">
+        <div class="glass-card p-12 md:p-24 rounded-[5rem] text-center relative overflow-hidden mx-auto">
             <div class="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]"></div>
 
             <div class="absolute top-10 left-1/2 -translate-x-1/2 flex items-center gap-3">
                 <span class="w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
-                <span class="text-[10px] font-black uppercase tracking-[0.6em] text-gray-400">Sync Active</span>
+                <span class="text-[10px] font-black uppercase tracking-[0.6em] text-gray-400">Broadcasting Sync</span>
             </div>
             
             <h3 class="text-primary font-display text-[12px] tracking-[0.8em] uppercase mt-4 mb-16 italic opacity-80">Bordertown HQ</h3>
@@ -116,29 +116,10 @@
     </div>
 
     <script>
-        const card = document.getElementById('main-card');
-        
-        // 3D TILT & MOUSE TRACKING
-        document.addEventListener('mousemove', e => {
-            const x = (e.clientX / window.innerWidth) * 100;
-            const y = (e.clientY / window.innerHeight) * 100;
-            document.documentElement.style.setProperty('--mouse-x', `${x}%`);
-            document.documentElement.style.setProperty('--mouse-y', `${y}%`);
-
-            // Calculate tilt
-            const xAxis = (window.innerWidth / 2 - e.clientX) / 25;
-            const yAxis = (window.innerHeight / 2 - e.clientY) / 25;
-            document.documentElement.style.setProperty('--tilt-x', `${-xAxis}deg`);
-            document.documentElement.style.setProperty('--tilt-y', `${yAxis}deg`);
-        });
-
-        // PARTICLE ENGINE (Mouse-Repelling)
+        // BACKGROUND PARTICLE ENGINE (AUTOMATED DRIFT)
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
-        let mouse = { x: null, y: null };
-
-        window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
         function resize() {
             canvas.width = window.innerWidth;
@@ -150,37 +131,18 @@
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
                 this.size = Math.random() * 2 + 0.5;
-                this.baseX = this.x;
-                this.baseY = this.y;
-                this.density = (Math.random() * 30) + 1;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.opacity = Math.random() * 0.4;
             }
             update() {
-                let dx = mouse.x - this.x;
-                let dy = mouse.y - this.y;
-                let distance = Math.sqrt(dx * dx + dy * dy);
-                let forceDirectionX = dx / distance;
-                let forceDirectionY = dy / distance;
-                let maxDistance = 150;
-                let force = (maxDistance - distance) / maxDistance;
-                let directionX = forceDirectionX * force * this.density;
-                let directionY = forceDirectionY * force * this.density;
-
-                if (distance < maxDistance) {
-                    this.x -= directionX;
-                    this.y -= directionY;
-                } else {
-                    if (this.x !== this.baseX) {
-                        let dx = this.x - this.baseX;
-                        this.x -= dx / 15;
-                    }
-                    if (this.y !== this.baseY) {
-                        let dy = this.y - this.baseY;
-                        this.y -= dy / 15;
-                    }
-                }
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
             }
             draw() {
-                ctx.fillStyle = 'rgba(236, 72, 153, 0.4)';
+                ctx.fillStyle = `rgba(236, 72, 153, ${this.opacity})`;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
@@ -189,7 +151,7 @@
 
         function initParticles() {
             particles = [];
-            for (let i = 0; i < 120; i++) particles.push(new Particle());
+            for (let i = 0; i < 100; i++) particles.push(new Particle());
         }
 
         function animate() {
@@ -212,7 +174,7 @@
             document.getElementById('bt-time').innerText = parts[0];
             document.getElementById('bt-ampm').innerText = parts[1].toUpperCase();
 
-            // Trigger reactive visual pulse on every second
+            // Automated reactive pulse every second
             clockEl.classList.add('tick-pulse');
             setTimeout(() => clockEl.classList.remove('tick-pulse'), 150);
         }
