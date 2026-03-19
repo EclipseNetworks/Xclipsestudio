@@ -185,6 +185,41 @@
         animate();
         setInterval(updateStudioClock, 1000);
         updateStudioClock();
+
+        // --- GITHUB AUTO-REFRESH ENGINE ---
+let currentVersion = null;
+
+async function syncWithGitHub() {
+    try {
+        // Fetch the headers of the current page
+        const response = await fetch(window.location.href, { method: 'HEAD', cache: 'no-cache' });
+        
+        // The ETag or Last-Modified header changes every time you push to GitHub
+        const newVersion = response.headers.get('ETag') || response.headers.get('Last-Modified');
+
+        if (currentVersion && newVersion !== currentVersion) {
+            console.log("Xclipse Studio: Update detected. Syncing...");
+            
+            // Subtle fade out before refresh for a cleaner "studio" look
+            document.body.style.transition = "opacity 1s ease";
+            document.body.style.opacity = "0";
+            
+            setTimeout(() => {
+                window.location.reload(true); // Force reload from server, not cache
+            }, 1000);
+        }
+        
+        currentVersion = newVersion;
+    } catch (err) {
+        // Silently fail if there's a connection blip
+    }
+}
+
+// Check for new GitHub pushes every 30 seconds
+setInterval(syncWithGitHub, 30000);
+
+// Initial check on load
+syncWithGitHub();
     </script>
 </body>
 </html>
