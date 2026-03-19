@@ -29,14 +29,15 @@
       :root {
         --mouse-x: 50%;
         --mouse-y: 50%;
-        --transition-fluid: cubic-bezier(0.16, 1, 0.3, 1);
+        --tilt-x: 0deg;
+        --tilt-y: 0deg;
       }
 
-      body { background: #050811; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: white; }
+      body { background: #050811; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: white; perspective: 1000px; }
 
       .mesh-gradient {
         position: fixed; inset: 0; z-index: -1;
-        background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(236, 72, 153, 0.15) 0%, rgba(5, 8, 17, 1) 50%), 
+        background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(236, 72, 153, 0.18) 0%, rgba(5, 8, 17, 1) 45%), 
                     radial-gradient(circle at 50% 50%, #0d1226 0%, #050811 100%);
       }
 
@@ -44,28 +45,37 @@
 
       .glass-card {
         background: rgba(255, 255, 255, 0.01);
-        backdrop-filter: blur(40px);
+        backdrop-filter: blur(50px);
         border: 1px solid rgba(255, 255, 255, 0.05);
-        transition: 0.8s var(--transition-fluid);
+        transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x));
+        transition: transform 0.1s ease-out, border-color 0.6s ease;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
       }
 
       .glass-card:hover {
-        border-color: rgba(236, 72, 153, 0.4);
+        border-color: rgba(236, 72, 153, 0.5);
         background: rgba(255, 255, 255, 0.02);
-        box-shadow: 0 0 80px rgba(236, 72, 153, 0.05);
       }
 
       .clock-text {
         font-variant-numeric: tabular-nums;
-        text-shadow: 0 0 30px rgba(236, 72, 153, 0.2);
+        text-shadow: 0 0 40px rgba(236, 72, 153, 0.3);
+        transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      /* Second-by-second Pulse */
+      .tick-pulse {
+        transform: scale(1.02);
+        text-shadow: 0 0 60px rgba(236, 72, 153, 0.6);
+        filter: brightness(1.2);
       }
 
       .ampm {
-        font-size: 0.25em;
+        font-size: 0.22em;
         vertical-align: middle;
         margin-left: 15px;
-        opacity: 0.6;
-        letter-spacing: 0.15em;
+        opacity: 0.5;
+        letter-spacing: 0.2em;
       }
 
       .no-select { user-select: none; }
@@ -78,44 +88,57 @@
 
     <div class="w-full max-w-4xl px-6 relative z-10">
         
-        <div class="glass-card p-12 md:p-20 rounded-[4rem] text-center relative overflow-hidden group mx-auto">
-            <div class="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-3">
-                <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
-                <span class="text-[9px] font-black uppercase tracking-[0.5em] text-gray-400">Live ACDT Signal</span>
+        <div id="main-card" class="glass-card p-12 md:p-24 rounded-[5rem] text-center relative overflow-hidden mx-auto">
+            <div class="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]"></div>
+
+            <div class="absolute top-10 left-1/2 -translate-x-1/2 flex items-center gap-3">
+                <span class="w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
+                <span class="text-[10px] font-black uppercase tracking-[0.6em] text-gray-400">Sync Active</span>
             </div>
             
-            <h3 class="text-primary font-display text-[11px] tracking-[0.7em] uppercase mt-6 mb-12 italic opacity-70">Bordertown HQ</h3>
+            <h3 class="text-primary font-display text-[12px] tracking-[0.8em] uppercase mt-4 mb-16 italic opacity-80">Bordertown HQ</h3>
             
-            <div id="bt-container" class="clock-text text-6xl md:text-9xl font-black italic tracking-tighter leading-none flex items-center justify-center">
+            <div id="bt-container" class="clock-text text-7xl md:text-[10rem] font-black italic tracking-tighter leading-none flex items-center justify-center">
                 <span id="bt-time">00:00:00</span>
                 <span id="bt-ampm" class="ampm font-display">--</span>
             </div>
             
-            <div class="mt-12 flex justify-center gap-8 opacity-40">
-                <div class="h-[1px] w-12 bg-gradient-to-r from-transparent to-primary my-auto"></div>
-                <p class="text-[10px] text-gray-500 uppercase font-black tracking-[0.6em]">South Australia</p>
-                <div class="h-[1px] w-12 bg-gradient-to-l from-transparent to-primary my-auto"></div>
+            <div class="mt-16 flex justify-center items-center gap-10 opacity-30">
+                <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent to-primary max-w-[100px]"></div>
+                <p class="text-[11px] text-gray-400 uppercase font-black tracking-[0.8em]">Australia / Adelaide</p>
+                <div class="h-[1px] flex-1 bg-gradient-to-l from-transparent to-primary max-w-[100px]"></div>
             </div>
         </div>
 
-        <div class="mt-16 text-center opacity-25">
-            <p class="font-display text-[9px] tracking-[1.5em] uppercase italic">Xclipse Studio | Temporal Engine 2.0</p>
+        <div class="mt-20 text-center opacity-20">
+            <p class="font-display text-[10px] tracking-[2em] uppercase italic animate-pulse">Temporal Engine 2.0 // Xclipse Studio</p>
         </div>
     </div>
 
     <script>
-        // MOUSE TRACKING
+        const card = document.getElementById('main-card');
+        
+        // 3D TILT & MOUSE TRACKING
         document.addEventListener('mousemove', e => {
             const x = (e.clientX / window.innerWidth) * 100;
             const y = (e.clientY / window.innerHeight) * 100;
             document.documentElement.style.setProperty('--mouse-x', `${x}%`);
             document.documentElement.style.setProperty('--mouse-y', `${y}%`);
+
+            // Calculate tilt
+            const xAxis = (window.innerWidth / 2 - e.clientX) / 25;
+            const yAxis = (window.innerHeight / 2 - e.clientY) / 25;
+            document.documentElement.style.setProperty('--tilt-x', `${-xAxis}deg`);
+            document.documentElement.style.setProperty('--tilt-y', `${yAxis}deg`);
         });
 
-        // PARTICLE ENGINE
+        // PARTICLE ENGINE (Mouse-Repelling)
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
+        let mouse = { x: null, y: null };
+
+        window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
         function resize() {
             canvas.width = window.innerWidth;
@@ -127,15 +150,37 @@
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
                 this.size = Math.random() * 2 + 0.5;
-                this.speedY = Math.random() * -0.4 - 0.1;
-                this.opacity = Math.random() * 0.4;
+                this.baseX = this.x;
+                this.baseY = this.y;
+                this.density = (Math.random() * 30) + 1;
             }
             update() {
-                this.y += this.speedY;
-                if (this.y < 0) this.y = canvas.height;
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                let forceDirectionX = dx / distance;
+                let forceDirectionY = dy / distance;
+                let maxDistance = 150;
+                let force = (maxDistance - distance) / maxDistance;
+                let directionX = forceDirectionX * force * this.density;
+                let directionY = forceDirectionY * force * this.density;
+
+                if (distance < maxDistance) {
+                    this.x -= directionX;
+                    this.y -= directionY;
+                } else {
+                    if (this.x !== this.baseX) {
+                        let dx = this.x - this.baseX;
+                        this.x -= dx / 15;
+                    }
+                    if (this.y !== this.baseY) {
+                        let dy = this.y - this.baseY;
+                        this.y -= dy / 15;
+                    }
+                }
             }
             draw() {
-                ctx.fillStyle = `rgba(236, 72, 153, ${this.opacity})`;
+                ctx.fillStyle = 'rgba(236, 72, 153, 0.4)';
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
@@ -144,7 +189,7 @@
 
         function initParticles() {
             particles = [];
-            for (let i = 0; i < 80; i++) particles.push(new Particle());
+            for (let i = 0; i < 120; i++) particles.push(new Particle());
         }
 
         function animate() {
@@ -153,26 +198,23 @@
             requestAnimationFrame(animate);
         }
 
-        // CLOCK ENGINE
+        // CLOCK & REACTION ENGINE
         function updateStudioClock() {
             const now = new Date();
-            const options = { 
-                hour: 'numeric', 
-                minute: '2-digit', 
-                second: '2-digit', 
-                hour12: true,
-                timeZone: 'Australia/Adelaide'
-            };
+            const timeString = now.toLocaleTimeString('en-AU', { 
+                hour: 'numeric', minute: '2-digit', second: '2-digit', 
+                hour12: true, timeZone: 'Australia/Adelaide' 
+            });
 
-            const timeString = now.toLocaleTimeString('en-AU', options);
             const parts = timeString.split(' '); 
+            const clockEl = document.getElementById('bt-container');
             
             document.getElementById('bt-time').innerText = parts[0];
             document.getElementById('bt-ampm').innerText = parts[1].toUpperCase();
 
-            // Glow reaction
-            const clock = document.querySelector('.clock-text');
-            clock.style.textShadow = `0 0 ${25 + Math.random() * 15}px rgba(236, 72, 153, 0.4)`;
+            // Trigger reactive visual pulse on every second
+            clockEl.classList.add('tick-pulse');
+            setTimeout(() => clockEl.classList.remove('tick-pulse'), 150);
         }
 
         window.addEventListener('resize', resize);
