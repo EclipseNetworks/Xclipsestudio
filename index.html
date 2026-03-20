@@ -6,281 +6,124 @@
     <title>★》 XCLIPSE STUDIO | OFFICIAL《★</title>
     
     <link rel="icon" type="image/png" href="logo.png">    
-    <meta name="description" content="Xclipse Studio Official. Advanced Hoodtrap distribution and mastering portal.">
-
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Montserrat:wght@100;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <style>
+      :root { --primary-glow: #ec4899; }
+      html { background: #050811; cursor: none; scroll-behavior: smooth; }
+      body { color: white; font-family: 'Montserrat', sans-serif; }
+      
+      /* Status Icon Animations */
+      .shield-pulse {
+        box-shadow: 0 0 15px #ec4899;
+        animation: pulse-ring 2s infinite;
+      }
+      @keyframes pulse-ring {
+        0% { transform: scale(0.95); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.7; }
+        100% { transform: scale(0.95); opacity: 1; }
+      }
+
+      #cursor { width: 8px; height: 8px; background: var(--primary-glow); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999999; mix-blend-mode: difference; }
+      .reveal-text { background: linear-gradient(to right, #fff 20%, #ec4899 40%, #ec4899 60%, #fff 80%); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 8s linear infinite; }
+      @keyframes shine { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+    </style>
+  </head>
+
+  <body class="bg-[#050811] no-select">
+    <div id="cursor"></div>
+
+    <div id="status-link" class="fixed top-6 right-6 z-[10001] flex items-center gap-3 bg-black/40 backdrop-blur-md border border-white/5 p-2 px-4 rounded-full transition-all duration-500">
+        <div id="shield-icon-dot" class="w-2 h-2 rounded-full bg-gray-600 transition-all duration-500"></div>
+        <span id="shield-icon-text" class="text-[9px] font-black tracking-[0.3em] uppercase text-white/30 transition-all duration-500">Shield Standby</span>
+    </div>
+
+    <header class="fixed top-0 w-full z-[10000] px-8 py-6 flex justify-between items-center mix-blend-exclusion">
+        <a href="#" class="font-display text-xl font-bold italic uppercase tracking-tighter">
+            XCLIPSE<span class="text-primary">STUDIO</span>
+        </a>
+    </header>
+
+    <main class="min-h-screen flex items-center justify-center pt-20">
+        <div class="text-center">
+            <h1 class="reveal-text text-6xl md:text-[8rem] font-black italic tracking-tighter uppercase leading-none">
+                NETWORK<br>PORTAL
+            </h1>
+        </div>
+    </main>
 
     <script>
       const firebaseConfig = {
         apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
         authDomain: "xclipse-security.firebaseapp.com",
+        databaseURL: "https://xclipse-security-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "xclipse-security",
         storageBucket: "xclipse-security.firebasestorage.app",
         messagingSenderId: "161353959200",
-        appId: "1:161353959200:web:d0b36f7817b31842cff945",
-        databaseURL: "https://xclipse-security-default-rtdb.asia-southeast1.firebasedatabase.app" 
+        appId: "1:161353959200:web:d0b36f7817b31842cff945"
       };
 
       firebase.initializeApp(firebaseConfig);
       const db = firebase.database();
 
-      async function runSecurityGate() {
+      async function initSecurity() {
         try {
           const res = await fetch('https://api.ipify.org?format=json');
           const data = await res.json();
-          // Use dashes to match Admin-C2 format
           const cleanIP = data.ip.replaceAll('.', '-');
 
-          // 1. BLACKLIST CHECK (network/blacklist)
-          db.ref('network/blacklist/' + cleanIP).on('value', (snapshot) => {
-            if (snapshot.exists()) {
-              window.location.href = "/404.html";
-            }
-          });
-
-          // 2. LIVE TRAFFIC (network/traffic)
-          const userRef = db.ref('network/traffic/' + cleanIP);
-          userRef.set({
+          // 1. Traffic Reporting
+          db.ref('network/traffic/' + cleanIP).set({
             ip: data.ip,
-            current_page: window.location.pathname,
-            last_seen: Date.now(),
-            platform: navigator.platform
+            current_page: 'Index Portal',
+            last_seen: Date.now()
           });
-          userRef.onDisconnect().remove();
+          db.ref('network/traffic/' + cleanIP).onDisconnect().remove();
 
-        } catch (e) { console.warn("Security Link: Offline"); }
-      }
-
-      // 3. SHIELD/LOCKDOWN SYNC (network/security_shield)
-      function initLockdownListener() {
-          db.ref('network/security_shield').on('value', (snapshot) => {
-              if (snapshot.val() === 'Active') {
-                  window.location.href = "/404.html";
-              }
+          // 2. Blacklist Listener
+          db.ref('network/blacklist/' + cleanIP).on('value', (snap) => {
+            if (snap.exists()) window.location.href = "/404.html";
           });
-      }
 
-      runSecurityGate();
-      initLockdownListener();
-    </script>
+        } catch (e) { console.warn("Security Offline"); }
 
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: '#ec4899', 
-              secondary: '#a855f7',
-              accent: '#10b981',
-              dark: '#050811',
-              'dark-light': '#0f172a',
-              'glass-border': 'rgba(255, 255, 255, 0.08)'
-            },
-            fontFamily: { 
-                sans: ['Montserrat', 'sans-serif'],
-                display: ['Syncopate', 'sans-serif']
+        // 3. Shield Status & Visual Icon Sync
+        db.ref('network/security_shield').on('value', (snapshot) => {
+            const status = snapshot.val();
+            const dot = document.getElementById('shield-icon-dot');
+            const text = document.getElementById('shield-icon-text');
+            const container = document.getElementById('status-link');
+
+            if (status === 'Active') {
+                // Visual Updates for Icon
+                dot.className = "w-2 h-2 rounded-full bg-pink-500 shield-pulse";
+                text.innerText = "Shield Active";
+                text.className = "text-[9px] font-black tracking-[0.3em] uppercase text-pink-500";
+                container.style.borderColor = "rgba(236, 72, 153, 0.3)";
+                
+                // Functional Redirect
+                setTimeout(() => { window.location.href = "/404.html"; }, 1000);
+            } else {
+                dot.className = "w-2 h-2 rounded-full bg-gray-600";
+                text.innerText = "Shield Standby";
+                text.className = "text-[9px] font-black tracking-[0.3em] uppercase text-white/30";
+                container.style.borderColor = "rgba(255, 255, 255, 0.05)";
             }
-          }
-        }
-      }
-    </script>
-
-    <style>
-      :root {
-        --primary-glow: #ec4899;
-        --secondary-glow: #a855f7;
-        --base-font-size: 13px;
-        --transition-fluid: cubic-bezier(0.4, 0, 0.2, 1);
+        });
       }
 
-      html { 
-        scroll-behavior: smooth; 
-        cursor: none; 
-        overflow-x: hidden; 
-        font-size: var(--base-font-size);
-        background: #050811;
-      }
-      
-      body { color: white; -webkit-font-smoothing: antialiased; }
-
-      @keyframes morphBlob {
-        0% { border-radius: 40% 60% 60% 40% / 70% 30% 70% 30%; transform: scale(1); }
-        50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; transform: scale(1.05); }
-        100% { border-radius: 40% 60% 60% 40% / 70% 30% 70% 30%; transform: scale(1); }
-      }
-      @keyframes floatHeader { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-4px); } }
-      @keyframes floatHero { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-12px) rotate(0.5deg); } }
-      @keyframes shine { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
-
-      .floating-nav { animation: floatHeader 6s ease-in-out infinite; }
-      .floating-hero { animation: floatHero 8s ease-in-out infinite; }
-
-      #cursor { width: 8px; height: 8px; background: var(--primary-glow); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999999; transition: transform 0.08s ease-out; mix-blend-mode: difference; }
-      #cursor-blur { width: 140px; height: 140px; background: rgba(236, 72, 153, 0.08); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999998; filter: blur(45px); transition: transform 0.2s var(--transition-fluid); }
-
-      .mesh-gradient { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(circle at 50% 50%, #0a0d1a 0%, #050811 100%); }
-      .blob { position: absolute; width: 450px; height: 450px; background: rgba(236, 72, 153, 0.04); filter: blur(100px); border-radius: 50%; animation: morphBlob 25s infinite alternate linear; }
-
-      .reveal-text { background: linear-gradient(to right, #fff 20%, #ec4899 40%, #ec4899 60%, #fff 80%); background-size: 200% auto; background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 8s linear infinite; }
-      .glass-card { background: rgba(255, 255, 255, 0.015); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.04); transition: 0.4s var(--transition-fluid); }
-      .glass-card:hover { border-color: rgba(236, 72, 153, 0.25); }
-
-      .music-bar { background: rgba(5, 8, 17, 0.97); backdrop-filter: blur(40px); border-top: 1px solid rgba(236, 72, 153, 0.12); box-shadow: 0 -10px 50px rgba(0,0,0,0.5); }
-      input[type=range] { -webkit-appearance: none; background: rgba(255, 255, 255, 0.05); border-radius: 10px; height: 3px; outline: none; }
-      input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; background: #ec4899; border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px rgba(236, 72, 153, 0.5); border: 1px solid white; }
-
-      .no-select { user-select: none; }
-      ::-webkit-scrollbar { width: 4px; }
-      ::-webkit-scrollbar-thumb { background: #ec4899; border-radius: 10px; }
-    </style>
-  </head>
-
-  <body class="selection:bg-primary selection:text-white pb-28 no-select">
-
-    <div id="cursor"></div>
-    <div id="cursor-blur"></div>
-
-    <div class="mesh-gradient">
-        <div class="blob" style="top: 10%; left: 5%;"></div>
-        <div class="blob" style="bottom: 15%; right: 5%; background: rgba(168, 85, 247, 0.04); animation-delay: -5s;"></div>
-    </div>
-
-    <div class="music-bar fixed bottom-0 left-0 w-full z-[9999999] px-6 py-3 grid grid-cols-1 md:grid-cols-3 items-center gap-6">
-        <div class="flex items-center gap-4">
-            <div class="relative w-11 h-11 rounded-lg overflow-hidden border border-primary/20 group">
-                <img id="player-cover" src="IMG_9564.png" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Cover">
-            </div>
-            <div class="min-w-0">
-                <p id="player-title" class="text-[11px] font-bold truncate uppercase italic text-white mb-0.5">Select Pipeline</p>
-                <p class="text-[8px] text-gray-500 uppercase font-black tracking-widest">Xclipse Studio</p>
-            </div>
-        </div>
-
-        <div class="flex flex-col items-center gap-1.5">
-            <div class="flex items-center gap-6">
-                <select id="track-selector" class="bg-dark/60 border border-white/10 text-[8px] font-black uppercase py-1.5 px-4 rounded-full outline-none focus:border-primary/50 transition cursor-pointer text-gray-400 hover:text-white">
-                    <option value="" disabled selected>DROPS</option>
-                    <option value="stayaway.mp3" data-title="Stay Away" data-cover="StayAway.png">Stay Away (Hoodtrap)</option>
-                </select>
-                <div class="flex items-center gap-4">
-                    <button id="stop-btn" class="text-gray-500 hover:text-white transition"><i class="fas fa-undo-alt text-[9px]"></i></button>
-                    <button id="play-btn" class="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 transition"><i class="fas fa-play text-xs ml-0.5"></i></button>
-                    <button id="mute-btn" class="text-gray-500 hover:text-white transition"><i class="fas fa-volume-up text-xs"></i></button>
-                </div>
-            </div>
-            <div class="flex items-center gap-3 w-full max-w-sm">
-                <span id="current-time" class="text-[8px] font-black font-mono text-primary w-8 text-right">0:00</span>
-                <input type="range" id="progress-slider" value="0" min="0" max="100" class="flex-1 cursor-pointer">
-                <span id="duration-time" class="text-[8px] font-black font-mono text-gray-600 w-8">0:00</span>
-            </div>
-        </div>
-
-        <div class="hidden md:flex items-center justify-end gap-4 px-6">
-            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.75" class="w-20">
-            <span id="vol-display" class="text-[9px] font-black text-primary w-8">75%</span>
-        </div>
-    </div>
-
-    <header class="fixed top-0 w-full z-[10000] px-8 py-6 md:px-14 flex justify-between items-center mix-blend-exclusion floating-nav">
-        <div class="flex items-center gap-4">
-            <a href="#" class="font-display text-lg md:text-xl font-bold tracking-tighter uppercase italic">
-                XCLIPSE<span class="text-primary">STUDIO</span>
-            </a>
-        </div>
-        <nav class="hidden lg:flex items-center gap-12 font-medium text-[9px] uppercase tracking-[0.4em]">
-            <a href="index.html" class="hover:text-primary transition py-1 text-primary">Portal</a>
-            <a href="unreleased.html" class="hover:text-primary transition py-1 text-white">Unreleased</a>
-            <a href="gallery.html" class="hover:text-primary transition py-1 text-white">Gallery</a>
-            <a href="contact.html" class="px-5 py-2 rounded-full border border-primary/50 text-primary bg-primary/5 hover:bg-primary hover:text-white transition-all">Contact</a>
-        </nav>
-    </header>
-
-    <main>
-      <section id="home" class="min-h-screen flex items-center justify-center pt-20 px-6 relative overflow-hidden">
-          <div class="text-center z-10" data-aos="zoom-out" data-aos-duration="1400">
-              <div class="mb-10 relative inline-block group floating-hero">
-                  <img src="IMG_9564.png" class="relative w-64 h-64 md:w-[420px] md:h-[420px] object-cover rounded-[2.5rem] shadow-2xl border border-white/5 group-hover:scale-105 transition-all duration-1000" alt="Hero">
-              </div>
-              <div class="max-w-4xl mx-auto">
-                  <h1 class="reveal-text text-4xl md:text-[8rem] font-black italic tracking-tighter uppercase leading-[0.85] mb-12">THIS IS WHAT<br>YOU CAME FOR</h1>
-              </div>
-          </div>
-      </section>
-    </main>
-
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-          AOS.init({ duration: 1200, once: true });
-          initAudio();
-          initCursor();
-          initSecurityUI();
+      // Cursor Follow Logic
+      document.addEventListener('mousemove', (e) => {
+          const c = document.getElementById('cursor');
+          c.style.transform = `translate3d(${e.clientX - 4}px, ${e.clientY - 4}px, 0)`;
       });
 
-      function initAudio() {
-          const audio = new Audio();
-          const pBtn = document.getElementById('play-btn');
-          const tL = document.getElementById('track-selector');
-          const pS = document.getElementById('progress-slider');
-          const vS = document.getElementById('volume-slider');
-          const vT = document.getElementById('vol-display');
-          const cL = document.getElementById('current-time');
-          const dL = document.getElementById('duration-time');
-
-          tL.addEventListener('change', (e) => {
-              const opt = e.target.options[e.target.selectedIndex];
-              audio.src = opt.value;
-              document.getElementById('player-title').innerText = opt.getAttribute('data-title');
-              document.getElementById('player-cover').src = opt.getAttribute('data-cover');
-              audio.play();
-              pBtn.innerHTML = '<i class="fas fa-pause text-xs"></i>';
-          });
-
-          pBtn.addEventListener('click', () => {
-              if(!audio.src) return;
-              if(audio.paused) { audio.play(); pBtn.innerHTML = '<i class="fas fa-pause text-xs"></i>'; }
-              else { audio.pause(); pBtn.innerHTML = '<i class="fas fa-play text-xs ml-0.5"></i>'; }
-          });
-
-          audio.addEventListener('timeupdate', () => {
-              pS.value = (audio.currentTime / audio.duration) * 100 || 0;
-              let m = Math.floor(audio.currentTime / 60), s = Math.floor(audio.currentTime % 60);
-              cL.innerText = `${m}:${s < 10 ? '0'+s : s}`;
-          });
-
-          audio.addEventListener('loadedmetadata', () => {
-              let m = Math.floor(audio.duration / 60), s = Math.floor(audio.duration % 60);
-              dL.innerText = `${m}:${s < 10 ? '0'+s : s}`;
-          });
-
-          pS.addEventListener('input', () => { audio.currentTime = (pS.value / 100) * audio.duration; });
-          vS.addEventListener('input', (e) => { audio.volume = e.target.value; vT.innerText = `${Math.round(e.target.value * 100)}%`; });
-      }
-
-      function initCursor() {
-          const c = document.getElementById('cursor'), cb = document.getElementById('cursor-blur');
-          document.addEventListener('mousemove', (e) => {
-              window.requestAnimationFrame(() => {
-                  c.style.transform = `translate3d(${e.clientX - 4}px, ${e.clientY - 4}px, 0)`;
-                  cb.style.transform = `translate3d(${e.clientX - 70}px, ${e.clientY - 70}px, 0)`;
-              });
-          });
-      }
-
-      function initSecurityUI() {
-          document.addEventListener('keydown', (e) => {
-              if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
-                  e.preventDefault(); window.location.href = '/404.html';
-              }
-          });
-          document.addEventListener('contextmenu', (e) => e.preventDefault());
-      }
+      window.onload = initSecurity;
     </script>
   </body>
 </html>
