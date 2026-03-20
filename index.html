@@ -17,61 +17,60 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="network-core.js"></script>
 
-    <script>
-      const firebaseConfig = {
-        apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
-        authDomain: "xclipse-security.firebaseapp.com",
-        projectId: "xclipse-security",
-        storageBucket: "xclipse-security.firebasestorage.app",
-        messagingSenderId: "161353959200",
-        appId: "1:161353959200:web:d0b36f7817b31842cff945",
-        databaseURL: "https://xclipse-security-default-rtdb.firebaseio.com" 
-      };
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
+    authDomain: "xclipse-security.firebaseapp.com",
+    projectId: "xclipse-security",
+    storageBucket: "xclipse-security.firebasestorage.app",
+    messagingSenderId: "161353959200",
+    appId: "1:161353959200:web:d0b36f7817b31842cff945",
+    databaseURL: "https://xclipse-security-default-rtdb.asia-southeast1.firebasedatabase.app" 
+  };
 
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-      async function runSecurityGate() {
-        try {
-          const res = await fetch('https://api.ipify.org?format=json');
-          const data = await res.json();
-          const cleanIP = data.ip.replaceAll('.', '_');
+  async function runSecurityGate() {
+    try {
+      const res = await fetch('https://api.ipify.org?format=json');
+      const data = await res.json();
+      // Syncing IP format with Admin-C2 (using dashes instead of underscores)
+      const cleanIP = data.ip.replaceAll('.', '-');
 
-          // 1. INSTANT BAN LISTENER
-          // Forces redirect the moment the IP is added to the blacklist in Firebase
-          db.ref('blacklisted_ips/' + cleanIP).on('value', (snapshot) => {
-            if (snapshot.exists()) {
+      // 1. INSTANT BAN LISTENER (Synced to network/blacklist)
+      db.ref('network/blacklist/' + cleanIP).on('value', (snapshot) => {
+        if (snapshot.exists()) {
+          window.location.href = "/404.html";
+        }
+      });
+
+      // 2. LIVE TRAFFIC REPORTING (Synced to network/traffic)
+      const userRef = db.ref('network/traffic/' + cleanIP);
+      userRef.set({
+        ip: data.ip,
+        current_page: window.location.pathname,
+        last_seen: Date.now(),
+        platform: navigator.platform
+      });
+      userRef.onDisconnect().remove();
+
+    } catch (e) { console.warn("Security Link: Offline Mode"); }
+  }
+
+  // 3. GLOBAL LOCKDOWN LISTENER (Synced to network/security_shield)
+  function initLockdownListener() {
+      db.ref('network/security_shield').on('value', (snapshot) => {
+          // Syncing with Admin-C2 "Active" string status
+          if (snapshot.val() === 'Active') {
               window.location.href = "/404.html";
-            }
-          });
+          }
+      });
+  }
 
-          // 2. LIVE TRAFFIC REPORTING
-          const userRef = db.ref('live_traffic/' + cleanIP);
-          userRef.set({
-            ip: data.ip,
-            page: window.location.pathname,
-            last_seen: Date.now(),
-            platform: navigator.platform
-          });
-          userRef.onDisconnect().remove();
-
-        } catch (e) { console.warn("Security Link: Offline Mode"); }
-      }
-
-      // 3. GLOBAL LOCKDOWN LISTENER
-      // Forces redirect for all users if lockdown_active is toggled to true
-      function initLockdownListener() {
-          db.ref('lockdown_active').on('value', (snapshot) => {
-              if (snapshot.val() === true) {
-                  window.location.href = "/404.html";
-              }
-          });
-      }
-
-      runSecurityGate();
-      initLockdownListener();
-    </script>
-
+  runSecurityGate();
+  initLockdownListener();
+</script>
     <script>
       tailwind.config = {
         theme: {
