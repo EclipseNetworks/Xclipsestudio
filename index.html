@@ -15,62 +15,61 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <script src="network-core.js"></script>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
-    authDomain: "xclipse-security.firebaseapp.com",
-    projectId: "xclipse-security",
-    storageBucket: "xclipse-security.firebasestorage.app",
-    messagingSenderId: "161353959200",
-    appId: "1:161353959200:web:d0b36f7817b31842cff945",
-    databaseURL: "https://xclipse-security-default-rtdb.asia-southeast1.firebasedatabase.app" 
-  };
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
+        authDomain: "xclipse-security.firebaseapp.com",
+        projectId: "xclipse-security",
+        storageBucket: "xclipse-security.firebasestorage.app",
+        messagingSenderId: "161353959200",
+        appId: "1:161353959200:web:d0b36f7817b31842cff945",
+        databaseURL: "https://xclipse-security-default-rtdb.asia-southeast1.firebasedatabase.app" 
+      };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
 
-  async function runSecurityGate() {
-    try {
-      const res = await fetch('https://api.ipify.org?format=json');
-      const data = await res.json();
-      // Syncing IP format with Admin-C2 (using dashes instead of underscores)
-      const cleanIP = data.ip.replaceAll('.', '-');
+      async function runSecurityGate() {
+        try {
+          const res = await fetch('https://api.ipify.org?format=json');
+          const data = await res.json();
+          // Use dashes to match Admin-C2 format
+          const cleanIP = data.ip.replaceAll('.', '-');
 
-      // 1. INSTANT BAN LISTENER (Synced to network/blacklist)
-      db.ref('network/blacklist/' + cleanIP).on('value', (snapshot) => {
-        if (snapshot.exists()) {
-          window.location.href = "/404.html";
-        }
-      });
-
-      // 2. LIVE TRAFFIC REPORTING (Synced to network/traffic)
-      const userRef = db.ref('network/traffic/' + cleanIP);
-      userRef.set({
-        ip: data.ip,
-        current_page: window.location.pathname,
-        last_seen: Date.now(),
-        platform: navigator.platform
-      });
-      userRef.onDisconnect().remove();
-
-    } catch (e) { console.warn("Security Link: Offline Mode"); }
-  }
-
-  // 3. GLOBAL LOCKDOWN LISTENER (Synced to network/security_shield)
-  function initLockdownListener() {
-      db.ref('network/security_shield').on('value', (snapshot) => {
-          // Syncing with Admin-C2 "Active" string status
-          if (snapshot.val() === 'Active') {
+          // 1. BLACKLIST CHECK (network/blacklist)
+          db.ref('network/blacklist/' + cleanIP).on('value', (snapshot) => {
+            if (snapshot.exists()) {
               window.location.href = "/404.html";
-          }
-      });
-  }
+            }
+          });
 
-  runSecurityGate();
-  initLockdownListener();
-</script>
+          // 2. LIVE TRAFFIC (network/traffic)
+          const userRef = db.ref('network/traffic/' + cleanIP);
+          userRef.set({
+            ip: data.ip,
+            current_page: window.location.pathname,
+            last_seen: Date.now(),
+            platform: navigator.platform
+          });
+          userRef.onDisconnect().remove();
+
+        } catch (e) { console.warn("Security Link: Offline"); }
+      }
+
+      // 3. SHIELD/LOCKDOWN SYNC (network/security_shield)
+      function initLockdownListener() {
+          db.ref('network/security_shield').on('value', (snapshot) => {
+              if (snapshot.val() === 'Active') {
+                  window.location.href = "/404.html";
+              }
+          });
+      }
+
+      runSecurityGate();
+      initLockdownListener();
+    </script>
+
     <script>
       tailwind.config = {
         theme: {
@@ -167,7 +166,6 @@
             <div class="flex items-center gap-6">
                 <select id="track-selector" class="bg-dark/60 border border-white/10 text-[8px] font-black uppercase py-1.5 px-4 rounded-full outline-none focus:border-primary/50 transition cursor-pointer text-gray-400 hover:text-white">
                     <option value="" disabled selected>DROPS</option>
-                    <option value="friends1.mp3" data-title="Friends" data-cover="Tell me we weren't just friends - Hoodtrap.png">Friends (Unavailable)</option>
                     <option value="stayaway.mp3" data-title="Stay Away" data-cover="StayAway.png">Stay Away (Hoodtrap)</option>
                 </select>
                 <div class="flex items-center gap-4">
@@ -213,19 +211,6 @@
                   <h1 class="reveal-text text-4xl md:text-[8rem] font-black italic tracking-tighter uppercase leading-[0.85] mb-12">THIS IS WHAT<br>YOU CAME FOR</h1>
               </div>
           </div>
-      </section>
-
-      <section id="upcoming" class="py-32 relative">
-        <div class="max-w-6xl mx-auto px-8">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-16">
-            <div class="group relative glass-card rounded-[3.5rem] border border-white/5 overflow-hidden p-6">
-                <div class="overflow-hidden rounded-[2.5rem] relative aspect-square">
-                    <img src="StayAway.png" class="w-full h-full object-cover transition-all duration-1000 grayscale group-hover:grayscale-0" alt="Product">
-                </div>
-                <h3 class="mt-8 text-2xl font-bold italic uppercase group-hover:text-primary transition-colors">Stay Away</h3>
-            </div>
-          </div>
-        </div>
       </section>
     </main>
 
