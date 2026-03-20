@@ -3,109 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>XCLIPSE | COMMAND CENTER</title>
+    <title>XCLIPSE | NEURAL UPLINK</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <script src="network-core.js"></script>
-
+    
     <style>
-        body { background: #010206; color: white; font-family: 'JetBrains Mono', monospace; overflow-x: hidden; }
-        .glass { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
-        .btn-action { transition: all 0.3s; text-transform: uppercase; font-weight: 800; font-size: 10px; letter-spacing: 2px; border-radius: 0; }
-        .btn-action:hover { background: #ec4899; color: white; transform: translateY(-2px); }
-        input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px; font-size: 14px; outline: none; width: 100%; color: white; }
-        input:focus { border-color: #ec4899; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #ec4899; }
+        :root {
+            --neon-pink: #ec4899;
+            --deep-obsidian: #02040a;
+            --glass-border: rgba(236, 72, 153, 0.2);
+        }
+
+        body { 
+            background: var(--deep-obsidian); 
+            color: white; 
+            font-family: 'JetBrains Mono', monospace; 
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.05) 0%, transparent 50%),
+                linear-gradient(rgba(5, 8, 17, 0.8) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(5, 8, 17, 0.8) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+        }
+
+        .heavenly-glass { 
+            background: rgba(255, 255, 255, 0.01); 
+            border: 1px solid var(--glass-border); 
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        .shimmer-text {
+            background: linear-gradient(90deg, #fff, var(--neon-pink), #fff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            to { background-position: 200% center; }
+        }
+
+        .btn-neon {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid var(--neon-pink);
+            background: transparent;
+            color: var(--neon-pink);
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 4px;
+        }
+
+        .btn-neon:hover {
+            background: var(--neon-pink);
+            color: white;
+            box-shadow: 0 0 30px var(--neon-pink);
+            transform: scale(1.02);
+        }
+
+        input {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--glass-border);
+            padding: 16px;
+            font-size: 12px;
+            letter-spacing: 2px;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.2);
+            outline: none;
+        }
+
+        .status-dot {
+            height: 8px;
+            width: 8px;
+            background-color: var(--neon-pink);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-thumb { background: var(--neon-pink); }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-6 md:p-12">
 
-    <div id="login-screen" class="fixed inset-0 z-[100] bg-[#010206] flex items-center justify-center">
-        <div class="text-center p-8 md:p-12 glass border-pink-500/30 w-full max-w-md mx-4">
-            <h2 class="font-display text-pink-500 text-xl mb-6 tracking-widest uppercase italic">XCLIPSE_AUTH</h2>
-            <input type="password" id="master-pass" placeholder="ENTER MASTER KEY" class="text-center mb-4">
-            <button onclick="authenticate()" class="w-full btn-action border border-pink-500 text-pink-500 py-4 mt-2">Initialize C2</button>
+    <div id="login-screen" class="fixed inset-0 z-[100] bg-black flex items-center justify-center">
+        <div class="text-center p-10 heavenly-glass max-w-md w-full mx-4">
+            <div class="mb-8">
+                <i class="fas fa-fingerprint text-5xl text-pink-500 mb-4 animate-pulse"></i>
+                <h2 class="font-display text-white text-xl tracking-[0.8em] uppercase italic">XCLIPSE_CORE</h2>
+                <p class="text-[9px] text-pink-500/50 mt-2 tracking-widest">ENCRYPTION LEVEL: SEVEN_HEAVEN</p>
+            </div>
+            <input type="password" id="master-pass" placeholder="DECIPHER KEY" class="text-center mb-6 w-full">
+            <button onclick="authenticate()" class="w-full btn-neon py-5 text-xs">Establish Link</button>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto">
-        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-white/10 pb-6 gap-4">
-            <div>
-                <h1 class="font-display text-2xl italic uppercase">XCLIPSE <span class="text-pink-500">C2</span></h1>
-                <p class="text-[10px] text-white/40 tracking-[0.5em]">COMMAND & CONTROL INTERFACE v4.5</p>
+    <div class="max-w-7xl mx-auto opacity-0 transition-opacity duration-1000" id="main-content">
+        <header class="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-pink-500/10 pb-8">
+            <div class="w-full">
+                <h1 class="font-display text-4xl italic uppercase shimmer-text">XCLIPSE <span class="text-white">C2</span></h1>
+                <div class="flex items-center gap-4 mt-2">
+                    <p class="text-[10px] text-white/30 tracking-[0.6em]">NETWORK STATUS:</p>
+                    <span class="status-dot animate-ping"></span>
+                    <p id="uplink-status" class="text-[10px] text-pink-500 font-bold uppercase">Uplink Stable</p>
+                </div>
             </div>
-            <div class="text-left md:text-right">
-                <p id="uplink-status" class="text-[10px] text-pink-500 font-bold uppercase animate-pulse">● System Uplink Active</p>
-                <p id="ip-display" class="text-[9px] text-white/20 uppercase">NODE_IP: FETCHING...</p>
+            <div class="mt-6 md:mt-0 text-right font-mono">
+                <p id="ip-display" class="text-[10px] text-white/40 tracking-widest">NODE_ADDR: 0.0.0.0</p>
+                <p class="text-[10px] text-pink-500/30">AES-256 GCM ENCRYPTED</p>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 md:gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <div class="lg:col-span-1 space-y-6">
-                <div class="glass p-6 border-red-500/30 bg-red-500/5">
-                    <h3 class="text-xs font-bold mb-4 text-red-500 uppercase tracking-widest border-b border-red-500/10 pb-2">Emergency</h3>
-                    <button id="lockdown-btn" onclick="toggleLockdown()" class="w-full py-6 bg-red-600 text-white font-black text-xs tracking-[0.3em] uppercase hover:bg-red-700 transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)]">
-                        Initialize Lockdown
+            <div class="lg:col-span-4 space-y-8">
+                <div class="heavenly-glass p-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-2 opacity-10">
+                        <i class="fas fa-shield-alt text-6xl"></i>
+                    </div>
+                    <h3 class="text-[11px] font-bold mb-6 text-pink-500 uppercase tracking-[0.4em]">System Shield</h3>
+                    <button id="lockdown-btn" onclick="toggleLockdown()" class="w-full btn-neon py-6 text-[10px]">
+                        Syncing Protocols...
                     </button>
+                    <p class="text-[8px] text-white/20 mt-4 text-center tracking-widest italic">ROOT ACCESS REQUIRED FOR OVERRIDE</p>
                 </div>
 
-                <div class="glass p-6">
-                    <h3 class="text-xs font-bold mb-4 text-pink-500 uppercase tracking-widest border-b border-white/5 pb-2 italic">Live Traffic</h3>
-                    <div id="live-visitors" class="space-y-3 max-h-64 overflow-y-auto">
-                        <p class="text-[10px] text-white/20 italic">No active sessions...</p>
-                    </div>
+                <div class="heavenly-glass p-8">
+                    <h3 class="text-[11px] font-bold mb-6 text-pink-500 uppercase tracking-[0.4em]">Neural Traffic</h3>
+                    <div id="live-visitors" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                        </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-3 space-y-6 md:space-y-8">
-                
-                <div class="glass p-6 md:p-8 border-indigo-500/20 bg-indigo-500/5">
-                    <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-2">
-                        <i class="fab fa-discord text-indigo-400 text-lg"></i>
-                        <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-widest">Discord Broadcast</h3>
+            <div class="lg:col-span-8 space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="heavenly-glass p-8">
+                        <h3 class="text-[11px] font-bold mb-6 text-pink-500 uppercase tracking-[0.4em]">Broadcast</h3>
+                        <div class="space-y-4">
+                            <input type="text" id="marquee-msg" placeholder="SYSTEM_MESSAGE_STRING..." class="w-full">
+                            <button onclick="updateMarquee()" class="w-full btn-neon py-4 text-[9px]">Transmit</button>
+                        </div>
                     </div>
-                    <div class="flex flex-col md:flex-row gap-4">
-                        <input type="text" id="discord-msg" placeholder="ENTER SYSTEM ALERT MESSAGE..." class="flex-1">
-                        <button onclick="sendDiscordAlert()" class="btn-action bg-indigo-600 text-white px-8 py-4 hover:bg-indigo-500">Transmit</button>
+                    <div class="heavenly-glass p-8">
+                        <h3 class="text-[11px] font-bold mb-6 text-red-500 uppercase tracking-[0.4em]">Blacklist</h3>
+                        <div class="space-y-4">
+                            <input type="text" id="target-ip" placeholder="TARGET_ADDR (0.0.0.0)" class="w-full">
+                            <button onclick="banIP()" class="w-full py-4 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition text-[9px] font-bold tracking-[0.3em]">Excommunicate</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="glass p-6 md:p-8">
-                    <h3 class="text-xs font-bold mb-6 text-pink-500 uppercase tracking-widest border-b border-white/5 pb-2">IP Blacklist Management</h3>
-                    <div class="flex flex-col md:flex-row gap-4 mb-8">
-                        <input type="text" id="target-ip" placeholder="0.0.0.0" class="flex-1">
-                        <button onclick="banIP()" class="btn-action bg-white text-black px-10 py-4 hover:bg-red-600 hover:text-white">Execute Ban</button>
+                <div class="heavenly-glass p-8">
+                    <div class="flex justify-between items-center mb-6 border-b border-pink-500/10 pb-4">
+                        <h3 class="text-[11px] font-bold text-white/60 uppercase tracking-[0.4em]">System Execution Logs</h3>
+                        <span class="text-[9px] text-pink-500 font-mono">X-OS v2.0.26</span>
                     </div>
-                    <div id="ban-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                    <div id="logs" class="h-64 overflow-y-auto text-[10px] space-y-2 font-mono scroll-smooth">
+                        <p class="text-white/20 italic">Initializing encrypted kernel...</p>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                    <div class="glass p-6 bg-black/40">
-                        <h3 class="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">Session Logs</h3>
-                        <div id="logs" class="h-64 overflow-y-auto text-[10px] space-y-2 font-mono"></div>
+                <div id="ban-list" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     </div>
-                    <div class="glass p-6 bg-red-950/10">
-                        <h3 class="text-xs font-bold text-red-500 uppercase tracking-widest mb-4">Ban History</h3>
-                        <div id="history-logs" class="h-64 overflow-y-auto text-[10px] space-y-2 font-mono"></div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURATION
-        const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1482990295569268766/kW5bHJ9azwSfNMVn5m1rSwy-Xu5vYEzuFWLAMji_NuEZ5SOW3UknJqi3A53BQV2eqSlv';
+        // CONFIGURATION - DO NOT MODIFY PATHS
         const firebaseConfig = {
             apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
             authDomain: "xclipse-security.firebaseapp.com",
-            databaseURL: "https://xclipse-security-default-rtdb.firebaseio.com",
+            databaseURL: "https://xclipse-security-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "xclipse-security",
             storageBucket: "xclipse-security.firebasestorage.app",
             messagingSenderId: "161353959200",
@@ -116,114 +198,105 @@
         const db = firebase.database();
 
         function authenticate() {
-            const pass = document.getElementById('master-pass').value;
-            if(pass === 'XCLIPSE') { 
-                document.getElementById('login-screen').classList.add('hidden');
+            if(document.getElementById('master-pass').value === 'XCLIPSE') { 
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-content').style.opacity = '1';
                 initC2();
-                addLog('C2 Terminal Linked Successfully.', 'green');
-            } else { alert('ACCESS_DENIED'); }
+                addLog('>> UPLINK ESTABLISHED: SECURE TUNNEL ACTIVE', 'pink');
+            } else { 
+                addLog('>> CRITICAL_ERROR: UNAUTHORIZED ACCESS ATTEMPT', 'red');
+                alert('ACCESS_DENIED'); 
+            }
         }
 
         function initC2() {
-            // Live Traffic Listener
-            db.ref('live_traffic').on('value', (s) => {
+            // SYNC TRAFFIC
+            db.ref('network/traffic').on('value', (s) => {
                 const container = document.getElementById('live-visitors');
                 container.innerHTML = '';
                 const data = s.val();
-                if(!data) { container.innerHTML = '<p class="text-[10px] text-white/20 italic">No active sessions...</p>'; return; }
+                if(!data) return;
                 Object.keys(data).forEach(id => {
                     const u = data[id];
                     container.innerHTML += `
-                        <div class="p-3 bg-white/5 border-l-2 border-pink-500/50 mb-2">
-                            <p class="text-[10px] font-bold text-pink-400">${u.ip}</p>
-                            <p class="text-[8px] opacity-40 uppercase">${u.platform} | ${u.page}</p>
+                        <div class="p-4 bg-white/5 border-l-2 border-pink-500/30 hover:bg-white/10 transition-all group">
+                            <div class="flex justify-between items-center">
+                                <p class="text-[10px] font-bold text-pink-400 tracking-widest">${id.replaceAll('-', '.')}</p>
+                                <span class="text-[8px] text-white/20 group-hover:text-pink-500 transition-colors">LIVE</span>
+                            </div>
+                            <p class="text-[8px] opacity-40 uppercase mt-1">NODE_LOC: ${u.current_page || 'ROOT'}</p>
                         </div>`;
                 });
             });
 
-            // Blacklist Listener
-            db.ref('blacklisted_ips').on('value', (s) => {
+            // SYNC BLACKLIST
+            db.ref('network/blacklist').on('value', (s) => {
                 const list = document.getElementById('ban-list');
-                const history = document.getElementById('history-logs');
                 list.innerHTML = '';
                 const data = s.val();
                 if(data) {
                     Object.keys(data).forEach(id => {
-                        const ip = id.replaceAll('_', '.');
                         list.innerHTML += `
-                            <div class="flex justify-between items-center bg-red-500/10 border border-red-500/20 p-3">
-                                <span class="text-[10px]">${ip}</span>
-                                <button onclick="revokeBan('${id}')" class="text-[8px] bg-red-500/20 px-2 py-1 hover:bg-red-500 hover:text-white transition">REVOKE</button>
+                            <div class="heavenly-glass p-4 border-red-500/20 flex justify-between items-center bg-red-500/5 animate-pulse">
+                                <span class="text-[9px] font-mono text-red-500">${id.replaceAll('-', '.')}</span>
+                                <button onclick="revokeBan('${id}')" class="text-[8px] text-white/40 hover:text-white">REVOKE</button>
                             </div>`;
                     });
                 }
             });
 
-            // Lockdown Sync
-            db.ref('lockdown_active').on('value', (s) => updateLockdownUI(s.val()));
-        }
-
-        async function sendDiscordAlert() {
-            const msg = document.getElementById('discord-msg').value;
-            if(!msg) return;
-            try {
-                await fetch(DISCORD_WEBHOOK, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: "XCLIPSE MONITOR", content: `📡 **SEC_ALERT**: ${msg}` })
-                });
-                addLog("Broadcast Transmitted.", "green");
-                document.getElementById('discord-msg').value = '';
-            } catch (e) { addLog("Uplink Failed.", "red"); }
-        }
-
-        function toggleLockdown() {
-            db.ref('lockdown_active').once('value', (s) => {
-                const newState = !s.val();
-                db.ref('lockdown_active').set(newState).then(() => {
-                    addLog(newState ? "SITE_LOCKED" : "SITE_RESTORED", newState ? "red" : "green");
-                });
+            // SYNC SHIELD
+            db.ref('network/security_shield').on('value', (s) => {
+                const active = s.val() === 'Active';
+                const btn = document.getElementById('lockdown-btn');
+                btn.innerText = active ? "SHIELD: ENGAGED" : "SHIELD: DISENGAGED";
+                btn.style.borderColor = active ? "var(--neon-pink)" : "rgba(255,255,255,0.1)";
+                btn.style.color = active ? "white" : "rgba(255,255,255,0.3)";
+                btn.style.background = active ? "var(--neon-pink)" : "transparent";
             });
-        }
-
-        function updateLockdownUI(active) {
-            const btn = document.getElementById('lockdown-btn');
-            btn.innerText = active ? "LOCKED DOWN" : "INITIALIZE LOCKDOWN";
-            if(active) {
-                btn.classList.add('bg-white', 'text-red-600');
-                btn.classList.remove('bg-red-600', 'text-white');
-            } else {
-                btn.classList.remove('bg-white', 'text-red-600');
-                btn.classList.add('bg-red-600', 'text-white');
-            }
         }
 
         function banIP() {
             const ip = document.getElementById('target-ip').value;
             if(!ip.includes('.')) return;
-            db.ref('blacklisted_ips/' + ip.replaceAll('.', '_')).set({ 
+            db.ref('network/blacklist/' + ip.replaceAll('.', '-')).set({ 
                 timestamp: Date.now(),
-                reason: 'Manual Admin Ban'
+                status: 'BANNED'
             });
-            addLog(`Blacklisted: ${ip}`, 'red');
+            addLog(`>> SYSTEM_COMMAND: EXCOMMUNICATED NODE [${ip}]`, 'red');
             document.getElementById('target-ip').value = '';
         }
 
         function revokeBan(id) { 
-            db.ref('blacklisted_ips/' + id).remove(); 
-            addLog(`Revoked: ${id.replaceAll('_','.')}`, 'green');
+            db.ref('network/blacklist/' + id).remove(); 
+            addLog(`>> SYSTEM_COMMAND: RESTORED ACCESS TO [${id.replaceAll('-', '.')}]`, 'pink');
+        }
+
+        function toggleLockdown() {
+            db.ref('network/security_shield').once('value', (s) => {
+                const newState = s.val() === 'Active' ? 'Disabled' : 'Active';
+                db.ref('network/security_shield').set(newState);
+                addLog(`>> PROTOCOL_SHIFT: SHIELD SET TO ${newState.toUpperCase()}`, 'pink');
+            });
+        }
+
+        function updateMarquee() {
+            const msg = document.getElementById('marquee-msg').value;
+            if(!msg) return;
+            db.ref('network/global_marquee').set(msg);
+            addLog(`>> BROADCAST_UP: ${msg}`, 'pink');
+            document.getElementById('marquee-msg').value = '';
         }
 
         function addLog(msg, color = 'white') {
             const logEl = document.getElementById('logs');
             const p = document.createElement('p');
-            p.className = `text-${color}-400`;
-            p.innerHTML = `<span class="text-white/20">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+            p.style.color = color === 'pink' ? '#ec4899' : (color === 'red' ? '#ff4444' : 'white');
+            p.innerHTML = `<span style="opacity:0.2;">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
             logEl.prepend(p);
         }
 
-        // Get Dashboard IP
-        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => document.getElementById('ip-display').innerText = `NODE_IP: ${d.ip}`);
+        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => document.getElementById('ip-display').innerText = `NODE_ADDR: ${d.ip}`);
     </script>
 </body>
 </html>
