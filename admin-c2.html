@@ -18,8 +18,11 @@
         .btn-action:hover { background: #ec4899; color: white; transform: translateY(-2px); }
         input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px; font-size: 14px; outline: none; width: 100%; color: white; }
         input:focus { border-color: #ec4899; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #ec4899; }
+        
+        /* Status States */
+        .lockdown-ui-active { border-color: #ef4444 !important; background: rgba(239, 68, 68, 0.05) !important; }
+        .pulse-red { animation: pulse-red 2s infinite; }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -36,7 +39,7 @@
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-white/10 pb-6 gap-4">
             <div>
                 <h1 class="font-display text-2xl italic uppercase">XCLIPSE <span class="text-pink-500">C2</span></h1>
-                <p class="text-[10px] text-white/40 tracking-[0.5em]">COMMAND & CONTROL INTERFACE v4.5</p>
+                <p class="text-[10px] text-white/40 tracking-[0.5em]">COMMAND & CONTROL INTERFACE v4.7</p>
             </div>
             <div class="text-left md:text-right">
                 <p id="uplink-status" class="text-[10px] text-pink-500 font-bold uppercase animate-pulse">● System Uplink Active</p>
@@ -46,35 +49,31 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 md:gap-8">
             <div class="lg:col-span-1 space-y-6">
-                <div class="glass p-6 border-red-500/30 bg-red-500/5">
-                    <h3 class="text-xs font-bold mb-4 text-red-500 uppercase tracking-widest border-b border-red-500/10 pb-2">Emergency</h3>
-                    <button id="lockdown-btn" onclick="toggleLockdown()" class="w-full py-6 bg-red-600 text-white font-black text-xs tracking-[0.3em] uppercase hover:bg-red-700 transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)]">
+                <div id="lockdown-card" class="glass p-6 border-red-500/30 transition-all">
+                    <h3 class="text-xs font-bold mb-4 text-red-500 uppercase tracking-widest border-b border-red-500/10 pb-2">Master Shield</h3>
+                    <button id="lockdown-btn" onclick="toggleLockdown()" class="w-full py-6 bg-red-600 text-white font-black text-xs tracking-[0.3em] uppercase transition-all">
                         Initialize Lockdown
                     </button>
+                    <p id="status-text" class="text-[8px] text-center mt-3 text-white/20 uppercase">Network Status: Nominal</p>
                 </div>
 
                 <div class="glass p-6">
                     <h3 class="text-xs font-bold mb-4 text-pink-500 uppercase tracking-widest border-b border-white/5 pb-2 italic">Live Traffic</h3>
-                    <div id="live-visitors" class="space-y-3 max-h-64 overflow-y-auto">
-                        <p class="text-[10px] text-white/20 italic">No active sessions...</p>
-                    </div>
+                    <div id="live-visitors" class="space-y-3 max-h-96 overflow-y-auto"></div>
                 </div>
             </div>
 
-            <div class="lg:col-span-3 space-y-6 md:space-y-8">
+            <div class="lg:col-span-3 space-y-8">
                 <div class="glass p-6 md:p-8 border-indigo-500/20 bg-indigo-500/5">
-                    <div class="flex items-center gap-3 mb-6 border-b border-white/5 pb-2">
-                        <i class="fab fa-discord text-indigo-400 text-lg"></i>
-                        <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-widest">Global Marquee</h3>
-                    </div>
+                    <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-6">Global Marquee</h3>
                     <div class="flex flex-col md:flex-row gap-4">
-                        <input type="text" id="marquee-msg" placeholder="ENTER GLOBAL MARQUEE MESSAGE..." class="flex-1">
-                        <button onclick="updateMarquee()" class="btn-action bg-indigo-600 text-white px-8 py-4 hover:bg-indigo-500">Update</button>
+                        <input type="text" id="marquee-msg" placeholder="ENTER MESSAGE..." class="flex-1">
+                        <button onclick="updateMarquee()" class="btn-action bg-indigo-600 text-white px-8 py-4">Update</button>
                     </div>
                 </div>
 
                 <div class="glass p-6 md:p-8">
-                    <h3 class="text-xs font-bold mb-6 text-pink-500 uppercase tracking-widest border-b border-white/5 pb-2">IP Blacklist Management</h3>
+                    <h3 class="text-xs font-bold mb-6 text-pink-500 uppercase tracking-widest border-b border-white/5 pb-2">Blacklist Management</h3>
                     <div class="flex flex-col md:flex-row gap-4 mb-8">
                         <input type="text" id="target-ip" placeholder="0.0.0.0" class="flex-1">
                         <button onclick="banIP()" class="btn-action bg-white text-black px-10 py-4 hover:bg-red-600 hover:text-white">Execute Ban</button>
@@ -82,11 +81,9 @@
                     <div id="ban-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                    <div class="glass p-6 bg-black/40">
-                        <h3 class="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">Session Logs</h3>
-                        <div id="logs" class="h-64 overflow-y-auto text-[10px] space-y-2 font-mono"></div>
-                    </div>
+                <div class="glass p-6 bg-black/40">
+                    <h3 class="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">Uplink Logs</h3>
+                    <div id="logs" class="h-48 overflow-y-auto text-[10px] space-y-2 font-mono"></div>
                 </div>
             </div>
         </div>
@@ -107,103 +104,100 @@
         const db = firebase.database();
 
         function authenticate() {
-            const pass = document.getElementById('master-pass').value;
-            if(pass === 'XCLIPSE') { 
+            if(document.getElementById('master-pass').value === 'XCLIPSE') {
                 document.getElementById('login-screen').classList.add('hidden');
                 initC2();
-                addLog('C2 Terminal Linked Successfully.', 'green');
+                addLog('>> SESSION_STARTED: ADMIN_UPLINK_V4.7', 'pink');
             } else { alert('ACCESS_DENIED'); }
         }
 
         function initC2() {
-            // Live Traffic Listener - Synced to network/traffic
+            // Monitor Lockdown State (Sync UI only, NO REDIRECT for Admin)
+            db.ref('network/security_shield').on('value', (s) => {
+                const isActive = s.val() === 'Active';
+                const btn = document.getElementById('lockdown-btn');
+                const card = document.getElementById('lockdown-card');
+                const statusText = document.getElementById('status-text');
+
+                if(isActive) {
+                    btn.innerText = "TERMINATE LOCKDOWN";
+                    btn.className = "w-full py-6 bg-white text-red-600 font-black text-xs tracking-[0.3em] uppercase pulse-red";
+                    card.classList.add('lockdown-ui-active');
+                    statusText.innerText = "Network Status: SECURED / OFFLINE";
+                    statusText.className = "text-[8px] text-center mt-3 text-red-500 font-bold uppercase";
+                } else {
+                    btn.innerText = "INITIALIZE LOCKDOWN";
+                    btn.className = "w-full py-6 bg-red-600 text-white font-black text-xs tracking-[0.3em] uppercase hover:bg-red-700";
+                    card.classList.remove('lockdown-ui-active');
+                    statusText.innerText = "Network Status: Nominal";
+                    statusText.className = "text-[8px] text-center mt-3 text-white/20 uppercase";
+                }
+            });
+
+            // Traffic & Blacklist Listeners
             db.ref('network/traffic').on('value', (s) => {
                 const container = document.getElementById('live-visitors');
                 container.innerHTML = '';
                 const data = s.val();
-                if(!data) { container.innerHTML = '<p class="text-[10px] text-white/20 italic">No active sessions...</p>'; return; }
-                Object.keys(data).forEach(id => {
-                    const u = data[id];
-                    container.innerHTML += `
-                        <div class="p-3 bg-white/5 border-l-2 border-pink-500/50 mb-2">
-                            <p class="text-[10px] font-bold text-pink-400">${id.replaceAll('-', '.')}</p>
-                            <p class="text-[8px] opacity-40 uppercase">${u.current_page || 'Unknown'}</p>
+                if(data) {
+                    Object.keys(data).forEach(id => {
+                        container.innerHTML += `<div class="p-3 bg-white/5 border-l-2 border-pink-500 mb-2">
+                            <p class="text-[10px] font-bold">${id.replaceAll('-', '.')}</p>
+                            <p class="text-[8px] opacity-40 uppercase">${data[id].current_page || 'Home'}</p>
                         </div>`;
-                });
+                    });
+                }
             });
 
-            // Blacklist Listener - Synced to network/blacklist
             db.ref('network/blacklist').on('value', (s) => {
                 const list = document.getElementById('ban-list');
                 list.innerHTML = '';
                 const data = s.val();
                 if(data) {
                     Object.keys(data).forEach(id => {
-                        const ip = id.replaceAll('-', '.');
-                        list.innerHTML += `
-                            <div class="flex justify-between items-center bg-red-500/10 border border-red-500/20 p-3">
-                                <span class="text-[10px]">${ip}</span>
-                                <button onclick="revokeBan('${id}')" class="text-[8px] bg-red-500/20 px-2 py-1 hover:bg-red-600 hover:text-white transition">REVOKE</button>
-                            </div>`;
+                        list.innerHTML += `<div class="flex justify-between items-center bg-red-500/10 border border-red-500/20 p-3">
+                            <span class="text-[10px]">${id.replaceAll('-', '.')}</span>
+                            <button onclick="revokeBan('${id}')" class="text-[8px] bg-red-600 px-2 py-1">REVOKE</button>
+                        </div>`;
                     });
                 }
             });
-
-            // Lockdown Sync - Synced to network/security_shield
-            db.ref('network/security_shield').on('value', (s) => updateLockdownUI(s.val()));
         }
 
         function toggleLockdown() {
             db.ref('network/security_shield').once('value', (s) => {
                 const newState = s.val() === 'Active' ? 'Disabled' : 'Active';
-                db.ref('network/security_shield').set(newState).then(() => {
-                    addLog(newState === 'Active' ? "SITE_LOCKED" : "SITE_RESTORED", newState === 'Active' ? "red" : "green");
-                });
+                db.ref('network/security_shield').set(newState);
+                addLog(`>> COMMAND_EXECUTED: SHIELD_${newState.toUpperCase()}`, 'pink');
             });
-        }
-
-        function updateLockdownUI(status) {
-            const btn = document.getElementById('lockdown-btn');
-            const active = status === 'Active';
-            btn.innerText = active ? "LOCKED DOWN" : "INITIALIZE LOCKDOWN";
-            if(active) {
-                btn.classList.add('bg-white', 'text-red-600');
-                btn.classList.remove('bg-red-600', 'text-white');
-            } else {
-                btn.classList.remove('bg-white', 'text-red-600');
-                btn.classList.add('bg-red-600', 'text-white');
-            }
         }
 
         function updateMarquee() {
             const msg = document.getElementById('marquee-msg').value;
             if(!msg) return;
             db.ref('network/global_marquee').set(msg);
-            addLog(`Marquee Updated: ${msg}`, 'indigo');
+            addLog(`>> BROADCAST: ${msg}`, 'pink');
             document.getElementById('marquee-msg').value = '';
         }
 
         function banIP() {
             const ip = document.getElementById('target-ip').value;
             if(!ip.includes('.')) return;
-            db.ref('network/blacklist/' + ip.replaceAll('.', '-')).set({ 
-                timestamp: Date.now(),
-                reason: 'Manual Admin Ban'
-            });
-            addLog(`Blacklisted: ${ip}`, 'red');
+            db.ref('network/blacklist/' + ip.replaceAll('.', '-')).set({ timestamp: Date.now() });
+            addLog(`>> BLACKLISTED: ${ip}`, 'red');
             document.getElementById('target-ip').value = '';
         }
 
-        function revokeBan(id) { 
-            db.ref('network/blacklist/' + id).remove(); 
-            addLog(`Revoked: ${id.replaceAll('-','.')}`, 'green');
+        function revokeBan(id) {
+            db.ref('network/blacklist/' + id).remove();
+            addLog(`>> RESTORED: ${id.replaceAll('-','.')}`, 'green');
         }
 
         function addLog(msg, color = 'white') {
             const logEl = document.getElementById('logs');
             const p = document.createElement('p');
-            p.className = `text-${color}-400`;
-            p.innerHTML = `<span class="text-white/20">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+            p.style.color = color === 'pink' ? '#ec4899' : (color === 'red' ? '#ff4444' : (color === 'green' ? '#4ade80' : 'white'));
+            p.innerHTML = `<span style="opacity:0.2;">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
             logEl.prepend(p);
         }
 
