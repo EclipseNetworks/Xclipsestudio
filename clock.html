@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xclipse Studio | Temporal Engine</title>
+    <title>Xclipse Studio | Temporal Engine v2.4</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -12,7 +12,7 @@
       tailwind.config = {
         theme: {
           extend: {
-            colors: { primary: '#ec4899', dark: '#050811' },
+            colors: { primary: '#ec4899', secondary: '#0ea5e9', dark: '#050811' },
             fontFamily: { display: ['Syncopate', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }
           }
         }
@@ -20,26 +20,58 @@
     </script>
 
     <style>
-      body { background: #050811; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: white; transition: opacity 1s ease; }
-      .mesh-gradient { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.12) 0%, rgba(5, 8, 17, 1) 60%), radial-gradient(circle at 20% 30%, #0d1226 0%, #050811 100%); animation: meshFlow 20s ease-in-out infinite alternate; }
-      @keyframes meshFlow { 0% { transform: scale(1) translate(0, 0); } 100% { transform: scale(1.1) translate(2%, 2%); } }
-      #bg-canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+      :root { --glitch-intensity: 0px; }
+      body { background: #050811; margin: 0; min-height: 100vh; overflow: hidden; color: white; transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1); font-family: 'JetBrains Mono', monospace; }
       
-      @keyframes floatCard { 0%, 100% { transform: translateY(0) rotateX(2deg); } 50% { transform: translateY(-20px) rotateX(-2deg); } }
-      .glass-card { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(50px); border: 1px solid rgba(255, 255, 255, 0.05); animation: floatCard 8s ease-in-out infinite; box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.7); }
+      /* SOPHISTICATED MESH & GRID */
+      .viewport-container { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10; }
       
-      .clock-text { font-variant-numeric: tabular-nums; text-shadow: 0 0 40px rgba(236, 72, 153, 0.3); transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-      .tick-pulse { transform: scale(1.03); text-shadow: 0 0 70px rgba(236, 72, 153, 0.7); filter: brightness(1.25); }
-      .ampm { font-size: 0.22em; vertical-align: middle; margin-left: 15px; opacity: 0.5; letter-spacing: 0.2em; }
-      
-      /* BOTTOM COUNTDOWN STYLING */
-      .bottom-sync {
-        position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
-        z-index: 100; display: flex; flex-direction: column; align-items: center; gap: 8px;
+      .mesh-gradient {
+        position: fixed; inset: 0; z-index: -2;
+        background: radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.08) 0%, rgba(5, 8, 17, 1) 70%),
+                    radial-gradient(circle at 80% 20%, rgba(14, 165, 233, 0.05) 0%, transparent 50%);
       }
-      .progress-bar { width: 200px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
-      #progress-fill { width: 100%; height: 100%; background: #ec4899; transition: width 1s linear; }
-      
+
+      .grid-overlay {
+        position: fixed; inset: 0; z-index: -1;
+        background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
+      }
+
+      /* CORE CARD ANIMATION */
+      @keyframes engineFloat {
+        0%, 100% { transform: translateY(0) rotateX(1deg) rotateY(-1deg); filter: drop-shadow(0 0 0px rgba(236,72,153,0)); }
+        50% { transform: translateY(-15px) rotateX(-1deg) rotateY(1deg); filter: drop-shadow(0 20px 40px rgba(236,72,153,0.15)); }
+      }
+
+      .glass-engine {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(40px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        animation: engineFloat 10s ease-in-out infinite;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* SCANLINE EFFECT */
+      .glass-engine::after {
+        content: ""; position: absolute; inset: 0;
+        background: linear-gradient(to bottom, transparent 50%, rgba(236,72,153,0.02) 50%);
+        background-size: 100% 4px; pointer-events: none;
+      }
+
+      .clock-text {
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.05em;
+        transition: text-shadow 0.3s ease;
+      }
+
+      .sync-status { font-size: 8px; letter-spacing: 0.5em; color: rgba(255,255,255,0.3); }
+
+      /* DATA LOG STYLING */
+      .terminal-log { position: fixed; bottom: 40px; left: 40px; font-size: 9px; color: #4ade80; opacity: 0.5; }
+
       .no-select { user-select: none; }
     </style>
 </head>
@@ -47,102 +79,151 @@
 
     <canvas id="bg-canvas"></canvas>
     <div class="mesh-gradient"></div>
+    <div class="grid-overlay"></div>
 
-    <div class="w-full max-w-4xl px-6 relative z-10">
-        <div class="glass-card p-12 md:p-24 rounded-[5rem] text-center relative overflow-hidden mx-auto">
-            <div class="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]"></div>
-            <div class="absolute top-10 left-1/2 -translate-x-1/2 flex items-center gap-3">
-                <span class="w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
-                <span class="text-[10px] font-black uppercase tracking-[0.6em] text-gray-400">Broadcasting Xclipse Sync</span>
+    <div class="terminal-log font-mono hidden md:block">
+        <div id="log-line-1">>> INITIALIZING TEMPORAL_RECV</div>
+        <div id="log-line-2">>> ADELAIDE_NODE: CONNECTED</div>
+        <div id="log-line-3">>> PACKET_LOSS: 0.0001%</div>
+    </div>
+
+    <div class="viewport-container">
+        <div class="glass-engine p-10 md:p-20 rounded-[3rem] w-[90vw] max-w-5xl">
+            
+            <div class="flex justify-between items-start mb-12">
+                <div class="flex flex-col gap-1">
+                    <span class="text-[9px] font-bold text-primary tracking-[0.4em] uppercase">System Live</span>
+                    <span class="text-[8px] text-white/20 uppercase tracking-[0.2em]">Stability Protocol 4.0.1</span>
+                </div>
+                <div class="text-right">
+                    <span id="hex-id" class="text-[9px] text-white/40 font-mono italic">0x4F92...B3</span>
+                </div>
             </div>
-            <h3 class="text-primary font-display text-[12px] tracking-[0.8em] uppercase mt-4 mb-16 italic opacity-80">Bordertown HQ</h3>
-            <div id="bt-container" class="clock-text text-7xl md:text-[10rem] font-black italic tracking-tighter leading-none flex items-center justify-center">
-                <span id="bt-time">00:00:00</span>
-                <span id="bt-ampm" class="ampm font-display">--</span>
+
+            <div class="text-center py-10">
+                <div id="bt-container" class="clock-text text-6xl md:text-[10rem] font-black flex items-center justify-center relative">
+                    <span id="bt-time" class="relative z-10">00:00:00</span>
+                    <span id="bt-ampm" class="text-xl md:text-3xl ml-6 text-white/20 font-display italic">--</span>
+                </div>
+                <div class="mt-4 sync-status uppercase">Xclipse Studio // Temporal Anchor</div>
             </div>
-            <div class="mt-16 flex justify-center items-center gap-10 opacity-30">
-                <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent to-primary max-w-[100px]"></div>
-                <p class="text-[11px] text-gray-400 uppercase font-black tracking-[0.8em]">Australia / Adelaide</p>
-                <div class="h-[1px] flex-1 bg-gradient-to-l from-transparent to-primary max-w-[100px]"></div>
+
+            <div class="mt-12 flex justify-between items-end border-t border-white/5 pt-8">
+                <div class="flex gap-8">
+                    <div>
+                        <p class="text-[8px] text-white/30 uppercase mb-1">Location</p>
+                        <p class="text-[10px] tracking-widest uppercase">AU / ADE</p>
+                    </div>
+                    <div>
+                        <p class="text-[8px] text-white/30 uppercase mb-1">Offset</p>
+                        <p class="text-[10px] tracking-widest uppercase">+10:30</p>
+                    </div>
+                </div>
+                <div class="w-32 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
             </div>
         </div>
     </div>
 
-    <div class="bottom-sync">
-        <p class="font-mono text-[9px] tracking-[0.4em] uppercase text-white/40">Stability Refresh in <span id="sync-timer" class="text-primary">60</span>s</p>
-        <div class="progress-bar">
-            <div id="progress-fill"></div>
+    <div class="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 text-center">
+        <div class="flex items-center gap-4 mb-2">
+            <span class="h-[1px] w-8 bg-white/10"></span>
+            <p class="font-mono text-[9px] tracking-[0.5em] uppercase text-white/40">Next Pulse: <span id="sync-timer" class="text-primary font-bold">60</span>s</p>
+            <span class="h-[1px] w-8 bg-white/10"></span>
+        </div>
+        <div class="w-64 h-[2px] bg-white/5 rounded-full overflow-hidden mx-auto">
+            <div id="progress-fill" class="h-full bg-primary transition-all duration-1000 ease-linear" style="width: 100%"></div>
         </div>
     </div>
 
     <script>
+        // BACKGROUND PARTICLE ENGINE
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
-        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+        
         class Particle {
-            constructor() {
+            constructor() { this.init(); }
+            init() {
                 this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 2 + 0.5; this.speedX = (Math.random() - 0.5) * 0.5;
-                this.speedY = (Math.random() - 0.5) * 0.5; this.opacity = Math.random() * 0.4;
+                this.size = Math.random() * 1.5; this.speedX = (Math.random() - 0.5) * 0.3;
+                this.speedY = (Math.random() - 0.5) * 0.3; this.opacity = Math.random() * 0.3;
             }
-            update() { this.x += this.speedX; this.y += this.speedY; if (this.x < 0 || this.x > canvas.width) this.speedX *= -1; if (this.y < 0 || this.y > canvas.height) this.speedY *= -1; }
-            draw() { ctx.fillStyle = `rgba(236, 72, 153, ${this.opacity})`; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); }
+            update() {
+                this.x += this.speedX; this.y += this.speedY;
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.init();
+            }
+            draw() {
+                ctx.fillStyle = `rgba(236, 72, 153, ${this.opacity})`;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+            }
         }
-        function initParticles() { particles = []; for (let i = 0; i < 100; i++) particles.push(new Particle()); }
-        function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
 
-        // --- CLOCK & BOTTOM COUNTDOWN ENGINE ---
+        const initParticles = () => { for (let i = 0; i < 80; i++) particles.push(new Particle()); };
+        const animate = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        };
+
+        // --- CORE TEMPORAL ENGINE ---
         const syncTimer = document.getElementById('sync-timer');
         const progressFill = document.getElementById('progress-fill');
-        let refreshTriggered = false;
+        const hexId = document.getElementById('hex-id');
+        let isCritical = false;
 
-        function updateStudioClock() {
+        function updateEngine() {
             const now = new Date();
             const sec = now.getSeconds();
+            const ms = now.getMilliseconds();
             const remaining = 60 - sec;
-            
-            // 1. Update Clock Display
-            const timeStr = now.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true, timeZone: 'Australia/Adelaide' });
-            const parts = timeStr.split(' '); 
+
+            // Update Time
+            const timeStr = now.toLocaleTimeString('en-AU', { 
+                hour: '2-digit', minute: '2-digit', second: '2-digit', 
+                hour12: true, timeZone: 'Australia/Adelaide' 
+            });
+            const parts = timeStr.split(' ');
             document.getElementById('bt-time').innerText = parts[0];
             document.getElementById('bt-ampm').innerText = parts[1].toUpperCase();
-            
-            // 2. Pulse Effect
-            const clockEl = document.getElementById('bt-container');
-            clockEl.classList.add('tick-pulse');
-            setTimeout(() => clockEl.classList.remove('tick-pulse'), 150);
 
-            // 3. Bottom Countdown & Progress Bar
-            // If it's the exact moment of 0, show 0, otherwise show remaining
-            syncTimer.innerText = sec === 0 ? "0" : remaining;
-            
-            // Progress bar shrinks as we get closer to 60
-            const percentage = (remaining / 60) * 100;
-            progressFill.style.width = `${percentage}%`;
+            // Progress Bar & Timer
+            syncTimer.innerText = remaining.toString().padStart(2, '0');
+            const progress = (remaining / 60) * 100;
+            progressFill.style.width = `${progress}%`;
 
-            // 4. Handle Refresh sequence
-            // Start fade out at 1 second remaining
-            if (sec === 59 && !refreshTriggered) {
-                document.body.style.opacity = "0";
+            // Visual Effects logic
+            if (remaining <= 5) {
+                if (!isCritical) {
+                    isCritical = true;
+                    progressFill.style.backgroundColor = "#ff0000";
+                    document.getElementById('bt-container').style.textShadow = "0 0 50px rgba(236, 72, 153, 0.8)";
+                }
             }
 
-            // Trigger reload at 0
-            if (sec === 0 && !refreshTriggered) {
-                refreshTriggered = true; 
+            // Refresh Sequence
+            if (sec === 59 && ms > 100) {
+                document.body.style.opacity = "0";
+            }
+            if (sec === 0) {
                 window.location.reload();
+            }
+
+            // Randomize Hex ID for "sophistication"
+            if (sec % 5 === 0) {
+                hexId.innerText = `0x${Math.random().toString(16).substr(2, 6).toUpperCase()}...${Math.random().toString(16).substr(2, 2).toUpperCase()}`;
+            }
+
+            // Simulated Logs
+            if (sec % 10 === 0) {
+                document.getElementById('log-line-1').innerText = `>> SYNC_CYCLE_${sec}_INIT`;
+                document.getElementById('log-line-2').innerText = `>> BUFFER_LATENCY: ${(Math.random() * 5).toFixed(4)}ms`;
             }
         }
 
         window.addEventListener('resize', resize);
         resize(); initParticles(); animate();
-        setInterval(updateStudioClock, 1000);
-        updateStudioClock();
-
-        // Background Sync (HEAD request only)
-        setInterval(async () => {
-            try { await fetch(window.location.href, { method: 'HEAD', cache: 'no-cache' }); } catch (err) {}
-        }, 30000);
+        setInterval(updateEngine, 100); // 10hz update for smoother UI
     </script>
 </body>
 </html>
