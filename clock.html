@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Xclipse Studio | C2 Temporal Engine</title>
+    <title>Xclipse Studio | C2 Temporal Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
@@ -68,6 +68,9 @@
       
       @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
       .no-select { user-select: none; }
+
+      /* SHIELD STATUS SPECIFIC STYLES */
+      .shield-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; }
     </style>
 </head>
 <body class="no-select">
@@ -88,6 +91,14 @@
         </div>
 
         <nav class="flex-1 space-y-8">
+            <div class="shield-box mb-6">
+                <p class="text-[8px] text-white/30 tracking-widest mb-2 uppercase font-bold">Shield Integrity</p>
+                <div class="flex items-center gap-3">
+                    <div id="shield-indicator-dot" class="w-2 h-2 rounded-full bg-terminal shadow-[0_0_10px_#4ade80] animate-pulse"></div>
+                    <span id="shield-status-text" class="text-[10px] font-bold text-terminal tracking-tighter">ONLINE_MAX</span>
+                </div>
+            </div>
+
             <div class="cursor-pointer group" onclick="SystemControl.toggleLockdown()">
                 <div class="flex items-center text-[8px] text-white/30 tracking-widest mb-1 group-hover:text-alert transition-colors">
                     <span class="status-dot bg-alert"></span> SECURITY_FIREBASE
@@ -181,7 +192,6 @@
             appId: "1:682456546817:web:d4c7b5984372f4af5b4a00"
         };
 
-        // Initialize Dual Virtual Instances
         window.SEC_APP = initializeApp(securityConfig, "security");
         window.NET_APP = initializeApp(networksConfig, "networks");
         
@@ -189,10 +199,6 @@
     </script>
 
     <script>
-        /**
-         * SystemControl Kernel
-         * Handles Lockdown, Temporal Sync, and Canvas Particles
-         */
         const SystemControl = {
             lockdownActive: false,
             refreshTriggered: false,
@@ -246,10 +252,25 @@
                 this.lockdownActive = !this.lockdownActive;
                 const shield = document.getElementById('lockdown-shield');
                 const secText = document.getElementById('sec-app-status');
+                const shieldDot = document.getElementById('shield-indicator-dot');
+                const shieldText = document.getElementById('shield-status-text');
                 
                 shield.style.display = this.lockdownActive ? 'flex' : 'none';
                 secText.innerText = this.lockdownActive ? 'PROTOCOL_OVERRIDE' : 'IDLE_MONITORING';
                 secText.classList.toggle('text-alert', this.lockdownActive);
+
+                // Update Shield Status Module
+                if (this.lockdownActive) {
+                    shieldDot.classList.replace('bg-terminal', 'bg-alert');
+                    shieldDot.classList.replace('shadow-[#4ade80]', 'shadow-[#ff003c]');
+                    shieldText.innerText = "BREACH_DETECTED";
+                    shieldText.classList.replace('text-terminal', 'text-alert');
+                } else {
+                    shieldDot.classList.replace('bg-alert', 'bg-terminal');
+                    shieldDot.classList.replace('shadow-[#ff003c]', 'shadow-[#4ade80]');
+                    shieldText.innerText = "ONLINE_MAX";
+                    shieldText.classList.replace('text-alert', 'text-terminal');
+                }
             },
 
             updateTemporalCycle() {
@@ -260,7 +281,6 @@
                 const ms = now.getMilliseconds();
                 const remaining = 60 - sec;
 
-                // Time Sync
                 const timeStr = now.toLocaleTimeString('en-AU', { 
                     hour: '2-digit', minute: '2-digit', second: '2-digit', 
                     hour12: true, timeZone: 'Australia/Adelaide' 
@@ -269,11 +289,9 @@
                 document.getElementById('bt-time').innerText = parts[0];
                 document.getElementById('bt-ampm').innerText = parts[1].toUpperCase();
 
-                // Countdown UI
                 document.getElementById('sync-timer-badge').querySelector('span').innerText = `${remaining}S`;
                 document.getElementById('kernel-progress').style.width = `${(remaining / 60) * 100}%`;
 
-                // Critical Visuals
                 const container = document.getElementById('clock-container');
                 if (remaining <= 5) {
                     container.classList.add('critical-state');
@@ -281,7 +299,6 @@
                     container.classList.remove('critical-state');
                 }
 
-                // Smooth Refresh Trigger
                 if (sec === 59 && ms > 500 && !this.refreshTriggered) {
                     document.body.style.opacity = "0";
                 }
@@ -290,7 +307,6 @@
                     window.location.reload();
                 }
 
-                // Randomize Kernel Logs
                 if (ms < 100 && sec % 5 === 0) {
                     const logs = [
                         "[NET] Syncing with Adelaide_Bordertown_HQ",
@@ -304,6 +320,7 @@
         };
 
         SystemControl.init();
+        window.SystemControl = SystemControl; // Ensure it's globally accessible for button
     </script>
 </body>
 </html>
