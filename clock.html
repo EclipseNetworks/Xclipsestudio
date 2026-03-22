@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xclipse Studio | Temporal Engine v2.4</title>
-
+<title>Xclipse Studio | C2 Temporal Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
@@ -12,218 +11,299 @@
       tailwind.config = {
         theme: {
           extend: {
-            colors: { primary: '#ec4899', secondary: '#0ea5e9', dark: '#050811' },
-            fontFamily: { display: ['Syncopate', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }
+            colors: { 
+                primary: '#ec4899', 
+                secondary: '#0ea5e9',
+                alert: '#ff003c',
+                terminal: '#4ade80',
+                dark: '#050811' 
+            },
+            fontFamily: { 
+                display: ['Syncopate', 'sans-serif'], 
+                mono: ['JetBrains Mono', 'monospace'] 
+            }
           }
         }
       }
     </script>
 
     <style>
-      :root { --glitch-intensity: 0px; }
-      body { background: #050811; margin: 0; min-height: 100vh; overflow: hidden; color: white; transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1); font-family: 'JetBrains Mono', monospace; }
+      :root { --glitch-opacity: 0; }
+      body { background: #050811; color: white; margin: 0; min-height: 100vh; overflow: hidden; font-family: 'JetBrains Mono', monospace; transition: background 0.8s ease; }
       
-      /* SOPHISTICATED MESH & GRID */
-      .viewport-container { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10; }
+      /* SOPHISTICATED LAYER STACKING */
+      .layer-bg { position: fixed; inset: 0; z-index: -10; }
+      .layer-grid { position: fixed; inset: 0; z-index: -5; background-image: radial-gradient(circle, rgba(236, 72, 153, 0.05) 1px, transparent 1px); background-size: 30px 30px; mask-image: radial-gradient(ellipse at center, black, transparent 80%); }
       
-      .mesh-gradient {
-        position: fixed; inset: 0; z-index: -2;
-        background: radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.08) 0%, rgba(5, 8, 17, 1) 70%),
-                    radial-gradient(circle at 80% 20%, rgba(14, 165, 233, 0.05) 0%, transparent 50%);
+      /* CHROMATIC DISTORTION EFFECT */
+      .chromatic-wrap { position: relative; transition: filter 0.3s ease; }
+      .critical-state { filter: drop-shadow(2px 0px 0px #ff003c) drop-shadow(-2px 0px 0px #0ea5e9); animation: vibration 0.1s infinite; }
+      
+      @keyframes vibration {
+          0% { transform: translate(0); }
+          25% { transform: translate(1px, 1px); }
+          50% { transform: translate(-1px, -1px); }
+          75% { transform: translate(1px, -1px); }
+          100% { transform: translate(0); }
       }
 
-      .grid-overlay {
-        position: fixed; inset: 0; z-index: -1;
-        background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-        background-size: 50px 50px;
-        mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
-      }
-
-      /* CORE CARD ANIMATION */
-      @keyframes engineFloat {
-        0%, 100% { transform: translateY(0) rotateX(1deg) rotateY(-1deg); filter: drop-shadow(0 0 0px rgba(236,72,153,0)); }
-        50% { transform: translateY(-15px) rotateX(-1deg) rotateY(1deg); filter: drop-shadow(0 20px 40px rgba(236,72,153,0.15)); }
-      }
-
-      .glass-engine {
-        background: rgba(255, 255, 255, 0.02);
-        backdrop-filter: blur(40px);
+      /* NEUROMORPHIC GLASS CARDS */
+      .glass-kernel {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+        backdrop-filter: blur(60px);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        animation: engineFloat 10s ease-in-out infinite;
-        position: relative;
-        overflow: hidden;
+        box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255,255,255,0.05);
+        transform-style: preserve-3d;
       }
 
-      /* SCANLINE EFFECT */
-      .glass-engine::after {
-        content: ""; position: absolute; inset: 0;
-        background: linear-gradient(to bottom, transparent 50%, rgba(236,72,153,0.02) 50%);
-        background-size: 100% 4px; pointer-events: none;
+      /* LOCKDOWN OVERLAY */
+      #lockdown-shield {
+        position: fixed; inset: 0; background: rgba(26, 0, 5, 0.95); z-index: 1000;
+        display: none; flex-direction: column; align-items: center; justify-content: center;
+        border: 20px solid #ff003c;
       }
 
-      .clock-text {
-        font-variant-numeric: tabular-nums;
-        letter-spacing: -0.05em;
-        transition: text-shadow 0.3s ease;
-      }
-
-      .sync-status { font-size: 8px; letter-spacing: 0.5em; color: rgba(255,255,255,0.3); }
-
-      /* DATA LOG STYLING */
-      .terminal-log { position: fixed; bottom: 40px; left: 40px; font-size: 9px; color: #4ade80; opacity: 0.5; }
-
+      .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+      .dot-pulse { background: #4ade80; box-shadow: 0 0 10px #4ade80; animation: pulse 2s infinite; }
+      
+      @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
       .no-select { user-select: none; }
     </style>
 </head>
 <body class="no-select">
 
-    <canvas id="bg-canvas"></canvas>
-    <div class="mesh-gradient"></div>
-    <div class="grid-overlay"></div>
-
-    <div class="terminal-log font-mono hidden md:block">
-        <div id="log-line-1">>> INITIALIZING TEMPORAL_RECV</div>
-        <div id="log-line-2">>> ADELAIDE_NODE: CONNECTED</div>
-        <div id="log-line-3">>> PACKET_LOSS: 0.0001%</div>
+    <div id="lockdown-shield">
+        <h1 class="font-display text-4xl text-alert mb-4 tracking-[1em] animate-pulse">PROTOCOL_LOCKDOWN</h1>
+        <p class="font-mono text-sm opacity-50 uppercase tracking-widest text-white">Unauthorized Access Prevented // Security App Intercept</p>
+        <button onclick="SystemControl.toggleLockdown()" class="mt-10 px-8 py-2 border border-alert text-alert hover:bg-alert hover:text-white transition-all uppercase text-[10px] tracking-widest">Override Kernel</button>
     </div>
 
-    <div class="viewport-container">
-        <div class="glass-engine p-10 md:p-20 rounded-[3rem] w-[90vw] max-w-5xl">
+    <canvas id="kernel-canvas" class="layer-bg"></canvas>
+    <div class="layer-grid"></div>
+
+    <aside class="fixed left-0 top-0 h-full w-20 md:w-72 border-r border-white/5 bg-black/40 backdrop-blur-2xl z-50 p-8 flex flex-col">
+        <div class="mb-12">
+            <p class="text-[9px] text-primary font-bold tracking-[0.5em] uppercase mb-2">Xclipse Studio</p>
+            <h2 class="font-display text-xs text-white">C2_TERMINAL</h2>
+        </div>
+
+        <nav class="flex-1 space-y-8">
+            <div class="cursor-pointer group" onclick="SystemControl.toggleLockdown()">
+                <div class="flex items-center text-[8px] text-white/30 tracking-widest mb-1 group-hover:text-alert transition-colors">
+                    <span class="status-dot bg-alert"></span> SECURITY_FIREBASE
+                </div>
+                <p class="text-[10px] font-mono" id="sec-app-status">IDLE_MONITORING</p>
+            </div>
             
-            <div class="flex justify-between items-start mb-12">
-                <div class="flex flex-col gap-1">
-                    <span class="text-[9px] font-bold text-primary tracking-[0.4em] uppercase">System Live</span>
-                    <span class="text-[8px] text-white/20 uppercase tracking-[0.2em]">Stability Protocol 4.0.1</span>
+            <div class="opacity-50">
+                <div class="flex items-center text-[8px] text-white/30 tracking-widest mb-1">
+                    <span class="status-dot bg-secondary"></span> NETWORK_FIREBASE
                 </div>
-                <div class="text-right">
-                    <span id="hex-id" class="text-[9px] text-white/40 font-mono italic">0x4F92...B3</span>
-                </div>
+                <p class="text-[10px] font-mono" id="net-app-status">ADELAIDE_UPLINK</p>
             </div>
 
-            <div class="text-center py-10">
-                <div id="bt-container" class="clock-text text-6xl md:text-[10rem] font-black flex items-center justify-center relative">
-                    <span id="bt-time" class="relative z-10">00:00:00</span>
-                    <span id="bt-ampm" class="text-xl md:text-3xl ml-6 text-white/20 font-display italic">--</span>
+            <div class="pt-8 border-t border-white/5">
+                <p class="text-[8px] text-white/20 uppercase tracking-widest mb-4">Command History</p>
+                <div id="cmd-history" class="space-y-2 text-[9px] font-mono text-terminal opacity-60">
+                    <div>> Init kernel_v4</div>
+                    <div>> Auth established</div>
                 </div>
-                <div class="mt-4 sync-status uppercase">Xclipse Studio // Temporal Anchor</div>
+            </div>
+        </nav>
+
+        <div class="text-[8px] text-white/10 font-mono space-y-1">
+            <p>LATENCY: 12ms</p>
+            <p>UPTIME: 99.99%</p>
+            <p>© 2026 XCLIPSE_C2</p>
+        </div>
+    </aside>
+
+    <main class="pl-20 md:pl-72 w-full min-h-screen flex items-center justify-center p-6 md:p-12">
+        <div class="glass-kernel w-full max-w-5xl rounded-[4rem] p-12 md:p-20 relative overflow-hidden">
+            
+            <div class="absolute top-10 left-10 flex gap-2">
+                <div class="w-1 h-1 bg-white/20"></div>
+                <div class="w-1 h-1 bg-white/20"></div>
+            </div>
+            <div id="sync-timer-badge" class="absolute top-10 right-10 font-mono text-[10px] text-white/40 tracking-widest">
+                SYNC_CLK: <span class="text-primary font-bold">60S</span>
             </div>
 
-            <div class="mt-12 flex justify-between items-end border-t border-white/5 pt-8">
-                <div class="flex gap-8">
-                    <div>
-                        <p class="text-[8px] text-white/30 uppercase mb-1">Location</p>
-                        <p class="text-[10px] tracking-widest uppercase">AU / ADE</p>
-                    </div>
-                    <div>
-                        <p class="text-[8px] text-white/30 uppercase mb-1">Offset</p>
-                        <p class="text-[10px] tracking-widest uppercase">+10:30</p>
-                    </div>
+            <div class="chromatic-wrap text-center py-12" id="clock-container">
+                <div class="flex justify-center items-center gap-6 mb-4">
+                    <span class="h-[1px] w-12 bg-white/10"></span>
+                    <span class="text-[10px] text-white/20 uppercase tracking-[1em]">Temporal Engine</span>
+                    <span class="h-[1px] w-12 bg-white/10"></span>
                 </div>
-                <div class="w-32 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+
+                <div class="font-mono text-7xl md:text-[10rem] font-black tracking-tighter leading-none flex justify-center items-baseline">
+                    <span id="bt-time">00:00:00</span>
+                    <span id="bt-ampm" class="text-2xl md:text-4xl ml-4 text-white/20 font-display italic">--</span>
+                </div>
+                
+                <p class="mt-8 text-[9px] tracking-[2em] text-white/30 uppercase pl-[2em]">Bordertown Station // South Australia</p>
+            </div>
+
+            <div class="mt-16 bg-black/60 rounded-xl p-6 border border-white/5 font-mono text-[10px] relative">
+                <div class="absolute -top-3 left-6 bg-dark px-3 py-1 text-[8px] text-white/40 uppercase tracking-widest border border-white/5">System_Log</div>
+                <div class="space-y-1 text-terminal/80">
+                    <p><span class="text-white/20">>></span> [KERNEL] Stabilizing temporal drift...</p>
+                    <p id="live-log"><span class="text-white/20">>></span> [NET] Packet handshake successful at 192.168.1.1</p>
+                </div>
             </div>
         </div>
+    </main>
+
+    <div class="fixed bottom-0 left-0 w-full h-[2px] bg-white/5 z-[100]">
+        <div id="kernel-progress" class="h-full bg-primary transition-all duration-1000 linear" style="width: 100%"></div>
     </div>
 
-    <div class="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 text-center">
-        <div class="flex items-center gap-4 mb-2">
-            <span class="h-[1px] w-8 bg-white/10"></span>
-            <p class="font-mono text-[9px] tracking-[0.5em] uppercase text-white/40">Next Pulse: <span id="sync-timer" class="text-primary font-bold">60</span>s</p>
-            <span class="h-[1px] w-8 bg-white/10"></span>
-        </div>
-        <div class="w-64 h-[2px] bg-white/5 rounded-full overflow-hidden mx-auto">
-            <div id="progress-fill" class="h-full bg-primary transition-all duration-1000 ease-linear" style="width: 100%"></div>
-        </div>
-    </div>
-
-    <script>
-        // BACKGROUND PARTICLE ENGINE
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-        const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         
-        class Particle {
-            constructor() { this.init(); }
-            init() {
-                this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 1.5; this.speedX = (Math.random() - 0.5) * 0.3;
-                this.speedY = (Math.random() - 0.5) * 0.3; this.opacity = Math.random() * 0.3;
-            }
-            update() {
-                this.x += this.speedX; this.y += this.speedY;
-                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.init();
-            }
-            draw() {
-                ctx.fillStyle = `rgba(236, 72, 153, ${this.opacity})`;
-                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
-            }
-        }
-
-        const initParticles = () => { for (let i = 0; i < 80; i++) particles.push(new Particle()); };
-        const animate = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(animate);
+        const securityConfig = {
+            apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
+            authDomain: "xclipse-security.firebaseapp.com",
+            databaseURL: "https://xclipse-security-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "xclipse-security",
+            storageBucket: "xclipse-security.firebasestorage.app",
+            messagingSenderId: "161353959200",
+            appId: "1:161353959200:web:d0b36f7817b31842cff945"
         };
 
-        // --- CORE TEMPORAL ENGINE ---
-        const syncTimer = document.getElementById('sync-timer');
-        const progressFill = document.getElementById('progress-fill');
-        const hexId = document.getElementById('hex-id');
-        let isCritical = false;
+        const networksConfig = {
+            apiKey: "AIzaSyA0WvR-beK7RwV64bVLpRR1OomkXmvCIT0",
+            authDomain: "xclipse-networks.firebaseapp.com",
+            databaseURL: "https://xclipse-networks-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "xclipse-networks",
+            storageBucket: "xclipse-networks.firebasestorage.app",
+            messagingSenderId: "682456546817",
+            appId: "1:682456546817:web:d4c7b5984372f4af5b4a00"
+        };
 
-        function updateEngine() {
-            const now = new Date();
-            const sec = now.getSeconds();
-            const ms = now.getMilliseconds();
-            const remaining = 60 - sec;
+        // Initialize Dual Virtual Instances
+        window.SEC_APP = initializeApp(securityConfig, "security");
+        window.NET_APP = initializeApp(networksConfig, "networks");
+        
+        console.log("Xclipse C2: Dual-Firebase Uplink Established.");
+    </script>
 
-            // Update Time
-            const timeStr = now.toLocaleTimeString('en-AU', { 
-                hour: '2-digit', minute: '2-digit', second: '2-digit', 
-                hour12: true, timeZone: 'Australia/Adelaide' 
-            });
-            const parts = timeStr.split(' ');
-            document.getElementById('bt-time').innerText = parts[0];
-            document.getElementById('bt-ampm').innerText = parts[1].toUpperCase();
+    <script>
+        /**
+         * SystemControl Kernel
+         * Handles Lockdown, Temporal Sync, and Canvas Particles
+         */
+        const SystemControl = {
+            lockdownActive: false,
+            refreshTriggered: false,
 
-            // Progress Bar & Timer
-            syncTimer.innerText = remaining.toString().padStart(2, '0');
-            const progress = (remaining / 60) * 100;
-            progressFill.style.width = `${progress}%`;
+            init() {
+                this.canvas = document.getElementById('kernel-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.resize();
+                this.createParticles();
+                this.animate();
+                
+                window.addEventListener('resize', () => this.resize());
+                setInterval(() => this.updateTemporalCycle(), 100);
+            },
 
-            // Visual Effects logic
-            if (remaining <= 5) {
-                if (!isCritical) {
-                    isCritical = true;
-                    progressFill.style.backgroundColor = "#ff0000";
-                    document.getElementById('bt-container').style.textShadow = "0 0 50px rgba(236, 72, 153, 0.8)";
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            },
+
+            createParticles() {
+                for (let i = 0; i < 50; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: (Math.random() - 0.5) * 0.5,
+                        size: Math.random() * 2
+                    });
+                }
+            },
+
+            animate() {
+                if (!this.lockdownActive) {
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    this.ctx.fillStyle = 'rgba(236, 72, 153, 0.2)';
+                    this.particles.forEach(p => {
+                        p.x += p.vx; p.y += p.vy;
+                        if (p.x < 0 || p.x > this.canvas.width) p.vx *= -1;
+                        if (p.y < 0 || p.y > this.canvas.height) p.vy *= -1;
+                        this.ctx.beginPath();
+                        this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    });
+                }
+                requestAnimationFrame(() => this.animate());
+            },
+
+            toggleLockdown() {
+                this.lockdownActive = !this.lockdownActive;
+                const shield = document.getElementById('lockdown-shield');
+                const secText = document.getElementById('sec-app-status');
+                
+                shield.style.display = this.lockdownActive ? 'flex' : 'none';
+                secText.innerText = this.lockdownActive ? 'PROTOCOL_OVERRIDE' : 'IDLE_MONITORING';
+                secText.classList.toggle('text-alert', this.lockdownActive);
+            },
+
+            updateTemporalCycle() {
+                if (this.lockdownActive) return;
+
+                const now = new Date();
+                const sec = now.getSeconds();
+                const ms = now.getMilliseconds();
+                const remaining = 60 - sec;
+
+                // Time Sync
+                const timeStr = now.toLocaleTimeString('en-AU', { 
+                    hour: '2-digit', minute: '2-digit', second: '2-digit', 
+                    hour12: true, timeZone: 'Australia/Adelaide' 
+                });
+                const parts = timeStr.split(' ');
+                document.getElementById('bt-time').innerText = parts[0];
+                document.getElementById('bt-ampm').innerText = parts[1].toUpperCase();
+
+                // Countdown UI
+                document.getElementById('sync-timer-badge').querySelector('span').innerText = `${remaining}S`;
+                document.getElementById('kernel-progress').style.width = `${(remaining / 60) * 100}%`;
+
+                // Critical Visuals
+                const container = document.getElementById('clock-container');
+                if (remaining <= 5) {
+                    container.classList.add('critical-state');
+                } else {
+                    container.classList.remove('critical-state');
+                }
+
+                // Smooth Refresh Trigger
+                if (sec === 59 && ms > 500 && !this.refreshTriggered) {
+                    document.body.style.opacity = "0";
+                }
+                if (sec === 0 && !this.refreshTriggered) {
+                    this.refreshTriggered = true;
+                    window.location.reload();
+                }
+
+                // Randomize Kernel Logs
+                if (ms < 100 && sec % 5 === 0) {
+                    const logs = [
+                        "[NET] Syncing with Adelaide_Bordertown_HQ",
+                        "[SEC] Firebase_Auth handshake complete",
+                        "[SYS] Optimized stability index: 0.99",
+                        "[NET] Rotating dual-link decryption keys"
+                    ];
+                    document.getElementById('live-log').innerHTML = `<span class="text-white/20">>></span> ${logs[Math.floor(Math.random() * logs.length)]}`;
                 }
             }
+        };
 
-            // Refresh Sequence
-            if (sec === 59 && ms > 100) {
-                document.body.style.opacity = "0";
-            }
-            if (sec === 0) {
-                window.location.reload();
-            }
-
-            // Randomize Hex ID for "sophistication"
-            if (sec % 5 === 0) {
-                hexId.innerText = `0x${Math.random().toString(16).substr(2, 6).toUpperCase()}...${Math.random().toString(16).substr(2, 2).toUpperCase()}`;
-            }
-
-            // Simulated Logs
-            if (sec % 10 === 0) {
-                document.getElementById('log-line-1').innerText = `>> SYNC_CYCLE_${sec}_INIT`;
-                document.getElementById('log-line-2').innerText = `>> BUFFER_LATENCY: ${(Math.random() * 5).toFixed(4)}ms`;
-            }
-        }
-
-        window.addEventListener('resize', resize);
-        resize(); initParticles(); animate();
-        setInterval(updateEngine, 100); // 10hz update for smoother UI
+        SystemControl.init();
     </script>
 </body>
 </html>
