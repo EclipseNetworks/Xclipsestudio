@@ -12,87 +12,38 @@
       tailwind.config = {
         theme: {
           extend: {
-            colors: {
-              primary: '#ec4899', 
-              dark: '#050811'
-            },
-            fontFamily: { 
-                display: ['Syncopate', 'sans-serif'],
-                mono: ['JetBrains Mono', 'monospace']
-            }
+            colors: { primary: '#ec4899', dark: '#050811' },
+            fontFamily: { display: ['Syncopate', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }
           }
         }
       }
     </script>
 
     <style>
-      body { background: #050811; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: white; transition: opacity 1.5s ease; }
-
-      /* AUTOMATED MESH BACKGROUND */
-      .mesh-gradient {
-        position: fixed; inset: 0; z-index: -1;
-        background: radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.12) 0%, rgba(5, 8, 17, 1) 60%), 
-                    radial-gradient(circle at 20% 30%, #0d1226 0%, #050811 100%);
-        animation: meshFlow 20s ease-in-out infinite alternate;
-      }
-
-      @keyframes meshFlow {
-        0% { transform: scale(1) translate(0, 0); }
-        100% { transform: scale(1.1) translate(2%, 2%); }
-      }
-
+      body { background: #050811; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: white; transition: opacity 1s ease; }
+      .mesh-gradient { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.12) 0%, rgba(5, 8, 17, 1) 60%), radial-gradient(circle at 20% 30%, #0d1226 0%, #050811 100%); animation: meshFlow 20s ease-in-out infinite alternate; }
+      @keyframes meshFlow { 0% { transform: scale(1) translate(0, 0); } 100% { transform: scale(1.1) translate(2%, 2%); } }
       #bg-canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
-
-      /* FLOATING ANIMATION FOR THE CARD */
-      @keyframes floatCard {
-        0%, 100% { transform: translateY(0) rotateX(2deg); }
-        50% { transform: translateY(-20px) rotateX(-2deg); }
+      
+      @keyframes floatCard { 0%, 100% { transform: translateY(0) rotateX(2deg); } 50% { transform: translateY(-20px) rotateX(-2deg); } }
+      .glass-card { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(50px); border: 1px solid rgba(255, 255, 255, 0.05); animation: floatCard 8s ease-in-out infinite; box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.7); }
+      
+      .clock-text { font-variant-numeric: tabular-nums; text-shadow: 0 0 40px rgba(236, 72, 153, 0.3); transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+      .tick-pulse { transform: scale(1.03); text-shadow: 0 0 70px rgba(236, 72, 153, 0.7); filter: brightness(1.25); }
+      .ampm { font-size: 0.22em; vertical-align: middle; margin-left: 15px; opacity: 0.5; letter-spacing: 0.2em; }
+      
+      /* BOTTOM COUNTDOWN STYLING */
+      .bottom-sync {
+        position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+        z-index: 100; display: flex; flex-direction: column; align-items: center; gap: 8px;
       }
-
-      .glass-card {
-        background: rgba(255, 255, 255, 0.01);
-        backdrop-filter: blur(50px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        animation: floatCard 8s ease-in-out infinite;
-        box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.7);
-      }
-
-      .clock-text {
-        font-variant-numeric: tabular-nums;
-        text-shadow: 0 0 40px rgba(236, 72, 153, 0.3);
-        transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      }
-
-      .tick-pulse {
-        transform: scale(1.03);
-        text-shadow: 0 0 70px rgba(236, 72, 153, 0.7);
-        filter: brightness(1.25);
-      }
-
-      .ampm {
-        font-size: 0.22em;
-        vertical-align: middle;
-        margin-left: 15px;
-        opacity: 0.5;
-        letter-spacing: 0.2em;
-      }
-
-      /* NOTIFICATION SLIDE */
-      #sync-notice {
-        transform: translateY(-150%);
-        transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-      }
-      #sync-notice.show { transform: translateY(0); }
-
+      .progress-bar { width: 200px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+      #progress-fill { width: 100%; height: 100%; background: #ec4899; transition: width 1s linear; }
+      
       .no-select { user-select: none; }
     </style>
 </head>
 <body class="no-select">
-
-    <div id="sync-notice" class="fixed top-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-4 bg-black/60 backdrop-blur-xl border border-primary/30 px-6 py-3 rounded-full">
-        <div class="w-2 h-2 bg-primary animate-pulse rounded-full"></div>
-        <p class="font-mono text-[10px] tracking-[0.3em] uppercase text-white/80">Stability Sync in <span id="sync-timer" class="text-primary font-bold">5</span>s</p>
-    </div>
 
     <canvas id="bg-canvas"></canvas>
     <div class="mesh-gradient"></div>
@@ -100,33 +51,31 @@
     <div class="w-full max-w-4xl px-6 relative z-10">
         <div class="glass-card p-12 md:p-24 rounded-[5rem] text-center relative overflow-hidden mx-auto">
             <div class="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]"></div>
-
             <div class="absolute top-10 left-1/2 -translate-x-1/2 flex items-center gap-3">
                 <span class="w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
                 <span class="text-[10px] font-black uppercase tracking-[0.6em] text-gray-400">Broadcasting Xclipse Sync</span>
             </div>
-            
             <h3 class="text-primary font-display text-[12px] tracking-[0.8em] uppercase mt-4 mb-16 italic opacity-80">Bordertown HQ</h3>
-            
             <div id="bt-container" class="clock-text text-7xl md:text-[10rem] font-black italic tracking-tighter leading-none flex items-center justify-center">
                 <span id="bt-time">00:00:00</span>
                 <span id="bt-ampm" class="ampm font-display">--</span>
             </div>
-            
             <div class="mt-16 flex justify-center items-center gap-10 opacity-30">
                 <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent to-primary max-w-[100px]"></div>
                 <p class="text-[11px] text-gray-400 uppercase font-black tracking-[0.8em]">Australia / Adelaide</p>
                 <div class="h-[1px] flex-1 bg-gradient-to-l from-transparent to-primary max-w-[100px]"></div>
             </div>
         </div>
+    </div>
 
-        <div class="mt-20 text-center opacity-20">
-            <p class="font-display text-[10px] tracking-[2em] uppercase italic animate-pulse">Temporal Engine 2.0 // Xclipse Studio</p>
+    <div class="bottom-sync">
+        <p class="font-mono text-[9px] tracking-[0.4em] uppercase text-white/40">Stability Refresh in <span id="sync-timer" class="text-primary">60</span>s</p>
+        <div class="progress-bar">
+            <div id="progress-fill"></div>
         </div>
     </div>
 
     <script>
-        // BACKGROUND PARTICLE ENGINE
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -137,80 +86,63 @@
                 this.size = Math.random() * 2 + 0.5; this.speedX = (Math.random() - 0.5) * 0.5;
                 this.speedY = (Math.random() - 0.5) * 0.5; this.opacity = Math.random() * 0.4;
             }
-            update() {
-                this.x += this.speedX; this.y += this.speedY;
-                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
-            }
-            draw() {
-                ctx.fillStyle = `rgba(236, 72, 153, ${this.opacity})`;
-                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
-            }
+            update() { this.x += this.speedX; this.y += this.speedY; if (this.x < 0 || this.x > canvas.width) this.speedX *= -1; if (this.y < 0 || this.y > canvas.height) this.speedY *= -1; }
+            draw() { ctx.fillStyle = `rgba(236, 72, 153, ${this.opacity})`; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); }
         }
         function initParticles() { particles = []; for (let i = 0; i < 100; i++) particles.push(new Particle()); }
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(animate);
-        }
+        function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
 
-        // --- CLOCK & TEMPORAL SYNC ENGINE ---
-        const notice = document.getElementById('sync-notice');
+        // --- CLOCK & BOTTOM COUNTDOWN ENGINE ---
         const syncTimer = document.getElementById('sync-timer');
-        let isRefreshing = false;
+        const progressFill = document.getElementById('progress-fill');
+        let refreshTriggered = false;
 
         function updateStudioClock() {
             const now = new Date();
-            const seconds = now.getSeconds();
+            const sec = now.getSeconds();
+            const remaining = 60 - sec;
             
-            // Format time
-            const timeString = now.toLocaleTimeString('en-AU', { 
-                hour: 'numeric', minute: '2-digit', second: '2-digit', 
-                hour12: true, timeZone: 'Australia/Adelaide' 
-            });
-
-            const parts = timeString.split(' '); 
+            // 1. Update Clock Display
+            const timeStr = now.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true, timeZone: 'Australia/Adelaide' });
+            const parts = timeStr.split(' '); 
             document.getElementById('bt-time').innerText = parts[0];
             document.getElementById('bt-ampm').innerText = parts[1].toUpperCase();
-
-            // Reactive pulse
+            
+            // 2. Pulse Effect
             const clockEl = document.getElementById('bt-container');
             clockEl.classList.add('tick-pulse');
             setTimeout(() => clockEl.classList.remove('tick-pulse'), 150);
 
-            // SYNC LOGIC: Handle 5s warning and 0s refresh
-            if (seconds >= 55 && !isRefreshing) {
-                notice.classList.add('show');
-                syncTimer.innerText = 60 - seconds;
-            } else if (seconds === 0 && !isRefreshing) {
-                isRefreshing = true;
-                notice.classList.remove('show');
+            // 3. Bottom Countdown & Progress Bar
+            // If it's the exact moment of 0, show 0, otherwise show remaining
+            syncTimer.innerText = sec === 0 ? "0" : remaining;
+            
+            // Progress bar shrinks as we get closer to 60
+            const percentage = (remaining / 60) * 100;
+            progressFill.style.width = `${percentage}%`;
+
+            // 4. Handle Refresh sequence
+            // Start fade out at 1 second remaining
+            if (sec === 59 && !refreshTriggered) {
                 document.body.style.opacity = "0";
-                setTimeout(() => window.location.reload(), 1000);
-            } else if (seconds < 55) {
-                notice.classList.remove('show');
+            }
+
+            // Trigger reload at 0
+            if (sec === 0 && !refreshTriggered) {
+                refreshTriggered = true; 
+                window.location.reload();
             }
         }
 
         window.addEventListener('resize', resize);
-        resize();
-        initParticles();
-        animate();
+        resize(); initParticles(); animate();
         setInterval(updateStudioClock, 1000);
         updateStudioClock();
 
-        // GITHUB AUTO-SYNC (Background Check)
-        let currentVersion = null;
-        async function syncWithGitHub() {
-            try {
-                const response = await fetch(window.location.href, { method: 'HEAD', cache: 'no-cache' });
-                const newVersion = response.headers.get('ETag') || response.headers.get('Last-Modified');
-                if (currentVersion && newVersion !== currentVersion) window.location.reload();
-                currentVersion = newVersion;
-            } catch (err) {}
-        }
-        setInterval(syncWithGitHub, 30000);
-        syncWithGitHub();
+        // Background Sync (HEAD request only)
+        setInterval(async () => {
+            try { await fetch(window.location.href, { method: 'HEAD', cache: 'no-cache' }); } catch (err) {}
+        }, 30000);
     </script>
 </body>
 </html>
