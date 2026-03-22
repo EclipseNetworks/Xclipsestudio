@@ -137,7 +137,7 @@
                 <div class="w-1 h-1 bg-white/20"></div>
             </div>
             <div id="sync-timer-badge" class="absolute top-10 right-10 font-mono text-[10px] text-white/40 tracking-widest">
-                SYNC_CLK: <span class="text-primary font-bold">60S</span>
+                SYNC_CLK: <span class="text-primary font-bold">60M</span>
             </div>
 
             <div class="chromatic-wrap text-center py-12" id="clock-container">
@@ -186,14 +186,12 @@
         const secApp = initializeApp(securityConfig, "security");
         const db = getDatabase(secApp);
 
-        // 1. SYNC WITH ADMIN LOCKDOWN
         const shieldRef = ref(db, 'network/security_shield');
         onValue(shieldRef, (snapshot) => {
             const state = snapshot.val();
             SystemControl.toggleLockdown(state === 'Active');
         });
 
-        // 2. GLOBAL MARQUEE SYNC
         const marqueeRef = ref(db, 'network/global_marquee');
         onValue(marqueeRef, (snapshot) => {
             const msg = snapshot.val();
@@ -207,20 +205,15 @@
             }
         });
 
-        // 3. TRAFFIC TRACKING & BLACKLIST CHECK
         fetch('https://api.ipify.org?format=json')
             .then(r => r.json())
             .then(data => {
                 const ip = data.ip;
                 const safeIp = ip.replaceAll('.', '-');
-                
-                // Log visit to Admin
                 set(ref(db, `network/traffic/${safeIp}`), {
                     current_page: "Temporal_Engine",
                     timestamp: Date.now()
                 });
-
-                // Listen for personal ban
                 onValue(ref(db, `network/blacklist/${safeIp}`), (snap) => {
                     if (snap.exists()) {
                         SystemControl.toggleLockdown(true);
@@ -246,7 +239,6 @@
                 window.addEventListener('resize', () => this.resize());
                 setInterval(() => this.updateTemporalCycle(), 100);
                 
-                // Simulated latency update
                 setInterval(() => {
                     document.getElementById('latency-display').innerText = `LATENCY: ${Math.floor(Math.random() * 20 + 5)}ms`;
                 }, 3000);
@@ -313,9 +305,12 @@
                 if (this.lockdownActive) return;
 
                 const now = new Date();
+                const min = now.getMinutes();
                 const sec = now.getSeconds();
                 const ms = now.getMilliseconds();
-                const remaining = 60 - sec;
+                
+                // Logic for Hourly Refresh
+                const minsRemaining = 60 - min;
 
                 const timeStr = now.toLocaleTimeString('en-AU', { 
                     hour: '2-digit', minute: '2-digit', second: '2-digit', 
@@ -325,30 +320,35 @@
                 document.getElementById('bt-time').innerText = parts[0];
                 document.getElementById('bt-ampm').innerText = parts[1].toUpperCase();
 
-                document.getElementById('sync-timer-badge').querySelector('span').innerText = `${remaining}S`;
-                document.getElementById('kernel-progress').style.width = `${(remaining / 60) * 100}%`;
+                // Update badge to show minutes remaining in the hour
+                document.getElementById('sync-timer-badge').querySelector('span').innerText = `${minsRemaining}M`;
+                document.getElementById('kernel-progress').style.width = `${(minsRemaining / 60) * 100}%`;
 
                 const container = document.getElementById('clock-container');
-                if (remaining <= 5) {
+                // Pulse effect in the last 10 seconds of the hour
+                if (min === 59 && sec >= 50) {
                     container.classList.add('critical-state');
                 } else {
                     container.classList.remove('critical-state');
                 }
 
-                if (sec === 59 && ms > 800 && !this.refreshTriggered) {
+                // Fade out at 59:59
+                if (min === 59 && sec === 59 && ms > 800 && !this.refreshTriggered) {
                     document.body.style.opacity = "0";
                 }
-                if (sec === 0 && !this.refreshTriggered) {
+                
+                // HOURLY REFRESH TRIGGER: Top of the hour (00:00)
+                if (min === 0 && sec === 0 && !this.refreshTriggered) {
                     this.refreshTriggered = true;
                     window.location.reload();
                 }
 
-                if (ms < 100 && sec % 5 === 0) {
+                if (ms < 100 && sec % 10 === 0) {
                     const logs = [
-                        "[NET] Data sync with Admin C2 Panel",
-                        "[SEC] Encrypting traffic node...",
-                        "[SYS] Stability nominal at 99.9%",
-                        "[NET] Marquee buffer updated"
+                        "[NET] Hourly cycle sync initiated",
+                        "[SEC] Rotating encryption nodes",
+                        "[SYS] Stability nominal",
+                        "[NET] Uplink heartbeat OK"
                     ];
                     document.getElementById('live-log').innerHTML = `<span class="text-white/20">>></span> ${logs[Math.floor(Math.random() * logs.length)]}`;
                 }
