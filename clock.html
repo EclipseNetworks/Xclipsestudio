@@ -26,7 +26,7 @@
     </script>
 
     <style>
-      body { background: #050811; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: white; transition: opacity 1s ease; }
+      body { background: #050811; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: white; transition: opacity 1.5s ease; }
 
       /* AUTOMATED MESH BACKGROUND */
       .mesh-gradient {
@@ -77,16 +77,27 @@
         letter-spacing: 0.2em;
       }
 
+      /* NOTIFICATION SLIDE */
+      #sync-notice {
+        transform: translateY(-150%);
+        transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      }
+      #sync-notice.show { transform: translateY(0); }
+
       .no-select { user-select: none; }
     </style>
 </head>
 <body class="no-select">
 
+    <div id="sync-notice" class="fixed top-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-4 bg-black/60 backdrop-blur-xl border border-primary/30 px-6 py-3 rounded-full">
+        <div class="w-2 h-2 bg-primary animate-pulse rounded-full"></div>
+        <p class="font-mono text-[10px] tracking-[0.3em] uppercase text-white/80">Stability Sync in <span id="sync-timer" class="text-primary font-bold">5</span>s</p>
+    </div>
+
     <canvas id="bg-canvas"></canvas>
     <div class="mesh-gradient"></div>
 
     <div class="w-full max-w-4xl px-6 relative z-10">
-        
         <div class="glass-card p-12 md:p-24 rounded-[5rem] text-center relative overflow-hidden mx-auto">
             <div class="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]"></div>
 
@@ -119,63 +130,66 @@
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
-
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         class Particle {
             constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 2 + 0.5;
-                this.speedX = (Math.random() - 0.5) * 0.5;
-                this.speedY = (Math.random() - 0.5) * 0.5;
-                this.opacity = Math.random() * 0.4;
+                this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5; this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5; this.opacity = Math.random() * 0.4;
             }
             update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
+                this.x += this.speedX; this.y += this.speedY;
                 if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
                 if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
             }
             draw() {
                 ctx.fillStyle = `rgba(236, 72, 153, ${this.opacity})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
             }
         }
-
-        function initParticles() {
-            particles = [];
-            for (let i = 0; i < 100; i++) particles.push(new Particle());
-        }
-
+        function initParticles() { particles = []; for (let i = 0; i < 100; i++) particles.push(new Particle()); }
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             particles.forEach(p => { p.update(); p.draw(); });
             requestAnimationFrame(animate);
         }
 
-        // CLOCK & REACTION ENGINE
+        // --- CLOCK & TEMPORAL SYNC ENGINE ---
+        const notice = document.getElementById('sync-notice');
+        const syncTimer = document.getElementById('sync-timer');
+        let isRefreshing = false;
+
         function updateStudioClock() {
             const now = new Date();
+            const seconds = now.getSeconds();
+            
+            // Format time
             const timeString = now.toLocaleTimeString('en-AU', { 
                 hour: 'numeric', minute: '2-digit', second: '2-digit', 
                 hour12: true, timeZone: 'Australia/Adelaide' 
             });
 
             const parts = timeString.split(' '); 
-            const clockEl = document.getElementById('bt-container');
-            
             document.getElementById('bt-time').innerText = parts[0];
             document.getElementById('bt-ampm').innerText = parts[1].toUpperCase();
 
-            // Pulse effect
+            // Reactive pulse
+            const clockEl = document.getElementById('bt-container');
             clockEl.classList.add('tick-pulse');
             setTimeout(() => clockEl.classList.remove('tick-pulse'), 150);
+
+            // SYNC LOGIC: Handle 5s warning and 0s refresh
+            if (seconds >= 55 && !isRefreshing) {
+                notice.classList.add('show');
+                syncTimer.innerText = 60 - seconds;
+            } else if (seconds === 0 && !isRefreshing) {
+                isRefreshing = true;
+                notice.classList.remove('show');
+                document.body.style.opacity = "0";
+                setTimeout(() => window.location.reload(), 1000);
+            } else if (seconds < 55) {
+                notice.classList.remove('show');
+            }
         }
 
         window.addEventListener('resize', resize);
@@ -185,27 +199,15 @@
         setInterval(updateStudioClock, 1000);
         updateStudioClock();
 
-        // --- STABILITY REFRESH ENGINE ---
-        // Refreshes the site every 60 seconds to prevent memory leaks or animation bugs
-        setInterval(() => {
-            console.log("Xclipse Studio: Stability refresh initiated.");
-            document.body.style.opacity = "0"; // Fade out effect
-            setTimeout(() => {
-                window.location.reload(); 
-            }, 1000);
-        }, 60000);
-
-        // --- GITHUB AUTO-SYNC ENGINE ---
+        // GITHUB AUTO-SYNC (Background Check)
         let currentVersion = null;
         async function syncWithGitHub() {
             try {
                 const response = await fetch(window.location.href, { method: 'HEAD', cache: 'no-cache' });
                 const newVersion = response.headers.get('ETag') || response.headers.get('Last-Modified');
-                if (currentVersion && newVersion !== currentVersion) {
-                    window.location.reload();
-                }
+                if (currentVersion && newVersion !== currentVersion) window.location.reload();
                 currentVersion = newVersion;
-            } catch (err) { /* Silent fail on connection issues */ }
+            } catch (err) {}
         }
         setInterval(syncWithGitHub, 30000);
         syncWithGitHub();
