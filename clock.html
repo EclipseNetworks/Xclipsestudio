@@ -30,13 +30,10 @@
     <style>
       :root { --glitch-opacity: 0; }
       body { background: #050811; color: white; margin: 0; min-height: 100vh; overflow: hidden; font-family: 'JetBrains Mono', monospace; transition: background 0.8s ease; }
-      
       .layer-bg { position: fixed; inset: 0; z-index: -10; }
       .layer-grid { position: fixed; inset: 0; z-index: -5; background-image: radial-gradient(circle, rgba(236, 72, 153, 0.05) 1px, transparent 1px); background-size: 30px 30px; mask-image: radial-gradient(ellipse at center, black, transparent 80%); }
-      
       .chromatic-wrap { position: relative; transition: filter 0.3s ease; }
       .critical-state { filter: drop-shadow(2px 0px 0px #ff003c) drop-shadow(-2px 0px 0px #0ea5e9); animation: vibration 0.1s infinite; }
-      
       @keyframes vibration {
           0% { transform: translate(0); }
           25% { transform: translate(1px, 1px); }
@@ -44,7 +41,6 @@
           75% { transform: translate(1px, -1px); }
           100% { transform: translate(0); }
       }
-
       .glass-kernel {
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
         backdrop-filter: blur(60px);
@@ -52,17 +48,14 @@
         box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255,255,255,0.05);
         transform-style: preserve-3d;
       }
-
       #lockdown-shield {
         position: fixed; inset: 0; background: rgba(26, 0, 5, 0.95); z-index: 1000;
         display: none; flex-direction: column; align-items: center; justify-content: center;
         border: 20px solid #ff003c;
       }
-
       .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 8px; }
       .no-select { user-select: none; }
       .shield-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; }
-      
       #global-marquee-container {
         position: fixed; top: 0; left: 0; width: 100%; background: #ec4899; color: black; 
         font-weight: 800; font-size: 10px; padding: 4px 0; z-index: 2000; display: none;
@@ -137,7 +130,7 @@
                 <div class="w-1 h-1 bg-white/20"></div>
             </div>
             <div id="sync-timer-badge" class="absolute top-10 right-10 font-mono text-[10px] text-white/40 tracking-widest">
-                SYNC_CLK: <span class="text-primary font-bold">60M</span>
+                NEXT_RESYNC: <span class="text-primary font-bold">--:--:--</span>
             </div>
 
             <div class="chromatic-wrap text-center py-12" id="clock-container">
@@ -158,8 +151,8 @@
             <div class="mt-16 bg-black/60 rounded-xl p-6 border border-white/5 font-mono text-[10px] relative">
                 <div class="absolute -top-3 left-6 bg-dark px-3 py-1 text-[8px] text-white/40 uppercase tracking-widest border border-white/5">System_Log</div>
                 <div class="space-y-1 text-terminal/80">
-                    <p><span class="text-white/20">>></span> [KERNEL] Stabilizing temporal drift...</p>
-                    <p id="live-log"><span class="text-white/20">>></span> [NET] Awaiting Firebase handshake...</p>
+                    <p><span class="text-white/20">>></span> [KERNEL] Monitoring daily maintenance cycle...</p>
+                    <p id="live-log"><span class="text-white/20">>></span> [NET] Standing by for 0300_RELOAD</p>
                 </div>
             </div>
         </div>
@@ -186,18 +179,15 @@
         const secApp = initializeApp(securityConfig, "security");
         const db = getDatabase(secApp);
 
-        const shieldRef = ref(db, 'network/security_shield');
-        onValue(shieldRef, (snapshot) => {
-            const state = snapshot.val();
-            SystemControl.toggleLockdown(state === 'Active');
+        onValue(ref(db, 'network/security_shield'), (snapshot) => {
+            SystemControl.toggleLockdown(snapshot.val() === 'Active');
         });
 
-        const marqueeRef = ref(db, 'network/global_marquee');
-        onValue(marqueeRef, (snapshot) => {
+        onValue(ref(db, 'network/global_marquee'), (snapshot) => {
             const msg = snapshot.val();
             const container = document.getElementById('global-marquee-container');
             const text = document.getElementById('global-marquee-text');
-            if (msg && msg !== "") {
+            if (msg) {
                 container.style.display = 'block';
                 text.innerText = `[BROADCAST]: ${msg}`;
             } else {
@@ -205,22 +195,16 @@
             }
         });
 
-        fetch('https://api.ipify.org?format=json')
-            .then(r => r.json())
-            .then(data => {
-                const ip = data.ip;
-                const safeIp = ip.replaceAll('.', '-');
-                set(ref(db, `network/traffic/${safeIp}`), {
-                    current_page: "Temporal_Engine",
-                    timestamp: Date.now()
-                });
-                onValue(ref(db, `network/blacklist/${safeIp}`), (snap) => {
-                    if (snap.exists()) {
-                        SystemControl.toggleLockdown(true);
-                        document.getElementById('lockdown-msg').innerText = "FATAL: YOUR NODE IP HAS BEEN BLACKLISTED";
-                    }
-                });
+        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(data => {
+            const safeIp = data.ip.replaceAll('.', '-');
+            set(ref(db, `network/traffic/${safeIp}`), { current_page: "Temporal_Engine", timestamp: Date.now() });
+            onValue(ref(db, `network/blacklist/${safeIp}`), (snap) => {
+                if (snap.exists()) {
+                    SystemControl.toggleLockdown(true);
+                    document.getElementById('lockdown-msg').innerText = "FATAL: YOUR NODE IP HAS BEEN BLACKLISTED";
+                }
             });
+        });
     </script>
 
     <script>
@@ -235,29 +219,18 @@
                 this.resize();
                 this.createParticles();
                 this.animate();
-                
                 window.addEventListener('resize', () => this.resize());
                 setInterval(() => this.updateTemporalCycle(), 100);
-                
                 setInterval(() => {
                     document.getElementById('latency-display').innerText = `LATENCY: ${Math.floor(Math.random() * 20 + 5)}ms`;
                 }, 3000);
             },
 
-            resize() {
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
-            },
+            resize() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; },
 
             createParticles() {
                 for (let i = 0; i < 50; i++) {
-                    this.particles.push({
-                        x: Math.random() * this.canvas.width,
-                        y: Math.random() * this.canvas.height,
-                        vx: (Math.random() - 0.5) * 0.5,
-                        vy: (Math.random() - 0.5) * 0.5,
-                        size: Math.random() * 2
-                    });
+                    this.particles.push({ x: Math.random() * this.canvas.width, y: Math.random() * this.canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5, size: Math.random() * 2 });
                 }
             },
 
@@ -269,9 +242,7 @@
                         p.x += p.vx; p.y += p.vy;
                         if (p.x < 0 || p.x > this.canvas.width) p.vx *= -1;
                         if (p.y < 0 || p.y > this.canvas.height) p.vy *= -1;
-                        this.ctx.beginPath();
-                        this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                        this.ctx.fill();
+                        this.ctx.beginPath(); this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); this.ctx.fill();
                     });
                 }
                 requestAnimationFrame(() => this.animate());
@@ -279,39 +250,22 @@
 
             toggleLockdown(forceState) {
                 this.lockdownActive = forceState;
-                const shield = document.getElementById('lockdown-shield');
+                document.getElementById('lockdown-shield').style.display = forceState ? 'flex' : 'none';
                 const secText = document.getElementById('sec-app-status');
-                const shieldDot = document.getElementById('shield-indicator-dot');
-                const shieldText = document.getElementById('shield-status-text');
-                
-                shield.style.display = this.lockdownActive ? 'flex' : 'none';
-                secText.innerText = this.lockdownActive ? 'OVERRIDE_ACTIVE' : 'SYNC_ACTIVE';
-                secText.classList.toggle('text-alert', this.lockdownActive);
-
-                if (this.lockdownActive) {
-                    shieldDot.style.backgroundColor = '#ff003c';
-                    shieldDot.style.boxShadow = '0 0 10px #ff003c';
-                    shieldText.innerText = "BREACH_DETECTED";
-                    shieldText.style.color = '#ff003c';
-                } else {
-                    shieldDot.style.backgroundColor = '#4ade80';
-                    shieldDot.style.boxShadow = '0 0 10px #4ade80';
-                    shieldText.innerText = "ONLINE_MAX";
-                    shieldText.style.color = '#4ade80';
-                }
+                secText.innerText = forceState ? 'OVERRIDE_ACTIVE' : 'SYNC_ACTIVE';
+                secText.classList.toggle('text-alert', forceState);
             },
 
             updateTemporalCycle() {
                 if (this.lockdownActive) return;
 
                 const now = new Date();
+                const hrs = now.getHours();
                 const min = now.getMinutes();
                 const sec = now.getSeconds();
                 const ms = now.getMilliseconds();
-                
-                // Logic for Hourly Refresh
-                const minsRemaining = 60 - min;
 
+                // Display Clock
                 const timeStr = now.toLocaleTimeString('en-AU', { 
                     hour: '2-digit', minute: '2-digit', second: '2-digit', 
                     hour12: true, timeZone: 'Australia/Adelaide' 
@@ -320,35 +274,45 @@
                 document.getElementById('bt-time').innerText = parts[0];
                 document.getElementById('bt-ampm').innerText = parts[1].toUpperCase();
 
-                // Update badge to show minutes remaining in the hour
-                document.getElementById('sync-timer-badge').querySelector('span').innerText = `${minsRemaining}M`;
-                document.getElementById('kernel-progress').style.width = `${(minsRemaining / 60) * 100}%`;
+                // Calculate countdown to 3:00:00 AM
+                let target = new Date(now);
+                target.setHours(3, 0, 0, 0);
+                if (now >= target) {
+                    target.setDate(target.getDate() + 1);
+                }
+                const diff = target - now;
+                const hRem = Math.floor(diff / 3600000);
+                const mRem = Math.floor((diff % 3600000) / 60000);
+                const sRem = Math.floor((diff % 60000) / 1000);
+                
+                document.getElementById('sync-timer-badge').querySelector('span').innerText = 
+                    `${hRem.toString().padStart(2, '0')}:${mRem.toString().padStart(2, '0')}:${sRem.toString().padStart(2, '0')}`;
+                
+                // Progress bar shows completion of the current 24h cycle (relative to 3am)
+                document.getElementById('kernel-progress').style.width = `${(diff / 86400000) * 100}%`;
 
+                // Critical Warning: 10 seconds before 3 AM
                 const container = document.getElementById('clock-container');
-                // Pulse effect in the last 10 seconds of the hour
-                if (min === 59 && sec >= 50) {
+                if (hrs === 2 && min === 59 && sec >= 50) {
                     container.classList.add('critical-state');
                 } else {
                     container.classList.remove('critical-state');
                 }
 
-                // Fade out at 59:59
-                if (min === 59 && sec === 59 && ms > 800 && !this.refreshTriggered) {
-                    document.body.style.opacity = "0";
-                }
-                
-                // HOURLY REFRESH TRIGGER: Top of the hour (00:00)
-                if (min === 0 && sec === 0 && !this.refreshTriggered) {
+                // REFRESH TRIGGER: Exactly 03:00:00
+                if (hrs === 3 && min === 0 && sec === 0 && !this.refreshTriggered) {
                     this.refreshTriggered = true;
-                    window.location.reload();
+                    document.body.style.opacity = "0";
+                    setTimeout(() => window.location.reload(), 500);
                 }
 
-                if (ms < 100 && sec % 10 === 0) {
+                // Random System Logs
+                if (ms < 100 && sec % 15 === 0) {
                     const logs = [
-                        "[NET] Hourly cycle sync initiated",
-                        "[SEC] Rotating encryption nodes",
-                        "[SYS] Stability nominal",
-                        "[NET] Uplink heartbeat OK"
+                        "[SYS] Daily kernel cleanup scheduled",
+                        "[NET] Maintenance window: 0300 HRS",
+                        "[SEC] Integrity check nominal",
+                        "[SYS] Calculating next temporal leap"
                     ];
                     document.getElementById('live-log').innerHTML = `<span class="text-white/20">>></span> ${logs[Math.floor(Math.random() * logs.length)]}`;
                 }
@@ -356,7 +320,6 @@
         };
 
         SystemControl.init();
-        window.SystemControl = SystemControl;
     </script>
 </body>
 </html>
