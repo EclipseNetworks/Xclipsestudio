@@ -7,252 +7,237 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Montserrat:wght@300;400;900&display=swap" rel="stylesheet">
-
-
-    <script src="network-core.js"></script>
+    
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-
-    <script>
-      // Your verified Firebase configuration
-      const firebaseConfig = {
-        apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
-        authDomain: "xclipse-security.firebaseapp.com",
-        projectId: "xclipse-security",
-        storageBucket: "xclipse-security.firebasestorage.app",
-        messagingSenderId: "161353959200",
-        appId: "1:161353959200:web:d0b36f7817b31842cff945",
-        databaseURL: "https://xclipse-security-default-rtdb.firebaseio.com" 
-      };
-
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
-
-      async function runSecurityGate() {
-        try {
-          const res = await fetch('https://api.ipify.org?format=json');
-          const data = await res.json();
-          const cleanIP = data.ip.replaceAll('.', '_');
-
-          // 1. Instant Blacklist Check
-          db.ref('blacklisted_ips/' + cleanIP).once('value', (snapshot) => {
-            if (snapshot.exists()) {
-              window.location.href = "/404.html";
-            }
-          });
-
-          // 2. Report to Live Traffic
-          const userRef = db.ref('live_traffic/' + cleanIP);
-          userRef.set({
-            ip: data.ip,
-            page: window.location.pathname,
-            last_seen: Date.now(),
-            platform: navigator.platform
-          });
-
-          // Remove presence when they close the tab
-          userRef.onDisconnect().remove();
-
-        } catch (e) { console.warn("Security Link: Offline Mode"); }
-      }
-
-      runSecurityGate();
-    </script>
-
     
     <style>
-        body {
-            background: #050505;
-            color: #fff;
-            font-family: 'Montserrat', sans-serif;
-            overflow-x: hidden;
-        }
-
-        .vault-gradient {
-            background: radial-gradient(circle at 50% 50%, #1e0b36 0%, #050505 100%);
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-
-        .glass-vault {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 40px;
-        }
-
-        .glow-text {
-            text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
-        }
-
-        .bass-visualizer {
-            display: flex;
-            align-items: flex-end;
-            gap: 4px;
-            height: 40px;
-        }
-
-        .bar {
-            width: 4px;
-            background: #a855f7;
-            border-radius: 2px;
-            animation: bounce 1s infinite alternate;
-            animation-play-state: paused; /* Added to sync with play button */
-        }
-
-        @keyframes bounce {
-            10% { height: 10%; }
-            100% { height: 100%; }
-        }
-
-        input[type=range] {
-            -webkit-appearance: none;
-            background: rgba(255,255,255,0.1);
-            height: 4px;
-            border-radius: 5px;
-        }
-
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 15px;
-            width: 15px;
-            border-radius: 50%;
-            background: #a855f7;
-            cursor: pointer;
-            box-shadow: 0 0 10px #a855f7;
-        }
+        :root { --primary: #a855f7; --primary-glow: rgba(168, 85, 247, 0.3); }
+        body { background: #010101; color: #fff; font-family: 'Montserrat', sans-serif; overflow-x: hidden; -webkit-user-select: none; user-select: none; }
         
-        /* Hide native controls for cleaner look */
-        audio::-webkit-media-controls-enclosure { display:none !important; }
+        .mesh-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(at 0% 0%, var(--primary-glow) 0, transparent 50%), 
+                        radial-gradient(at 100% 100%, var(--primary-glow) 0, transparent 50%);
+            z-index: -1; filter: blur(100px); opacity: 0.5;
+        }
+
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .text-theme { color: var(--primary); }
+        .bg-theme { background: var(--primary); }
+        .shadow-glow { box-shadow: 0 0 50px -10px var(--primary-glow); }
+
+        /* Search Sophistication */
+        .search-input { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); transition: all 0.4s ease; }
+        .search-input:focus { border-color: var(--primary); width: 280px !important; box-shadow: 0 0 20px var(--primary-glow); }
+
+        .scroller { display: flex; overflow-x: auto; gap: 24px; padding: 20px; scrollbar-width: none; scroll-behavior: smooth; }
+        .track-card { min-width: 170px; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); cursor: pointer; }
+        .track-card:hover { transform: translateY(-12px); }
+
+        /* Sliders */
+        input[type=range] { -webkit-appearance: none; background: rgba(255,255,255,0.05); height: 2px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: var(--primary); cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 10px var(--primary); }
+
+        #settings-panel { transform: translateX(100%); transition: transform 0.6s cubic-bezier(0.85, 0, 0.15, 1); }
+        #settings-panel.open { transform: translateX(0); }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-6" oncontextmenu="return false;">
 
-    <div class="vault-gradient"></div>
+<body class="min-h-screen flex flex-col items-center p-6" oncontextmenu="return false;">
+    <div class="mesh-bg"></div>
 
-    <header class="mb-12 text-center">
-        <h2 class="text-[10px] tracking-[0.8em] uppercase text-purple-500 font-black mb-2">Private Access</h2>
-        <h1 class="font-display text-4xl md:text-6xl font-black italic tracking-tighter uppercase">The <span class="text-purple-600">Vault</span></h1>
-    </header>
-
-    <div class="glass-vault w-full max-w-4xl p-8 md:p-12 shadow-2xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            
-            <div class="relative group">
-                <div class="absolute -inset-4 bg-purple-600/20 rounded-[3rem] blur-2xl group-hover:bg-purple-600/40 transition duration-1000"></div>
-                <div class="relative aspect-square rounded-[2.5rem] overflow-hidden border border-white/10">
-                    <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=1000" 
-                         alt="Cover Art" 
-                         class="w-full h-full object-cover grayscale brightness-50 group-hover:grayscale-0 transition duration-1000 scale-110">
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <div class="bass-visualizer">
-                            <div class="bar" style="animation-delay: 0.1s"></div>
-                            <div class="bar" style="animation-delay: 0.3s"></div>
-                            <div class="bar" style="animation-delay: 0.2s"></div>
-                            <div class="bar" style="animation-delay: 0.4s"></div>
-                            <div class="bar" style="animation-delay: 0.1s"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex flex-col">
-                <div class="mb-8">
-                    <span class="bg-purple-600/20 text-purple-400 text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-widest border border-purple-500/30">
-                        Unreleased Leak
-                    </span>
-                    <h3 class="text-3xl md:text-5xl font-black italic uppercase mt-6 tracking-tighter">Mask Off</h3>
-                    <p class="text-gray-400 font-medium text-lg mt-2">Future</p>
-                    <p class="text-purple-500 text-[11px] font-bold uppercase tracking-widest mt-4 italic">
-                        Slowed + Reverb + Bass Boosted
-                    </p>
-                </div>
-
-                <div class="space-y-6">
-                    <div class="flex items-center gap-4">
-                        <span id="time" class="text-xs font-mono text-gray-500">0:00</span>
-                        <input type="range" id="progress" value="0" class="flex-1">
-                        <span id="duration" class="text-xs font-mono text-gray-500">--:--</span>
-                    </div>
-
-                    <div class="flex items-center justify-between">
-                        <div class="flex flex-col gap-1">
-                             <i class="fas fa-volume-down text-[10px] text-gray-600"></i>
-                             <input type="range" id="volume" min="0" max="1" step="0.1" value="0.8" class="w-20">
-                        </div>
-                        <div class="flex items-center gap-8">
-                            <button class="text-2xl hover:scale-110 transition"><i class="fas fa-step-backward"></i></button>
-                            <button id="playBtn" class="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center text-xl hover:scale-110 transition shadow-xl">
-                                <i class="fas fa-play ml-1"></i>
-                            </button>
-                            <button class="text-2xl hover:scale-110 transition"><i class="fas fa-step-forward"></i></button>
-                        </div>
-                        <button class="text-gray-500 hover:text-white transition"><i class="fas fa-redo"></i></button>
-                    </div>
-                </div>
-            </div>
+    <div class="fixed top-8 left-8 right-8 flex justify-between items-center z-50">
+        <div class="relative">
+            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-[10px] opacity-20"></i>
+            <input type="text" id="vaultSearch" placeholder="SEARCH VAULT..." class="search-input w-40 rounded-full py-2 pl-10 pr-6 text-[9px] font-black tracking-widest outline-none uppercase">
+        </div>
+        
+        <div class="flex items-center gap-6">
+            <span class="hidden md:block text-[9px] font-bold text-theme uppercase tracking-widest"><span id="live-count">1</span> Listeners Active</span>
+            <button onclick="toggleSettings()" class="w-10 h-10 glass rounded-xl flex items-center justify-center hover:bg-white/5 transition-all">
+                <i class="fas fa-palette text-xs"></i>
+            </button>
         </div>
     </div>
 
-    <audio id="audioSource" preload="auto" controlsList="nodownload">
-        <source src="https://docs.google.com/uc?export=download&id=1YuC7EG12q9pOgnvryIw4SEFDlvoNJZQM" type="audio/wav">
-    </audio>
+    <div id="settings-panel" class="fixed top-0 right-0 h-full w-72 glass z-[60] p-10 border-l border-white/5">
+        <h4 class="text-[10px] font-black uppercase tracking-[0.4em] mb-10 opacity-40">Visual Core</h4>
+        <div class="grid grid-cols-2 gap-4">
+            <button onclick="setTheme('#a855f7')" class="aspect-square bg-[#a855f7] rounded-2xl border-4 border-white/5"></button>
+            <button onclick="setTheme('#00ffcc')" class="aspect-square bg-[#00ffcc] rounded-2xl border-4 border-white/5"></button>
+            <button onclick="setTheme('#ff3366')" class="aspect-square bg-[#ff3366] rounded-2xl border-4 border-white/5"></button>
+            <button onclick="setTheme('#3b82f6')" class="aspect-square bg-[#3b82f6] rounded-2xl border-4 border-white/5"></button>
+        </div>
+        <button onclick="toggleSettings()" class="absolute bottom-10 left-10 right-10 py-4 glass text-[9px] font-black uppercase tracking-[0.2em]">Close</button>
+    </div>
 
-    <footer class="mt-12 opacity-40">
-        <p class="text-[9px] uppercase tracking-[0.5em] font-bold">Encrypted Archive &copy; 2026 XCLIPSE STUDIO</p>
+    <header class="mt-28 mb-16 text-center">
+        <h2 class="text-[10px] tracking-[1.2em] uppercase text-theme font-black mb-4">XCLIPSE STUDIO</h2>
+        <h1 class="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-none">The <span class="text-theme">Vault</span></h1>
+    </header>
+
+    <div id="player-target" class="glass w-full max-w-5xl p-8 md:p-14 rounded-[3.5rem] shadow-glow mb-20">
+        <div id="loading" class="text-center py-20 text-[10px] font-black tracking-[1em] opacity-20">DECRYPTING...</div>
+    </div>
+
+    <div class="w-full max-w-7xl px-6">
+        <div class="flex justify-between items-end mb-8 px-4">
+            <h3 class="text-[9px] uppercase tracking-[0.5em] font-black opacity-20">Archive Index</h3>
+            <span id="result-count" class="text-[8px] font-mono opacity-20">0 TRACKS LOADED</span>
+        </div>
+        <div id="track-scroller" class="scroller"></div>
+    </div>
+
+    <footer class="mt-24 mb-10 opacity-10">
+        <p class="text-[8px] uppercase tracking-[0.8em] font-bold text-center">Encrypted &copy; 2026 XCLIPSE</p>
     </footer>
 
     <script>
-        const audio = document.getElementById('audioSource');
-        const playBtn = document.getElementById('playBtn');
-        const progress = document.getElementById('progress');
-        const volume = document.getElementById('volume');
-        const timeDisplay = document.getElementById('time');
-        const durationDisplay = document.getElementById('duration');
-        const bars = document.querySelectorAll('.bar');
+        const USER_ID = "1435917656";
+        const API_BASE = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(`https://feeds.soundcloud.com/users/soundcloud:users:${USER_ID}/sounds.rss`)}&t=${Date.now()}`;
+        
+        let allTracks = [];
+        let filteredTracks = [];
+        let activeIdx = 0;
 
-        function formatTime(t) {
-            const m = Math.floor(t/60), s = Math.floor(t%60);
-            return `${m}:${s < 10 ? '0'+s : s}`;
+        // Firebase Block
+        const firebaseConfig = {
+            apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
+            authDomain: "xclipse-security.firebaseapp.com",
+            projectId: "xclipse-security",
+            databaseURL: "https://xclipse-security-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        async function secInit() {
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                const cleanIP = data.ip.replaceAll('.', '-');
+                db.ref('network/blacklist/' + cleanIP).on('value', s => { if(s.exists()) window.location.href="https://google.com"; });
+                db.ref('network/traffic/' + cleanIP).set({ page: 'VAULT', last: Date.now() });
+                db.ref('network/traffic/' + cleanIP).onDisconnect().remove();
+                db.ref('network/traffic').on('value', s => document.getElementById('live-count').innerText = s.numChildren());
+            } catch(e) {}
+        }
+        secInit();
+
+        function setTheme(c) {
+            document.documentElement.style.setProperty('--primary', c);
+            document.documentElement.style.setProperty('--primary-glow', c + '44');
+            localStorage.setItem('v_theme', c);
+        }
+        setTheme(localStorage.getItem('v_theme') || '#a855f7');
+        function toggleSettings() { document.getElementById('settings-panel').classList.toggle('open'); }
+
+        async function loadVault() {
+            const r = await fetch(API_BASE);
+            const d = await r.json();
+            allTracks = d.items;
+            filteredTracks = [...allTracks];
+            document.getElementById('result-count').innerText = `${allTracks.length} TRACKS ENCRYPTED`;
+            renderScroller();
+            selectTrack(0);
         }
 
-        // Load metadata to get real duration
-        audio.onloadedmetadata = () => {
-            durationDisplay.innerText = formatTime(audio.duration);
-        };
+        function renderScroller() {
+            document.getElementById('track-scroller').innerHTML = filteredTracks.map((t, i) => `
+                <div class="track-card group" onclick="selectTrack(${i}, true)">
+                    <img src="${t.thumbnail}" class="w-full aspect-square object-cover rounded-3xl grayscale group-hover:grayscale-0 transition-all duration-700 border border-white/5">
+                    <p class="text-[9px] font-black uppercase tracking-widest truncate mt-4 opacity-30 group-hover:opacity-100">${t.title}</p>
+                </div>
+            `).join('');
+        }
 
-        playBtn.addEventListener('click', () => {
-            if (audio.paused) {
-                audio.play();
-                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                bars.forEach(b => b.style.animationPlayState = 'running');
-            } else {
-                audio.pause();
-                playBtn.innerHTML = '<i class="fas fa-play ml-1"></i>';
-                bars.forEach(b => b.style.animationPlayState = 'paused');
-            }
+        document.getElementById('vaultSearch').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            filteredTracks = allTracks.filter(t => t.title.toLowerCase().includes(term));
+            renderScroller();
         });
 
-        audio.addEventListener('timeupdate', () => {
-            const val = (audio.currentTime / audio.duration) * 100;
-            progress.value = val || 0;
-            timeDisplay.innerText = formatTime(audio.currentTime);
-        });
+        function selectTrack(i, autoPlay = false) {
+            if(!filteredTracks[i]) return;
+            const t = filteredTracks[i];
+            activeIdx = i;
 
-        progress.addEventListener('input', () => {
-            audio.currentTime = (progress.value / 100) * audio.duration;
-        });
+            document.getElementById('player-target').innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div class="relative aspect-square">
+                        <div class="absolute -inset-8 bg-theme opacity-10 blur-3xl"></div>
+                        <img src="${t.thumbnail}" class="relative w-full h-full object-cover rounded-[2.5rem] border border-white/5">
+                    </div>
+                    <div class="flex flex-col">
+                        <div class="mb-10">
+                            <span class="text-theme text-[9px] font-black uppercase tracking-[0.4em] mb-4 block">Archive Node // ${allTracks.length - i}</span>
+                            <h3 class="text-4xl md:text-6xl font-black italic uppercase tracking-tighter leading-none mb-4">${t.title}</h3>
+                            <p class="text-gray-600 font-bold text-[10px] uppercase tracking-[0.3em]">Mastered by XCLIPSE</p>
+                        </div>
+                        
+                        <div class="space-y-8">
+                            <div class="flex items-center gap-4">
+                                <span id="curT" class="text-[9px] font-mono opacity-30">0:00</span>
+                                <input type="range" id="seek" value="0" class="flex-1">
+                                <span id="totT" class="text-[9px] font-mono opacity-30">0:00</span>
+                            </div>
 
-        volume.addEventListener('input', () => {
-            audio.volume = volume.value;
-        });
+                            <div class="flex items-center justify-between glass p-6 rounded-3xl">
+                                <div class="flex items-center gap-4">
+                                    <button onclick="toggleMute()" id="muteBtn" class="text-theme opacity-50 hover:opacity-100 transition"><i class="fas fa-volume-up"></i></button>
+                                    <input type="range" id="vol" min="0" max="1" step="0.01" class="w-24 md:w-32">
+                                </div>
+                                <div class="flex items-center gap-8">
+                                    <button id="playBtn" class="w-20 h-20 bg-white text-black rounded-full flex items-center justify-center text-3xl hover:scale-105 active:scale-95 transition shadow-theme">
+                                        <i class="fas fa-play ml-1"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <audio id="v_audio" src="${t.enclosure.link}" preload="auto" controlsList="nodownload"></audio>
+            `;
+            initAudio(autoPlay);
+        }
 
-        audio.onended = () => {
-            playBtn.innerHTML = '<i class="fas fa-play ml-1"></i>';
-            bars.forEach(b => b.style.animationPlayState = 'paused');
-        };
+        function initAudio(playNow) {
+            const a = document.getElementById('v_audio'), pBtn = document.getElementById('playBtn'), 
+                  seek = document.getElementById('seek'), vol = document.getElementById('vol');
+            
+            a.volume = localStorage.getItem('v_vol') || 0.8;
+            vol.value = a.volume;
+            
+            const fmt = s => { let m=Math.floor(s/60), sec=Math.floor(s%60); return `${m}:${sec<10?'0'+sec:sec}`; };
+            a.onloadedmetadata = () => document.getElementById('totT').innerText = fmt(a.duration);
+            
+            pBtn.onclick = () => {
+                if(a.paused) { a.play(); pBtn.innerHTML = '<i class="fas fa-pause"></i>'; }
+                else { a.pause(); pBtn.innerHTML = '<i class="fas fa-play ml-1"></i>'; }
+            };
+
+            if(playNow) { a.play(); pBtn.innerHTML = '<i class="fas fa-pause"></i>'; }
+
+            a.ontimeupdate = () => {
+                seek.value = (a.currentTime / a.duration) * 100 || 0;
+                document.getElementById('curT').innerText = fmt(a.currentTime);
+            };
+
+            seek.oninput = () => a.currentTime = (seek.value / 100) * a.duration;
+            vol.oninput = (e) => { 
+                a.volume = e.target.value; 
+                localStorage.setItem('v_vol', a.volume); 
+            };
+        }
+
+        function toggleMute() {
+            const a = document.getElementById('v_audio'), mBtn = document.getElementById('muteBtn');
+            a.muted = !a.muted;
+            mBtn.innerHTML = a.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+            mBtn.style.opacity = a.muted ? "1" : "0.5";
+        }
+
+        loadVault();
     </script>
 </body>
 </html>
