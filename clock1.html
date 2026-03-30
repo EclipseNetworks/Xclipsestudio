@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XCLIPSE | OVERDRIVE CHRONO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #a855f7;
+            --primary-glow: rgba(168, 85, 247, 0.6);
+            --glow-mult: 1; /* Dynamic Multiplier */
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: #000; color: #fff; font-family: 'Montserrat', sans-serif;
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
+        }
+
+        canvas {
+            position: fixed; inset: 0; z-index: -1;
+            opacity: calc(0.2 * var(--glow-mult)); filter: blur(0.5px);
+        }
+
+        /* Intensity UI */
+        .intensity-toggle {
+            position: fixed; top: 40px; right: 40px; z-index: 100;
+            display: flex; gap: 8px; background: rgba(255,255,255,0.03);
+            padding: 6px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .int-btn {
+            width: 32px; height: 32px; border-radius: 8px; font-size: 8px;
+            font-weight: 900; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.3s; color: rgba(255,255,255,0.3);
+        }
+        .int-btn.active { background: var(--primary); color: #000; box-shadow: 0 0 15px var(--primary-glow); }
+
+        .chrono-container { text-align: center; width: 100%; z-index: 10; pointer-events: none; }
+
+        #time-display {
+            font-size: clamp(6rem, 20vw, 22rem);
+            font-weight: 900; font-style: italic; letter-spacing: -0.06em;
+            line-height: 0.85; text-transform: uppercase; font-variant-numeric: tabular-nums;
+            filter: drop-shadow(0 0 calc(30px * var(--glow-mult)) var(--primary-glow));
+            transition: filter 0.5s ease;
+        }
+
+        .seconds-container { display: inline-flex; flex-direction: column; align-items: flex-start; vertical-align: top; margin-left: 0.1em; }
+        .seconds-unit { font-size: 0.3em; opacity: 0.4; color: var(--primary); line-height: 1; font-family: 'JetBrains Mono', monospace; }
+
+        .ampm-unit {
+            font-size: 0.12em; font-style: normal; font-weight: 900;
+            letter-spacing: 0.2em; color: #000; background: var(--primary);
+            padding: 4px 10px; border-radius: 4px; margin-top: 15px;
+            animation: heartbeat 1.5s infinite;
+            box-shadow: 0 0 calc(25px * var(--glow-mult)) var(--primary-glow);
+            transition: box-shadow 0.5s ease;
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); filter: brightness(1); }
+            10% { transform: scale(1.2); filter: brightness(1.8); }
+            20% { transform: scale(1.1); filter: brightness(1.4); }
+            30% { transform: scale(1.3); filter: brightness(2); }
+            45% { transform: scale(1); filter: brightness(1); }
+        }
+
+        .metadata { margin-top: 4rem; }
+        .date-text { font-size: clamp(0.7rem, 2vw, 1.2rem); font-weight: 900; text-transform: uppercase; letter-spacing: 0.8em; opacity: 0.3; }
+        .status-badge {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--primary); margin-top: 2rem;
+            letter-spacing: 0.5em; opacity: 0.8; border: 1px solid var(--primary); padding: 4px 12px;
+            display: inline-block; border-radius: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="intensity-toggle">
+        <div class="int-btn" onclick="setInt(0.5, this)" id="low-btn">LOW</div>
+        <div class="int-btn active" onclick="setInt(1, this)">MID</div>
+        <div class="int-btn" onclick="setInt(2, this)">MAX</div>
+    </div>
+
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="chrono-container">
+        <div id="time-display">
+            00:00<div class="seconds-container">
+                <span class="seconds-unit" id="sec-node">00</span>
+                <span class="ampm-unit" id="ampm-node">AM</span>
+            </div>
+        </div>
+
+        <div class="metadata">
+            <div id="date-display" class="date-text">SYNCHRONIZING...</div>
+            <div id="status-label" class="status-badge">NODE_STANDBY</div>
+        </div>
+    </div>
+
+    <script>
+        // --- INTENSITY ENGINE ---
+        function setInt(val, el) {
+            document.documentElement.style.setProperty('--glow-mult', val);
+            document.querySelectorAll('.int-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            localStorage.setItem('v_glow_val', val);
+        }
+        // Load preference
+        const savedGlow = localStorage.getItem('v_glow_val') || 1;
+        document.documentElement.style.setProperty('--glow-mult', savedGlow);
+
+        // --- MATRIX ENGINE ---
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        const alphabet = "XCLIPSEVAULT777";
+        const fontSize = 18;
+        const columns = Math.floor(width / fontSize);
+        const rainDrops = Array.from({ length: columns }).fill(0).map(() => Math.random() * -100);
+        let matrixSpeed = 1, targetSpeed = 1;
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = localStorage.getItem('v_theme') || "#a855f7";
+            ctx.font = `900 ${fontSize}px monospace`;
+            matrixSpeed += (targetSpeed - matrixSpeed) * 0.1;
+            for (let i = 0; i < rainDrops.length; i++) {
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+                if (rainDrops[i] * fontSize > height && Math.random() > 0.975) rainDrops[i] = 0;
+                rainDrops[i] += matrixSpeed;
+            }
+        }
+
+        // --- CLOCK ENGINE ---
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleString("en-AU", { timeZone: "Australia/Adelaide", hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            const dateStr = now.toLocaleString("en-AU", { timeZone: "Australia/Adelaide", weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            const parts = timeStr.match(/(\d+):(\d+):(\d+)\s*(am|pm)/i);
+            if (parts) {
+                const [_, hours, mins, secs, ampm] = parts;
+                document.getElementById('time-display').childNodes[0].nodeValue = `${hours}:${mins}`;
+                document.getElementById('sec-node').innerText = secs;
+                document.getElementById('ampm-node').innerText = ampm.toUpperCase();
+            }
+            document.getElementById('date-display').innerText = dateStr;
+            const isPlaying = localStorage.getItem('v_audio_playing') === 'true';
+            targetSpeed = isPlaying ? 4 : 1;
+            document.getElementById('status-label').innerText = isPlaying ? "NODE_ACTIVE_DECRYPTING" : "NODE_IDLE_STANDBY";
+        }
+
+        // --- THEME SYNC ---
+        function syncTheme() {
+            const color = localStorage.getItem('v_theme') || '#a855f7';
+            document.documentElement.style.setProperty('--primary', color);
+            document.documentElement.style.setProperty('--primary-glow', color + '99');
+        }
+
+        window.addEventListener('resize', () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; });
+        function animate() { drawMatrix(); requestAnimationFrame(animate); }
+        setInterval(updateClock, 1000);
+        syncTheme(); updateClock(); animate();
+    </script>
+</body>
+</html>
