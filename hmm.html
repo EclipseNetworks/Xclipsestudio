@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | ARCHITECT_OS_v45.0</title>
+    <title>XCLIPSE | ARCHITECT_OS_v45.2.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     
@@ -15,15 +15,12 @@
             --bg-dark: #010101;
             --panel-bg: rgba(5, 5, 5, 0.98);
             --border-ui: rgba(255, 255, 255, 0.08);
-            --accent-red: #ff4444;
-            --accent-cyan: #00f3ff;
             --terminal-green: #00ff88;
         }
 
-        /* --- GLOBAL RESET & SCROLL --- */
+        /* --- GLOBAL RESET --- */
         * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
 
         body, html { 
@@ -34,137 +31,61 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* --- BACKGROUND DYNAMICS --- */
-        #entropy-canvas { 
-            position: fixed; inset: 0; z-index: 0; 
-            opacity: 0.25; pointer-events: none; 
-        }
+        /* --- BACKGROUND LAYER --- */
+        #entropy-canvas { position: fixed; inset: 0; z-index: 0; opacity: 0.2; pointer-events: none; }
+        .os-grid { position: fixed; inset: 0; z-index: 1; background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
+        .scanline { width: 100%; height: 150px; z-index: 2; position: absolute; background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(168, 85, 247, 0.05) 50%, rgba(0,0,0,0) 100%); opacity: 0.1; pointer-events: none; animation: scan 12s linear infinite; }
+        @keyframes scan { from { top: -150px; } to { top: 100%; } }
 
-        .scanline {
-            width: 100%; height: 120px;
-            z-index: 1; position: absolute;
-            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(168, 85, 247, 0.08) 50%, rgba(0,0,0,0) 100%);
-            opacity: 0.15; pointer-events: none;
-            animation: scan 10s linear infinite;
-        }
+        /* --- HEADER & NAVIGATION --- */
+        .os-header { position: fixed; top: 40px; left: 50px; right: 50px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 100; }
+        .system-tag { font-size: 11px; letter-spacing: 0.6em; text-transform: uppercase; color: var(--primary); text-shadow: 0 0 10px var(--primary-glow); font-weight: 800; }
 
-        @keyframes scan { from { top: -120px; } to { top: 100%; } }
-
-        /* --- OS UI ARCHITECTURE --- */
-        .os-header { 
-            position: fixed; top: 40px; left: 50px; right: 50px; 
-            display: flex; justify-content: space-between; align-items: flex-start;
-            z-index: 100; 
-        }
-
-        .system-tag {
-            font-size: 11px; letter-spacing: 0.7em;
-            text-transform: uppercase; color: var(--primary);
-            text-shadow: 0 0 15px var(--primary-glow);
-            font-weight: 800;
-        }
-
-        /* --- PANEL SYSTEM --- */
+        /* --- UI PANELS --- */
         .os-panel {
-            position: absolute; top: 80px; right: 0; width: 500px;
+            position: absolute; top: 80px; right: 0; width: 520px;
             background: var(--panel-bg); border: 1px solid var(--border-ui);
             padding: 40px; display: none; flex-direction: column;
-            box-shadow: -30px 30px 120px rgba(0,0,0,0.9);
-            clip-path: polygon(0 0, 100% 0, 100% 94%, 94% 100%, 0 100%);
+            box-shadow: -30px 30px 100px rgba(0,0,0,0.9);
+            clip-path: polygon(0 0, 100% 0, 100% 92%, 92% 100%, 0 100%);
             z-index: 1000; border-top: 5px solid var(--primary);
             backdrop-filter: blur(40px);
         }
+        .os-panel.active { display: flex; animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        .os-panel.active { display: flex; animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-
-        @keyframes slideIn {
-            from { transform: translateX(60px) scale(0.95); opacity: 0; }
-            to { transform: translateX(0) scale(1); opacity: 1; }
-        }
-
-        /* --- COMPONENT STYLING --- */
-        .tab-btn { 
-            font-size: 11px; letter-spacing: 0.4em; padding: 14px 20px; 
-            cursor: pointer; opacity: 0.25; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            border-bottom: 2px solid transparent; text-transform: uppercase;
-        }
+        .tab-btn { font-size: 10px; letter-spacing: 0.3em; padding: 12px 20px; cursor: pointer; opacity: 0.3; transition: 0.4s; border-bottom: 2px solid transparent; text-transform: uppercase; }
         .tab-btn.active { opacity: 1; color: var(--primary); border-bottom: 2px solid var(--primary); }
-        .tab-btn:hover { opacity: 0.9; background: rgba(255,255,255,0.03); }
 
         .os-btn { 
             background: rgba(255,255,255,0.02); border: 1px solid var(--border-ui); 
-            padding: 16px; font-size: 11px; text-transform: uppercase; font-weight: 800; 
-            cursor: pointer; transition: 0.4s; text-align: center; color: #fff;
-            position: relative; overflow: hidden;
+            padding: 16px; font-size: 10px; text-transform: uppercase; font-weight: 800; 
+            cursor: pointer; transition: 0.3s; text-align: center; color: #fff;
             letter-spacing: 0.1em;
         }
-        .os-btn::after {
-            content: ''; position: absolute; top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
-            transition: 0.6s;
-        }
-        .os-btn:hover::after { left: 100%; }
         .os-btn:hover { background: var(--primary); color: #000; border-color: var(--primary); box-shadow: 0 0 20px var(--primary-glow); }
 
-        /* --- CHRONOS INTERFACE --- */
-        .master-interface { 
-            position: absolute; inset: 0; 
-            display: flex; align-items: center; justify-content: center; 
-            z-index: 10; pointer-events: none; 
-        }
-
-        #main-time {
-            font-family: 'Montserrat', sans-serif;
-            font-size: clamp(12rem, 28vw, 34rem);
-            font-weight: 900; font-style: italic; letter-spacing: -0.09em; line-height: 0.6;
-            color: #ffffff; mix-blend-mode: overlay;
-            filter: drop-shadow(0 0 100px var(--primary-glow));
-            transition: 0.6s cubic-bezier(0.2, 0, 0.2, 1);
-        }
-
-        .metrics-container { display: flex; flex-direction: column; align-items: flex-start; gap: 0; margin-left: -20px; }
-        #sec-hex { font-size: 10rem; font-weight: 100; color: var(--primary); line-height: 0.65; opacity: 0.9; }
-        #mode-shard { 
-            font-size: 14px; font-weight: 800; border: 3px solid var(--primary); 
-            padding: 8px 25px; margin-top: 30px; letter-spacing: 0.6em; 
-            text-transform: uppercase;
-        }
+        /* --- MAIN CLOCK INTERFACE --- */
+        .master-interface { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10; pointer-events: none; }
+        #main-time { font-family: 'Montserrat', sans-serif; font-size: clamp(10rem, 25vw, 32rem); font-weight: 900; font-style: italic; letter-spacing: -0.08em; line-height: 0.65; color: #fff; mix-blend-mode: overlay; filter: drop-shadow(0 0 80px var(--primary-glow)); }
+        #sec-hex { font-size: 9rem; font-weight: 100; color: var(--primary); line-height: 0.7; opacity: 0.8; }
+        #mode-shard { font-size: 12px; font-weight: 800; border: 2px solid var(--primary); padding: 8px 20px; margin-top: 25px; letter-spacing: 0.5em; text-transform: uppercase; }
 
         /* --- SPOTIFY NODE --- */
         #spotify-node { position: fixed; bottom: 80px; left: 80px; z-index: 100; }
-        .node-box {
-            background: rgba(0,0,0,0.95); border: 1px solid var(--border-ui);
-            padding: 25px 40px; border-left: 8px solid var(--spotify);
-            clip-path: polygon(0 0, 96% 0, 100% 20%, 100% 100%, 4% 100%, 0 80%);
-            backdrop-filter: blur(30px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-        }
+        .node-box { background: rgba(0,0,0,0.9); border: 1px solid var(--border-ui); padding: 25px 35px; border-left: 6px solid var(--spotify); clip-path: polygon(0 0, 96% 0, 100% 18%, 100% 100%, 4% 100%, 0 82%); backdrop-filter: blur(20px); box-shadow: 0 15px 50px rgba(0,0,0,0.7); }
+        .progress-rail { height: 3px; width: 100%; background: rgba(255,255,255,0.06); margin-top: 20px; border-radius: 4px; overflow: hidden; }
+        .track-progress-bar { height: 100%; background: var(--spotify); transition: width 1s linear; box-shadow: 0 0 15px var(--spotify); }
 
-        .progress-rail { height: 3px; width: 100%; background: rgba(255,255,255,0.08); margin-top: 20px; border-radius: 6px; overflow: hidden; }
-        #track-progress { height: 100%; background: var(--spotify); transition: width 1s linear; box-shadow: 0 0 15px var(--spotify); }
+        /* --- MUSIC TAB DISPLAY --- */
+        .media-mirror { background: rgba(255,255,255,0.03); border: 1px solid var(--border-ui); padding: 20px; border-radius: 2px; position: relative; }
+        .mirror-tag { font-size: 8px; opacity: 0.3; letter-spacing: 0.5em; margin-bottom: 10px; display: block; }
 
-        /* --- TERMINAL --- */
-        .log-terminal { 
-            background: rgba(0,0,0,0.9); border: 1px solid var(--border-ui); 
-            height: 260px; overflow-y: auto; padding: 20px; 
-            font-size: 11px; color: var(--terminal-green); font-family: 'JetBrains Mono';
-            display: flex; flex-direction: column; gap: 6px;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-        }
-
-        .log-entry { display: flex; gap: 12px; animation: logFade 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); }
-        @keyframes logFade { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-        .log-time { opacity: 0.35; font-size: 9px; }
-        .log-tag { color: var(--primary); font-weight: 800; min-width: 60px; }
-        .log-msg { opacity: 0.9; }
-
-        /* --- GRID OVERLAY --- */
-        .os-grid {
-            position: fixed; inset: 0; z-index: 2;
-            background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 40px 40px; pointer-events: none;
-        }
+        /* --- SYSTEM LOGS --- */
+        .log-terminal { background: rgba(0,0,0,0.9); border: 1px solid var(--border-ui); height: 280px; overflow-y: auto; padding: 20px; font-size: 10px; color: var(--terminal-green); font-family: 'JetBrains Mono'; display: flex; flex-direction: column; gap: 5px; }
+        .log-entry { display: flex; gap: 10px; animation: logFade 0.3s ease; }
+        @keyframes logFade { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+        .log-tag { color: var(--primary); font-weight: 800; min-width: 50px; }
     </style>
 </head>
 <body>
@@ -175,80 +96,66 @@
 
     <header class="os-header">
         <div class="flex flex-col">
-            <div class="system-tag">ARCHITECT_OS // v45.0_STABLE</div>
-            <div class="text-[9px] opacity-40 mt-2 tracking-[0.9em] uppercase">Security_Protocol: response_type=code</div>
+            <div class="system-tag">ARCHITECT_OS // v45.2.1_MIRROR</div>
+            <div class="text-[9px] opacity-40 mt-1 tracking-[0.9em] uppercase">Auth_Method: SECURE_CODE_FLOW</div>
         </div>
 
         <div class="settings-hub relative">
-            <button class="os-btn !px-16" onclick="OS.togglePanel()">Terminal_Access</button>
+            <button class="os-btn !px-12" onclick="OS.togglePanel()">Settings</button>
             
             <div class="os-panel" id="osPanel">
-                <div class="flex justify-between mb-12 border-b border-white/5">
-                    <div class="tab-btn active" onclick="OS.switchTab('core', this)">01_KRNL</div>
+                <div class="flex justify-between mb-10 border-b border-white/5">
+                    <div class="tab-btn active" onclick="OS.switchTab('core', this)">01_CORE</div>
                     <div class="tab-btn" onclick="OS.switchTab('media', this)">02_MEDI</div>
                     <div class="tab-btn" onclick="OS.switchTab('net', this)">03_NETW</div>
                     <div class="tab-btn" onclick="OS.switchTab('auth', this)">04_LOGS</div>
                 </div>
 
                 <div id="tab-core" class="tab-content flex flex-col gap-10">
-                    <div class="flex flex-col gap-6">
-                        <span class="text-[10px] opacity-40 tracking-widest uppercase">Chronos_Synchronization</span>
+                    <div class="flex flex-col gap-4">
+                        <span class="text-[10px] opacity-40 tracking-widest uppercase">Chronos_Mode</span>
                         <div class="grid grid-cols-2 gap-4">
-                            <button class="os-btn" onclick="Clock.setMode(12)">Set_Format_12H</button>
-                            <button class="os-btn" onclick="Clock.setMode(24)">Set_Format_24H</button>
-                        </div>
-                    </div>
-                    <div class="flex flex-col gap-6">
-                        <span class="text-[10px] opacity-40 tracking-widest uppercase">Entropy_Radiation</span>
-                        <div class="flex items-center gap-6">
-                            <input type="range" class="w-full accent-purple-500 opacity-40" min="0" max="100" oninput="OS.setGlow(this.value)">
-                            <span id="entropy-val" class="text-[10px] w-12">50%</span>
+                            <button class="os-btn" onclick="Clock.setMode(12)">12_HOUR</button>
+                            <button class="os-btn" onclick="Clock.setMode(24)">24_HOUR</button>
                         </div>
                     </div>
                 </div>
 
-                <div id="tab-media" class="tab-content hidden flex flex-col gap-8">
-                    <span class="text-[10px] opacity-40 tracking-widest uppercase">Neural_Media_Bridge (OAUTH_V2)</span>
+                <div id="tab-media" class="tab-content hidden flex-col gap-8">
+                    <div class="media-mirror">
+                        <span class="mirror-tag">UPLINK_STREAM_DATA</span>
+                        <div id="mirror-track" class="text-xl font-black uppercase truncate tracking-tighter">Initializing...</div>
+                        <div id="mirror-artist" class="text-[10px] text-purple-400 tracking-[0.4em] uppercase font-bold mt-1">Ready_for_Link</div>
+                        <div class="progress-rail"><div class="track-progress-bar" id="mirror-progress" style="width: 0%"></div></div>
+                    </div>
+
                     <div class="grid grid-cols-3 gap-4">
-                        <button class="os-btn" onclick="Spotify.command('previous')">PREV_TRACK</button>
-                        <button id="play-pause-btn" class="os-btn !border-green-500 !text-green-500" onclick="Spotify.command('play')">PLAY_SIGNAL</button>
-                        <button class="os-btn" onclick="Spotify.command('next')">NEXT_TRACK</button>
+                        <button class="os-btn" onclick="Spotify.command('previous')">PREV</button>
+                        <button id="play-pause-btn" class="os-btn !border-green-500 !text-green-500" onclick="Spotify.command('play')">PLAY</button>
+                        <button class="os-btn" onclick="Spotify.command('next')">NEXT</button>
                     </div>
-                    <div class="node-box !bg-white/5 !border-white/5 !px-6 !py-6">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-[9px] opacity-30 uppercase tracking-[0.2em]">Signal_Sync</span>
-                            <span class="text-[9px] text-green-500 animate-pulse">ACTIVE</span>
-                        </div>
-                        <div class="progress-rail"><div id="track-progress-inner" class="h-full bg-green-500 w-0 transition-all duration-1000"></div></div>
-                    </div>
-                    <button class="os-btn w-full !text-[10px] !opacity-50 !border-dashed" onclick="Spotify.auth()">INITIALIZE_CODE_HANDSHAKE</button>
+                    <button class="os-btn w-full !text-[10px] !border-dashed !opacity-60" onclick="Spotify.auth()">INITIALIZE_PKCE_FLOW</button>
                 </div>
 
                 <div id="tab-net" class="tab-content hidden flex flex-col gap-6">
                     <div class="p-8 border border-white/5 bg-black/50">
-                        <div class="flex justify-between text-[11px] mb-6"><span>PACKET_LATENCY</span><span id="ping" class="text-green-400 font-bold">24ms</span></div>
-                        <div class="flex justify-between text-[11px] mb-6"><span>PROCESSING_LOAD</span><span id="load" class="text-purple-400 font-bold">12.4%</span></div>
-                        <div class="flex justify-between text-[11px] mb-6"><span>UPTIME_SESSION</span><span id="uptime" class="text-cyan-400">00:00:00</span></div>
-                        <div class="flex justify-between text-[11px]"><span>ENCRYPTION_LAYER</span><span class="text-white/40 italic">AES_256_RSA</span></div>
+                        <div class="flex justify-between text-[11px] mb-4"><span>PING</span><span class="text-green-400">22ms</span></div>
+                        <div class="flex justify-between text-[11px]"><span>UPLINK</span><span class="text-purple-400">ENCRYPTED</span></div>
                     </div>
                 </div>
 
                 <div id="tab-auth" class="tab-content hidden flex flex-col gap-6">
-                    <span class="text-[10px] opacity-40 tracking-widest uppercase">Kernel_Output_Stream</span>
+                    <span class="text-[10px] opacity-40 tracking-widest uppercase">System_Runtime_Log</span>
                     <div class="log-terminal" id="sys-log"></div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <button class="os-btn !text-[10px] !opacity-60" onclick="OS.clearLogs()">Purge_Stream</button>
-                        <button class="os-btn !text-[10px] !opacity-60" onclick="OS.exportLogs()">Export_Config</button>
-                    </div>
                 </div>
             </div>
         </div>
     </header>
 
     <main class="master-interface">
-        <div class="flex items-baseline gap-20">
+        <div class="flex items-baseline gap-16">
             <div id="main-time">00:00</div>
-            <div class="metrics-container pb-24">
+            <div class="metrics-container pb-20">
                 <div id="sec-hex">00</div>
                 <div id="mode-shard">AM</div>
             </div>
@@ -257,179 +164,151 @@
 
     <div id="spotify-node">
         <div class="node-box">
-            <div class="text-[10px] opacity-30 tracking-[0.5em] mb-4 font-black uppercase">Current_Audio_Uplink</div>
-            <div id="track-name" class="text-lg font-black uppercase truncate w-72 tracking-tighter leading-none">System_Standby</div>
-            <div id="artist-name" class="text-[10px] text-purple-400 tracking-[0.3em] uppercase font-bold mt-2">Awaiting Authentication...</div>
-            <div class="progress-rail mt-6"><div id="track-progress-bar" style="width: 0%" class="h-full bg-green-500 shadow-[0_0_20px_#1DB954]"></div></div>
+            <div class="text-[10px] opacity-30 tracking-[0.5em] mb-3 font-black uppercase">Audio_Stream</div>
+            <div id="track-name" class="text-lg font-black uppercase truncate w-64 tracking-tighter">Initializing...</div>
+            <div id="artist-name" class="text-[10px] text-purple-400 tracking-[0.3em] uppercase font-bold mt-1">Waiting for Signal</div>
+            <div class="progress-rail"><div class="track-progress-bar" id="main-progress" style="width: 0%"></div></div>
         </div>
     </div>
 
     <script>
-        /**
-         * OS CORE MANAGER
-         * Architecture for v45.0
-         */
         const OS = {
-            activePanel: false,
-            startTime: Date.now(),
-            
-            togglePanel: () => {
-                const p = document.getElementById('osPanel');
-                OS.activePanel = !OS.activePanel;
-                p.classList.toggle('active');
-                OS.log("KERNEL", OS.activePanel ? "Shell_Engaged" : "Shell_Disengaged");
-            },
-
+            togglePanel: () => document.getElementById('osPanel').classList.toggle('active'),
             switchTab: (id, btn) => {
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('flex'));
+                document.querySelectorAll('.tab-content').forEach(c => { c.classList.add('hidden'); c.classList.remove('flex'); });
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                
                 const target = document.getElementById(`tab-${id}`);
-                target.classList.remove('hidden');
-                target.classList.add('flex');
+                target.classList.remove('hidden'); target.classList.add('flex');
                 btn.classList.add('active');
-                OS.log("SHELL", `Maps: ${id.toUpperCase()}`);
             },
-
             log: (tag, msg) => {
                 const log = document.getElementById('sys-log');
-                const time = new Date().toTimeString().split(' ')[0];
                 const entry = document.createElement('div');
                 entry.className = "log-entry";
-                entry.innerHTML = `<span class="log-time">${time}</span><span class="log-tag">[${tag}]</span><span class="log-msg">${msg}</span>`;
+                entry.innerHTML = `<span class="opacity-30">${new Date().toLocaleTimeString()}</span> <span class="log-tag">[${tag}]</span> ${msg}`;
                 log.prepend(entry);
-                if(log.children.length > 100) log.lastChild.remove();
-            },
-
-            clearLogs: () => {
-                document.getElementById('sys-log').innerHTML = '';
-                OS.log("SYS", "Terminal_Memory_Flushed");
-            },
-
-            exportLogs: () => {
-                OS.log("SYS", "Generating_Session_Manifest...");
-                setTimeout(() => OS.log("SYS", "Export_Restricted: Level_5_Auth_Required"), 800);
-            },
-
-            setGlow: (val) => {
-                document.documentElement.style.setProperty('--glow-mult', val / 50);
-                document.getElementById('entropy-val').innerText = val + "%";
-                OS.log("CORE", `Entropy_Density: ${val}%`);
-            },
-
-            updateUptime: () => {
-                const diff = Math.floor((Date.now() - OS.startTime) / 1000);
-                const h = String(Math.floor(diff / 3600)).padStart(2, '0');
-                const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
-                const s = String(diff % 60).padStart(2, '0');
-                document.getElementById('uptime').innerText = `${h}:${m}:${s}`;
             }
         };
 
-        /**
-         * TEMPORAL ENGINE (CLOCK)
-         */
         const Clock = {
             mode: 12,
-            setMode: (m) => { 
-                Clock.mode = m; 
-                OS.log("CHRONOS", `Mode_Override: ${m}H`);
-            },
+            setMode: (m) => { Clock.mode = m; OS.log("SYS", `Clock set to ${m}H`); },
             tick: () => {
-                const now = new Date();
-                let h = now.getHours();
+                const now = new Date(); let h = now.getHours();
                 const m = String(now.getMinutes()).padStart(2, '0');
                 const s = String(now.getSeconds()).padStart(2, '0');
                 const ampm = h >= 12 ? 'PM' : 'AM';
-                
                 if(Clock.mode === 12) h = h % 12 || 12;
-                
                 document.getElementById('main-time').innerText = `${String(h).padStart(2, '0')}:${m}`;
                 document.getElementById('sec-hex').innerText = s;
                 document.getElementById('mode-shard').innerText = ampm;
             }
         };
 
-        /**
-         * SPOTIFY NEURAL BRIDGE
-         * MANDATE: response_type=code
-         */
         const Spotify = {
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
+            redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback',
             isPlaying: false,
 
-            auth: () => {
-                const scope = encodeURIComponent('user-read-currently-playing user-read-playback-state user-modify-playback-state');
-                const uri = encodeURIComponent('https://xclipsestudio.xclipsenetworks.com.au/callback');
-                
-                // RESPONSE_TYPE MUST BE CODE
-                const authUrl = `https://accounts.spotify.com/authorize?client_id=${Spotify.clientId}&response_type=code&redirect_uri=${uri}&scope=${scope}`;
-                
-                OS.log("OAUTH", "Requesting_Auth_Code...");
-                window.location.href = authUrl;
+            generateRandomString: (len) => {
+                const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                return Array.from(crypto.getRandomValues(new Uint8Array(len))).map(x => possible[x % possible.length]).join('');
+            },
+            sha256: async (plain) => {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(plain);
+                return window.crypto.subtle.digest('SHA-256', data);
+            },
+            base64encode: (input) => {
+                return btoa(String.fromCharCode.apply(null, new Uint8Array(input)))
+                    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+            },
+
+            auth: async () => {
+                const codeVerifier = Spotify.generateRandomString(64);
+                const hashed = await Spotify.sha256(codeVerifier);
+                const codeChallenge = Spotify.base64encode(hashed);
+                localStorage.setItem('code_verifier', codeVerifier);
+
+                const params = new URLSearchParams({
+                    response_type: 'code',
+                    client_id: Spotify.clientId,
+                    scope: 'user-read-currently-playing user-read-playback-state user-modify-playback-state',
+                    redirect_uri: Spotify.redirectUri,
+                    code_challenge_method: 'S256',
+                    code_challenge: codeChallenge,
+                });
+                OS.log("OAUTH", "Handshake_Started...");
+                window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+            },
+
+            getToken: async (code) => {
+                const codeVerifier = localStorage.getItem('code_verifier');
+                const payload = {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        client_id: Spotify.clientId,
+                        grant_type: 'authorization_code',
+                        code: code,
+                        redirect_uri: Spotify.redirectUri,
+                        code_verifier: codeVerifier,
+                    }),
+                };
+                const body = await fetch('https://accounts.spotify.com/api/token', payload);
+                const response = await body.json();
+                if (response.access_token) {
+                    localStorage.setItem('sp_access_token', response.access_token);
+                    OS.log("AUTH", "Access_Token_Acquired");
+                }
             },
 
             command: async (type) => {
                 const token = localStorage.getItem('sp_access_token');
-                if(!token) return OS.log("ERROR", "Uplink_Auth_Token_Missing");
-
+                if(!token) return OS.log("ERROR", "Uplink_Unauthorized");
                 let method = (type === 'next' || type === 'previous') ? 'POST' : 'PUT';
-                let endpoint = type;
-
-                if (type === 'play') {
-                    endpoint = Spotify.isPlaying ? 'pause' : 'play';
-                }
-
-                try {
-                    const res = await fetch(`https://api.spotify.com/v1/me/player/${endpoint}`, {
-                        method: method,
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-
-                    if(res.ok || res.status === 204) {
-                        OS.log("MEDIA", `SIGNAL_${endpoint.toUpperCase()}_SENT`);
-                        setTimeout(Spotify.sync, 600);
-                    } else {
-                        OS.log("MEDIA", "ERR: NO_ACTIVE_LISTENING_DEVICE");
-                    }
-                } catch(e) {
-                    OS.log("MEDIA", "CORE_SIGNAL_FAILURE");
-                }
+                let endpoint = type === 'play' ? (Spotify.isPlaying ? 'pause' : 'play') : type;
+                
+                await fetch(`https://api.spotify.com/v1/me/player/${endpoint}`, {
+                    method: method,
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                OS.log("MEDIA", `CMD_${endpoint.toUpperCase()}`);
+                setTimeout(Spotify.sync, 500);
             },
 
             sync: async () => {
                 const token = localStorage.getItem('sp_access_token');
                 if(!token) return;
-
                 try {
-                    const res = await fetch('https://api.spotify.com/v1/me/player', {
+                    const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-
                     if(res.status === 200) {
                         const d = await res.json();
                         Spotify.isPlaying = d.is_playing;
-                        
-                        document.getElementById('track-name').innerText = d.item.name;
-                        document.getElementById('artist-name').innerText = d.item.artists[0].name.toUpperCase();
-                        
-                        const prog = (d.progress_ms / d.item.duration_ms) * 100;
-                        document.getElementById('track-progress-bar').style.width = prog + "%";
-                        document.getElementById('track-progress-inner').style.width = prog + "%";
+                        const track = d.item.name;
+                        const artist = d.item.artists[0].name.toUpperCase();
+                        const progress = (d.progress_ms / d.item.duration_ms) * 100 + "%";
 
-                        const btn = document.getElementById('play-pause-btn');
-                        btn.innerText = Spotify.isPlaying ? 'PAUSE_SIGNAL' : 'PLAY_SIGNAL';
-                        btn.style.color = Spotify.isPlaying ? '#ff4444' : '#1DB954';
-                        btn.style.borderColor = Spotify.isPlaying ? '#ff4444' : '#1DB954';
+                        // Update Main Node
+                        document.getElementById('track-name').innerText = track;
+                        document.getElementById('artist-name').innerText = artist;
+                        document.getElementById('main-progress').style.width = progress;
+
+                        // Update Tab Mirror
+                        document.getElementById('mirror-track').innerText = track;
+                        document.getElementById('mirror-artist').innerText = artist;
+                        document.getElementById('mirror-progress').style.width = progress;
+
+                        const b = document.getElementById('play-pause-btn');
+                        b.innerText = d.is_playing ? 'PAUSE' : 'PLAY';
+                        b.style.color = d.is_playing ? '#ff4444' : '#1DB954';
                     }
                 } catch(e) {}
             }
         };
 
-        /**
-         * ENTROPY ENGINE (CANVAS)
-         */
         const Canvas = {
             el: document.getElementById('entropy-canvas'),
             ctx: null,
@@ -438,67 +317,36 @@
                 Canvas.ctx = Canvas.el.getContext('2d');
                 Canvas.el.width = window.innerWidth;
                 Canvas.el.height = window.innerHeight;
-                Canvas.drops = Array(Math.floor(Canvas.el.width / 18)).fill(1);
-                setInterval(Canvas.draw, 40);
-            },
-            draw: () => {
-                const ctx = Canvas.ctx;
-                ctx.fillStyle = "rgba(0,0,0,0.1)";
-                ctx.fillRect(0, 0, Canvas.el.width, Canvas.el.height);
-                ctx.fillStyle = "#a855f7";
-                ctx.font = "14px monospace";
-                
-                Canvas.drops.forEach((y, i) => {
-                    const char = Math.random() > 0.5 ? "0" : "1";
-                    ctx.fillText(char, i * 18, y * 18);
-                    if(y * 18 > Canvas.el.height && Math.random() > 0.985) Canvas.drops[i] = 0;
-                    Canvas.drops[i]++;
-                });
+                Canvas.drops = Array(Math.floor(Canvas.el.width / 15)).fill(1);
+                setInterval(() => {
+                    Canvas.ctx.fillStyle = "rgba(0,0,0,0.1)";
+                    Canvas.ctx.fillRect(0, 0, Canvas.el.width, Canvas.el.height);
+                    Canvas.ctx.fillStyle = "#a855f7";
+                    Canvas.ctx.font = "14px monospace";
+                    Canvas.drops.forEach((y, i) => {
+                        Canvas.ctx.fillText(Math.random() > 0.5 ? "0" : "1", i * 15, y * 15);
+                        if(y * 15 > Canvas.el.height && Math.random() > 0.98) Canvas.drops[i] = 0;
+                        Canvas.drops[i]++;
+                    });
+                }, 40);
             }
         };
 
-        // --- GLOBAL INITIALIZATION ---
         window.onload = () => {
             Canvas.init();
             setInterval(Clock.tick, 1000);
             setInterval(Spotify.sync, 4000);
-            setInterval(OS.updateUptime, 1000);
+            Clock.tick();
             
-            // Simulation of live data
-            setInterval(() => {
-                document.getElementById('ping').innerText = Math.floor(Math.random() * 10 + 15) + "ms";
-                document.getElementById('load').innerText = (Math.random() * 8 + 4).toFixed(1) + "%";
-            }, 5000);
-
-            // OAuth Code/Token Capture Logic
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
-            
-            if(code) {
-                OS.log("OAUTH", "Code_Captured: " + code.substring(0, 8) + "...");
-                OS.log("OAUTH", "Manual_Exchange_Required_For_Token.");
-                // Note: Normally, here you'd POST the code to your backend to get an access_token
+            if (code) {
+                Spotify.getToken(code).then(() => {
+                    window.history.replaceState({}, document.title, "/");
+                    Spotify.sync();
+                });
             }
-
-            const hash = window.location.hash.substring(1).split('&').reduce((acc, item) => {
-                if (item) { let p = item.split('='); acc[p[0]] = decodeURIComponent(p[1]); }
-                return acc;
-            }, {});
-
-            if(hash.access_token) {
-                localStorage.setItem('sp_access_token', hash.access_token);
-                OS.log("AUTH", "Access_Token_Synchronized");
-                window.location.hash = "";
-            }
-
-            Clock.tick();
-            OS.log("KERNEL", "Architect_OS_v45.0_XP_Online");
-        };
-
-        window.onresize = () => {
-            Canvas.el.width = window.innerWidth;
-            Canvas.el.height = window.innerHeight;
-            OS.log("CORE", "Viewport_Resized");
+            OS.log("KERNEL", "Architect_OS_v45.2.1_Ready");
         };
     </script>
 </body>
