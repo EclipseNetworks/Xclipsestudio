@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | ARCHITECT_OS_v40.0</title>
+    <title>XCLIPSE | ARCHITECT_OS_v45.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     
@@ -17,12 +17,14 @@
             --border-ui: rgba(255, 255, 255, 0.08);
             --accent-red: #ff4444;
             --accent-cyan: #00f3ff;
+            --terminal-green: #00ff88;
         }
 
         /* --- GLOBAL RESET & SCROLL --- */
         * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
-        ::-webkit-scrollbar { width: 2px; }
-        ::-webkit-scrollbar-thumb { background: var(--primary); }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
 
         body, html { 
             width: 100%; height: 100%; 
@@ -39,14 +41,14 @@
         }
 
         .scanline {
-            width: 100%; height: 100px;
+            width: 100%; height: 120px;
             z-index: 1; position: absolute;
-            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(168, 85, 247, 0.05) 50%, rgba(0,0,0,0) 100%);
-            opacity: 0.1; pointer-events: none;
-            animation: scan 8s linear infinite;
+            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(168, 85, 247, 0.08) 50%, rgba(0,0,0,0) 100%);
+            opacity: 0.15; pointer-events: none;
+            animation: scan 10s linear infinite;
         }
 
-        @keyframes scan { from { top: -100px; } to { top: 100%; } }
+        @keyframes scan { from { top: -120px; } to { top: 100%; } }
 
         /* --- OS UI ARCHITECTURE --- */
         .os-header { 
@@ -56,52 +58,54 @@
         }
 
         .system-tag {
-            font-size: 10px; letter-spacing: 0.6em;
+            font-size: 11px; letter-spacing: 0.7em;
             text-transform: uppercase; color: var(--primary);
-            text-shadow: 0 0 10px var(--primary-glow);
+            text-shadow: 0 0 15px var(--primary-glow);
+            font-weight: 800;
         }
 
         /* --- PANEL SYSTEM --- */
         .os-panel {
-            position: absolute; top: 70px; right: 0; width: 480px;
+            position: absolute; top: 80px; right: 0; width: 500px;
             background: var(--panel-bg); border: 1px solid var(--border-ui);
-            padding: 35px; display: none; flex-direction: column;
-            box-shadow: -20px 20px 100px rgba(0,0,0,0.8);
-            clip-path: polygon(0 0, 100% 0, 100% 92%, 92% 100%, 0 100%);
-            z-index: 1000; border-top: 4px solid var(--primary);
-            backdrop-filter: blur(30px);
+            padding: 40px; display: none; flex-direction: column;
+            box-shadow: -30px 30px 120px rgba(0,0,0,0.9);
+            clip-path: polygon(0 0, 100% 0, 100% 94%, 94% 100%, 0 100%);
+            z-index: 1000; border-top: 5px solid var(--primary);
+            backdrop-filter: blur(40px);
         }
 
-        .os-panel.active { display: flex; animation: slideIn 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
+        .os-panel.active { display: flex; animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
 
         @keyframes slideIn {
-            from { transform: translateX(50px) scale(0.98); opacity: 0; }
+            from { transform: translateX(60px) scale(0.95); opacity: 0; }
             to { transform: translateX(0) scale(1); opacity: 1; }
         }
 
         /* --- COMPONENT STYLING --- */
         .tab-btn { 
-            font-size: 10px; letter-spacing: 0.3em; padding: 12px 18px; 
-            cursor: pointer; opacity: 0.3; transition: all 0.4s;
+            font-size: 11px; letter-spacing: 0.4em; padding: 14px 20px; 
+            cursor: pointer; opacity: 0.25; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             border-bottom: 2px solid transparent; text-transform: uppercase;
         }
         .tab-btn.active { opacity: 1; color: var(--primary); border-bottom: 2px solid var(--primary); }
-        .tab-btn:hover { opacity: 0.8; background: rgba(255,255,255,0.02); }
+        .tab-btn:hover { opacity: 0.9; background: rgba(255,255,255,0.03); }
 
         .os-btn { 
             background: rgba(255,255,255,0.02); border: 1px solid var(--border-ui); 
-            padding: 14px; font-size: 10px; text-transform: uppercase; font-weight: 800; 
-            cursor: pointer; transition: 0.3s; text-align: center; color: #fff;
+            padding: 16px; font-size: 11px; text-transform: uppercase; font-weight: 800; 
+            cursor: pointer; transition: 0.4s; text-align: center; color: #fff;
             position: relative; overflow: hidden;
+            letter-spacing: 0.1em;
         }
         .os-btn::after {
             content: ''; position: absolute; top: 0; left: -100%;
             width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-            transition: 0.5s;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+            transition: 0.6s;
         }
         .os-btn:hover::after { left: 100%; }
-        .os-btn:hover { background: var(--primary); color: #000; border-color: var(--primary); }
+        .os-btn:hover { background: var(--primary); color: #000; border-color: var(--primary); box-shadow: 0 0 20px var(--primary-glow); }
 
         /* --- CHRONOS INTERFACE --- */
         .master-interface { 
@@ -112,119 +116,139 @@
 
         #main-time {
             font-family: 'Montserrat', sans-serif;
-            font-size: clamp(10rem, 25vw, 30rem);
-            font-weight: 900; font-style: italic; letter-spacing: -0.08em; line-height: 0.65;
+            font-size: clamp(12rem, 28vw, 34rem);
+            font-weight: 900; font-style: italic; letter-spacing: -0.09em; line-height: 0.6;
             color: #ffffff; mix-blend-mode: overlay;
-            filter: drop-shadow(0 0 80px var(--primary-glow));
-            transition: 0.5s ease;
+            filter: drop-shadow(0 0 100px var(--primary-glow));
+            transition: 0.6s cubic-bezier(0.2, 0, 0.2, 1);
         }
 
-        .metrics-container { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
-        #sec-hex { font-size: 8rem; font-weight: 100; color: var(--primary); line-height: 0.7; opacity: 0.8; }
+        .metrics-container { display: flex; flex-direction: column; align-items: flex-start; gap: 0; margin-left: -20px; }
+        #sec-hex { font-size: 10rem; font-weight: 100; color: var(--primary); line-height: 0.65; opacity: 0.9; }
         #mode-shard { 
-            font-size: 12px; font-weight: 800; border: 2px solid var(--primary); 
-            padding: 6px 20px; margin-top: 20px; letter-spacing: 0.5em; 
+            font-size: 14px; font-weight: 800; border: 3px solid var(--primary); 
+            padding: 8px 25px; margin-top: 30px; letter-spacing: 0.6em; 
             text-transform: uppercase;
         }
 
         /* --- SPOTIFY NODE --- */
-        #spotify-node { position: fixed; bottom: 60px; left: 60px; z-index: 100; }
+        #spotify-node { position: fixed; bottom: 80px; left: 80px; z-index: 100; }
         .node-box {
-            background: rgba(0,0,0,0.9); border: 1px solid var(--border-ui);
-            padding: 20px 30px; border-left: 6px solid var(--spotify);
-            clip-path: polygon(0 0, 96% 0, 100% 15%, 100% 100%, 4% 100%, 0 85%);
-            backdrop-filter: blur(20px);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.95); border: 1px solid var(--border-ui);
+            padding: 25px 40px; border-left: 8px solid var(--spotify);
+            clip-path: polygon(0 0, 96% 0, 100% 20%, 100% 100%, 4% 100%, 0 80%);
+            backdrop-filter: blur(30px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
         }
 
-        .progress-rail { height: 2px; width: 100%; background: rgba(255,255,255,0.05); margin-top: 15px; border-radius: 4px; overflow: hidden; }
-        #track-progress { height: 100%; background: var(--spotify); transition: width 0.8s linear; box-shadow: 0 0 10px var(--spotify); }
+        .progress-rail { height: 3px; width: 100%; background: rgba(255,255,255,0.08); margin-top: 20px; border-radius: 6px; overflow: hidden; }
+        #track-progress { height: 100%; background: var(--spotify); transition: width 1s linear; box-shadow: 0 0 15px var(--spotify); }
 
         /* --- TERMINAL --- */
         .log-terminal { 
-            background: rgba(0,0,0,0.8); border: 1px solid var(--border-ui); 
-            height: 220px; overflow-y: scroll; padding: 15px; 
-            font-size: 10px; color: #00ff88; font-family: 'JetBrains Mono';
-            display: flex; flex-direction: column; gap: 4px;
+            background: rgba(0,0,0,0.9); border: 1px solid var(--border-ui); 
+            height: 260px; overflow-y: auto; padding: 20px; 
+            font-size: 11px; color: var(--terminal-green); font-family: 'JetBrains Mono';
+            display: flex; flex-direction: column; gap: 6px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
 
-        .log-entry { display: flex; gap: 10px; animation: logFade 0.3s ease; }
-        @keyframes logFade { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
-        .log-time { opacity: 0.3; }
-        .log-tag { color: var(--primary); font-weight: 800; }
+        .log-entry { display: flex; gap: 12px; animation: logFade 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); }
+        @keyframes logFade { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        .log-time { opacity: 0.35; font-size: 9px; }
+        .log-tag { color: var(--primary); font-weight: 800; min-width: 60px; }
+        .log-msg { opacity: 0.9; }
+
+        /* --- GRID OVERLAY --- */
+        .os-grid {
+            position: fixed; inset: 0; z-index: 2;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px; pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
     <canvas id="entropy-canvas"></canvas>
+    <div class="os-grid"></div>
     <div class="scanline"></div>
 
     <header class="os-header">
         <div class="flex flex-col">
-            <div class="system-tag">ARCHITECT_OS // CORE_STABLE</div>
-            <div class="text-[8px] opacity-30 mt-1 tracking-[0.8em]">UPLINKED: BORDERTOWN_SUBSTATION</div>
+            <div class="system-tag">ARCHITECT_OS // v45.0_STABLE</div>
+            <div class="text-[9px] opacity-40 mt-2 tracking-[0.9em] uppercase">Security_Protocol: response_type=code</div>
         </div>
 
         <div class="settings-hub relative">
-            <button class="os-btn !px-12" onclick="OS.togglePanel()">Settings</button>
+            <button class="os-btn !px-16" onclick="OS.togglePanel()">Terminal_Access</button>
             
             <div class="os-panel" id="osPanel">
-                <div class="flex justify-between mb-10 border-b border-white/5">
-                    <div class="tab-btn active" onclick="OS.switchTab('core', this)">01_CORE</div>
-                    <div class="tab-btn" onclick="OS.switchTab('media', this)">02_MEDIA</div>
-                    <div class="tab-btn" onclick="OS.switchTab('net', this)">03_NET</div>
-                    <div class="tab-btn" onclick="OS.switchTab('auth', this)">04_SYNC</div>
+                <div class="flex justify-between mb-12 border-b border-white/5">
+                    <div class="tab-btn active" onclick="OS.switchTab('core', this)">01_KRNL</div>
+                    <div class="tab-btn" onclick="OS.switchTab('media', this)">02_MEDI</div>
+                    <div class="tab-btn" onclick="OS.switchTab('net', this)">03_NETW</div>
+                    <div class="tab-btn" onclick="OS.switchTab('auth', this)">04_LOGS</div>
                 </div>
 
-                <div id="tab-core" class="tab-content flex flex-col gap-8">
-                    <div class="flex flex-col gap-4">
-                        <span class="text-[9px] opacity-40 tracking-widest uppercase">Chronos Configuration</span>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button class="os-btn" onclick="Clock.setMode(12)">Set_12H</button>
-                            <button class="os-btn" onclick="Clock.setMode(24)">Set_24H</button>
+                <div id="tab-core" class="tab-content flex flex-col gap-10">
+                    <div class="flex flex-col gap-6">
+                        <span class="text-[10px] opacity-40 tracking-widest uppercase">Chronos_Synchronization</span>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button class="os-btn" onclick="Clock.setMode(12)">Set_Format_12H</button>
+                            <button class="os-btn" onclick="Clock.setMode(24)">Set_Format_24H</button>
                         </div>
                     </div>
-                    <div class="flex flex-col gap-4">
-                        <span class="text-[9px] opacity-40 tracking-widest uppercase">Display Entropy</span>
-                        <input type="range" class="accent-purple-500 opacity-50" min="0" max="100" oninput="OS.setGlow(this.value)">
+                    <div class="flex flex-col gap-6">
+                        <span class="text-[10px] opacity-40 tracking-widest uppercase">Entropy_Radiation</span>
+                        <div class="flex items-center gap-6">
+                            <input type="range" class="w-full accent-purple-500 opacity-40" min="0" max="100" oninput="OS.setGlow(this.value)">
+                            <span id="entropy-val" class="text-[10px] w-12">50%</span>
+                        </div>
                     </div>
                 </div>
 
-                <div id="tab-media" class="tab-content hidden flex-col gap-6">
-                    <span class="text-[9px] opacity-40 tracking-widest uppercase">Neural Media Bridge</span>
-                    <div class="grid grid-cols-3 gap-3">
-                        <button class="os-btn" onclick="Spotify.command('previous')">PREV</button>
-                        <button id="play-pause-btn" class="os-btn !border-green-500 !text-green-500" onclick="Spotify.command('play')">PLAY</button>
-                        <button class="os-btn" onclick="Spotify.command('next')">NEXT</button>
+                <div id="tab-media" class="tab-content hidden flex flex-col gap-8">
+                    <span class="text-[10px] opacity-40 tracking-widest uppercase">Neural_Media_Bridge (OAUTH_V2)</span>
+                    <div class="grid grid-cols-3 gap-4">
+                        <button class="os-btn" onclick="Spotify.command('previous')">PREV_TRACK</button>
+                        <button id="play-pause-btn" class="os-btn !border-green-500 !text-green-500" onclick="Spotify.command('play')">PLAY_SIGNAL</button>
+                        <button class="os-btn" onclick="Spotify.command('next')">NEXT_TRACK</button>
                     </div>
-                    <div class="node-box !bg-white/5 !border-white/5 !px-4 !py-4">
-                        <span class="text-[8px] opacity-30 uppercase">Uplink Health</span>
-                        <div class="progress-rail"><div id="track-progress-inner" class="h-full bg-green-500 w-0 transition-all"></div></div>
+                    <div class="node-box !bg-white/5 !border-white/5 !px-6 !py-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[9px] opacity-30 uppercase tracking-[0.2em]">Signal_Sync</span>
+                            <span class="text-[9px] text-green-500 animate-pulse">ACTIVE</span>
+                        </div>
+                        <div class="progress-rail"><div id="track-progress-inner" class="h-full bg-green-500 w-0 transition-all duration-1000"></div></div>
                     </div>
-                    <button class="os-btn w-full !text-[9px] !opacity-40" onclick="Spotify.auth()">RESET_OAUTH_HANDSHAKE</button>
+                    <button class="os-btn w-full !text-[10px] !opacity-50 !border-dashed" onclick="Spotify.auth()">INITIALIZE_CODE_HANDSHAKE</button>
                 </div>
 
-                <div id="tab-net" class="tab-content hidden flex-col gap-4">
-                    <div class="p-6 border border-white/5 bg-black/40">
-                        <div class="flex justify-between text-[10px] mb-4"><span>LATENCY_SIGNAL</span><span id="ping" class="text-green-400">24ms</span></div>
-                        <div class="flex justify-between text-[10px] mb-4"><span>CORE_LOAD</span><span id="load" class="text-purple-400">12.4%</span></div>
-                        <div class="flex justify-between text-[10px]"><span>PACKET_LOSS</span><span class="text-red-400">0.00%</span></div>
+                <div id="tab-net" class="tab-content hidden flex flex-col gap-6">
+                    <div class="p-8 border border-white/5 bg-black/50">
+                        <div class="flex justify-between text-[11px] mb-6"><span>PACKET_LATENCY</span><span id="ping" class="text-green-400 font-bold">24ms</span></div>
+                        <div class="flex justify-between text-[11px] mb-6"><span>PROCESSING_LOAD</span><span id="load" class="text-purple-400 font-bold">12.4%</span></div>
+                        <div class="flex justify-between text-[11px] mb-6"><span>UPTIME_SESSION</span><span id="uptime" class="text-cyan-400">00:00:00</span></div>
+                        <div class="flex justify-between text-[11px]"><span>ENCRYPTION_LAYER</span><span class="text-white/40 italic">AES_256_RSA</span></div>
                     </div>
                 </div>
 
-                <div id="tab-auth" class="tab-content hidden flex-col gap-5">
-                    <span class="text-[9px] opacity-40 tracking-widest uppercase">System Runtime Log</span>
+                <div id="tab-auth" class="tab-content hidden flex flex-col gap-6">
+                    <span class="text-[10px] opacity-40 tracking-widest uppercase">Kernel_Output_Stream</span>
                     <div class="log-terminal" id="sys-log"></div>
-                    <button class="os-btn !border-purple-500/50" onclick="OS.clearLogs()">Purge_Logs</button>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button class="os-btn !text-[10px] !opacity-60" onclick="OS.clearLogs()">Purge_Stream</button>
+                        <button class="os-btn !text-[10px] !opacity-60" onclick="OS.exportLogs()">Export_Config</button>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
 
     <main class="master-interface">
-        <div class="flex items-baseline gap-16">
+        <div class="flex items-baseline gap-20">
             <div id="main-time">00:00</div>
-            <div class="metrics-container pb-20">
+            <div class="metrics-container pb-24">
                 <div id="sec-hex">00</div>
                 <div id="mode-shard">AM</div>
             </div>
@@ -233,33 +257,41 @@
 
     <div id="spotify-node">
         <div class="node-box">
-            <div class="text-[9px] opacity-30 tracking-[0.4em] mb-2 font-bold uppercase">Streaming_Signal</div>
-            <div id="track-name" class="text-sm font-black uppercase truncate w-56 tracking-tighter">System_Idle</div>
-            <div id="artist-name" class="text-[9px] text-purple-400 tracking-[0.2em] uppercase font-bold mt-1">Awaiting Data...</div>
-            <div class="progress-rail"><div id="track-progress-bar" style="width: 0%" class="h-full bg-green-500 shadow-[0_0_15px_#1DB954]"></div></div>
+            <div class="text-[10px] opacity-30 tracking-[0.5em] mb-4 font-black uppercase">Current_Audio_Uplink</div>
+            <div id="track-name" class="text-lg font-black uppercase truncate w-72 tracking-tighter leading-none">System_Standby</div>
+            <div id="artist-name" class="text-[10px] text-purple-400 tracking-[0.3em] uppercase font-bold mt-2">Awaiting Authentication...</div>
+            <div class="progress-rail mt-6"><div id="track-progress-bar" style="width: 0%" class="h-full bg-green-500 shadow-[0_0_20px_#1DB954]"></div></div>
         </div>
     </div>
 
     <script>
         /**
          * OS CORE MANAGER
-         * Handles UI transitions, tabs, and environmental effects
+         * Architecture for v45.0
          */
         const OS = {
             activePanel: false,
+            startTime: Date.now(),
+            
             togglePanel: () => {
                 const p = document.getElementById('osPanel');
                 OS.activePanel = !OS.activePanel;
                 p.classList.toggle('active');
-                OS.log("SYSTEM", OS.activePanel ? "Panel_Engaged" : "Panel_Disengaged");
+                OS.log("KERNEL", OS.activePanel ? "Shell_Engaged" : "Shell_Disengaged");
             },
+
             switchTab: (id, btn) => {
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('flex'));
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.getElementById(`tab-${id}`).classList.remove('hidden');
+                
+                const target = document.getElementById(`tab-${id}`);
+                target.classList.remove('hidden');
+                target.classList.add('flex');
                 btn.classList.add('active');
-                OS.log("UI", `Switching to ${id.toUpperCase()}`);
+                OS.log("SHELL", `Maps: ${id.toUpperCase()}`);
             },
+
             log: (tag, msg) => {
                 const log = document.getElementById('sys-log');
                 const time = new Date().toTimeString().split(' ')[0];
@@ -267,15 +299,31 @@
                 entry.className = "log-entry";
                 entry.innerHTML = `<span class="log-time">${time}</span><span class="log-tag">[${tag}]</span><span class="log-msg">${msg}</span>`;
                 log.prepend(entry);
-                if(log.children.length > 50) log.lastChild.remove();
+                if(log.children.length > 100) log.lastChild.remove();
             },
+
             clearLogs: () => {
                 document.getElementById('sys-log').innerHTML = '';
-                OS.log("AUTH", "Terminal_Purged");
+                OS.log("SYS", "Terminal_Memory_Flushed");
             },
+
+            exportLogs: () => {
+                OS.log("SYS", "Generating_Session_Manifest...");
+                setTimeout(() => OS.log("SYS", "Export_Restricted: Level_5_Auth_Required"), 800);
+            },
+
             setGlow: (val) => {
                 document.documentElement.style.setProperty('--glow-mult', val / 50);
-                OS.log("CORE", `Entropy_Adjusted: ${val}%`);
+                document.getElementById('entropy-val').innerText = val + "%";
+                OS.log("CORE", `Entropy_Density: ${val}%`);
+            },
+
+            updateUptime: () => {
+                const diff = Math.floor((Date.now() - OS.startTime) / 1000);
+                const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+                const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+                const s = String(diff % 60).padStart(2, '0');
+                document.getElementById('uptime').innerText = `${h}:${m}:${s}`;
             }
         };
 
@@ -284,7 +332,10 @@
          */
         const Clock = {
             mode: 12,
-            setMode: (m) => { Clock.mode = m; OS.log("CHRONOS", `Format_${m}H_Applied`); },
+            setMode: (m) => { 
+                Clock.mode = m; 
+                OS.log("CHRONOS", `Mode_Override: ${m}H`);
+            },
             tick: () => {
                 const now = new Date();
                 let h = now.getHours();
@@ -302,7 +353,7 @@
 
         /**
          * SPOTIFY NEURAL BRIDGE
-         * Repaired button logic and state observer
+         * MANDATE: response_type=code
          */
         const Spotify = {
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
@@ -311,12 +362,17 @@
             auth: () => {
                 const scope = encodeURIComponent('user-read-currently-playing user-read-playback-state user-modify-playback-state');
                 const uri = encodeURIComponent('https://xclipsestudio.xclipsenetworks.com.au/callback');
-                window.location.href = `https://accounts.spotify.com/authorize?client_id=${Spotify.clientId}&response_type=token&redirect_uri=${uri}&scope=${scope}`;
+                
+                // RESPONSE_TYPE MUST BE CODE
+                const authUrl = `https://accounts.spotify.com/authorize?client_id=${Spotify.clientId}&response_type=code&redirect_uri=${uri}&scope=${scope}`;
+                
+                OS.log("OAUTH", "Requesting_Auth_Code...");
+                window.location.href = authUrl;
             },
 
             command: async (type) => {
                 const token = localStorage.getItem('sp_access_token');
-                if(!token) return OS.log("ERROR", "Uplink_Missing");
+                if(!token) return OS.log("ERROR", "Uplink_Auth_Token_Missing");
 
                 let method = (type === 'next' || type === 'previous') ? 'POST' : 'PUT';
                 let endpoint = type;
@@ -332,13 +388,13 @@
                     });
 
                     if(res.ok || res.status === 204) {
-                        OS.log("MEDIA", `CMD_${endpoint.toUpperCase()}_SUCCESS`);
-                        setTimeout(Spotify.sync, 500);
+                        OS.log("MEDIA", `SIGNAL_${endpoint.toUpperCase()}_SENT`);
+                        setTimeout(Spotify.sync, 600);
                     } else {
-                        OS.log("MEDIA", "ERR: NO_ACTIVE_DEVICE");
+                        OS.log("MEDIA", "ERR: NO_ACTIVE_LISTENING_DEVICE");
                     }
                 } catch(e) {
-                    OS.log("MEDIA", "SIGNAL_DROPPED");
+                    OS.log("MEDIA", "CORE_SIGNAL_FAILURE");
                 }
             },
 
@@ -347,7 +403,7 @@
                 if(!token) return;
 
                 try {
-                    const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
+                    const res = await fetch('https://api.spotify.com/v1/me/player', {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
 
@@ -363,7 +419,7 @@
                         document.getElementById('track-progress-inner').style.width = prog + "%";
 
                         const btn = document.getElementById('play-pause-btn');
-                        btn.innerText = Spotify.isPlaying ? 'PAUSE' : 'PLAY';
+                        btn.innerText = Spotify.isPlaying ? 'PAUSE_SIGNAL' : 'PLAY_SIGNAL';
                         btn.style.color = Spotify.isPlaying ? '#ff4444' : '#1DB954';
                         btn.style.borderColor = Spotify.isPlaying ? '#ff4444' : '#1DB954';
                     }
@@ -382,20 +438,20 @@
                 Canvas.ctx = Canvas.el.getContext('2d');
                 Canvas.el.width = window.innerWidth;
                 Canvas.el.height = window.innerHeight;
-                Canvas.drops = Array(Math.floor(Canvas.el.width / 15)).fill(1);
-                setInterval(Canvas.draw, 35);
+                Canvas.drops = Array(Math.floor(Canvas.el.width / 18)).fill(1);
+                setInterval(Canvas.draw, 40);
             },
             draw: () => {
                 const ctx = Canvas.ctx;
-                ctx.fillStyle = "rgba(0,0,0,0.08)";
+                ctx.fillStyle = "rgba(0,0,0,0.1)";
                 ctx.fillRect(0, 0, Canvas.el.width, Canvas.el.height);
                 ctx.fillStyle = "#a855f7";
-                ctx.font = "12px monospace";
+                ctx.font = "14px monospace";
                 
                 Canvas.drops.forEach((y, i) => {
                     const char = Math.random() > 0.5 ? "0" : "1";
-                    ctx.fillText(char, i * 15, y * 15);
-                    if(y * 15 > Canvas.el.height && Math.random() > 0.98) Canvas.drops[i] = 0;
+                    ctx.fillText(char, i * 18, y * 18);
+                    if(y * 18 > Canvas.el.height && Math.random() > 0.985) Canvas.drops[i] = 0;
                     Canvas.drops[i]++;
                 });
             }
@@ -405,15 +461,25 @@
         window.onload = () => {
             Canvas.init();
             setInterval(Clock.tick, 1000);
-            setInterval(Spotify.sync, 3000);
+            setInterval(Spotify.sync, 4000);
+            setInterval(OS.updateUptime, 1000);
             
-            // Random Metrics Sim
+            // Simulation of live data
             setInterval(() => {
-                document.getElementById('ping').innerText = Math.floor(Math.random() * 15 + 20) + "ms";
-                document.getElementById('load').innerText = (Math.random() * 10 + 5).toFixed(1) + "%";
-            }, 4000);
+                document.getElementById('ping').innerText = Math.floor(Math.random() * 10 + 15) + "ms";
+                document.getElementById('load').innerText = (Math.random() * 8 + 4).toFixed(1) + "%";
+            }, 5000);
 
-            // OAuth Token Capture
+            // OAuth Code/Token Capture Logic
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            
+            if(code) {
+                OS.log("OAUTH", "Code_Captured: " + code.substring(0, 8) + "...");
+                OS.log("OAUTH", "Manual_Exchange_Required_For_Token.");
+                // Note: Normally, here you'd POST the code to your backend to get an access_token
+            }
+
             const hash = window.location.hash.substring(1).split('&').reduce((acc, item) => {
                 if (item) { let p = item.split('='); acc[p[0]] = decodeURIComponent(p[1]); }
                 return acc;
@@ -421,17 +487,18 @@
 
             if(hash.access_token) {
                 localStorage.setItem('sp_access_token', hash.access_token);
-                OS.log("AUTH", "Handshake_Complete");
+                OS.log("AUTH", "Access_Token_Synchronized");
                 window.location.hash = "";
             }
 
             Clock.tick();
-            OS.log("KERNEL", "Architect_OS_v40.0_Ready");
+            OS.log("KERNEL", "Architect_OS_v45.0_XP_Online");
         };
 
         window.onresize = () => {
             Canvas.el.width = window.innerWidth;
             Canvas.el.height = window.innerHeight;
+            OS.log("CORE", "Viewport_Resized");
         };
     </script>
 </body>
