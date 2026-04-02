@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XCLIPSE | ARCHITECT_OS_v12.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #a855f7;
+            --primary-glow: rgba(168, 85, 247, 0.4);
+            --bg-dark: #010101;
+            --glow-mult: 1;
+        }
+
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg-dark); color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; }
+
+        @keyframes textShimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+        .os-header { position: fixed; top: 30px; left: 40px; right: 40px; display: flex; justify-content: space-between; z-index: 100; }
+        .system-status { font-size: 8px; letter-spacing: 0.5em; color: var(--primary); }
+
+        .os-panel {
+            position: absolute; top: 50px; right: 0; width: 360px;
+            background: rgba(5,5,5,0.98); border: 1px solid var(--primary);
+            padding: 25px; display: none; flex-direction: column; gap: 15px;
+            box-shadow: 0 0 60px rgba(0,0,0,1); clip-path: polygon(0 0, 100% 0, 100% 95%, 95% 100%, 0 100%);
+            z-index: 1000; border-top: 4px solid var(--primary);
+        }
+        .os-panel.active { display: flex; }
+
+        .log-terminal {
+            background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
+            height: 120px; overflow-y: auto; padding: 10px; font-size: 8px; color: #00ff88;
+        }
+        .log-entry { opacity: 0.7; border-left: 1px solid #00ff88; padding-left: 5px; margin-bottom: 4px; }
+
+        .os-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 10px; font-size: 9px; text-transform: uppercase; font-weight: 800; cursor: pointer; transition: 0.2s; text-align: center; color: #fff; }
+        .os-btn.active { background: var(--primary); color: #000; box-shadow: 0 0 15px var(--primary-glow); }
+        
+        #auth-trigger { border: 1px solid var(--primary); color: var(--primary); padding: 12px; width: 100%; font-size: 9px; letter-spacing: 0.2em; font-weight: 800; cursor: pointer; }
+        #logout-btn { border: 1px solid #ff4444; color: #ff4444; padding: 12px; width: 100%; font-size: 9px; letter-spacing: 0.2em; font-weight: 800; cursor: pointer; display: none; }
+
+        .master-interface { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10; pointer-events: none; }
+        
+        #main-time {
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(5rem, 18vw, 22rem);
+            font-weight: 900; font-style: italic; letter-spacing: -0.06em;
+            line-height: 0.8;
+            background: linear-gradient(90deg, #fff, rgba(168, 85, 247, 0.8), #fff);
+            background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: textShimmer 8s linear infinite;
+            filter: drop-shadow(0 0 calc(30px * var(--glow-mult)) var(--primary-glow));
+        }
+
+        .temporal-metrics { display: flex; flex-direction: column; gap: 8px; margin-bottom: 25px; align-items: flex-start; }
+        #sec-hex { font-size: 5rem; font-weight: 100; color: var(--primary); line-height: 0.9; text-shadow: 0 0 20px var(--primary-glow); }
+        
+        /* Updated AM/PM Tag */
+        #mode-id {
+            font-size: 11px; font-weight: 800; color: var(--primary);
+            border: 1px solid var(--primary); padding: 4px 12px;
+            letter-spacing: 0.4em; background: rgba(168, 85, 247, 0.1);
+            text-shadow: 0 0 10px var(--primary-glow);
+            clip-path: polygon(15% 0, 100% 0, 85% 100%, 0 100%);
+        }
+
+        .admin-section { display: none; }
+    </style>
+</head>
+<body>
+
+    <header class="os-header">
+        <div class="system-status">CORE_ACCESS // <span id="admin-tag">GUEST_LINK</span></div>
+        <div class="settings-hub">
+            <button class="os-btn" onclick="document.getElementById('osPanel').classList.toggle('active')" style="width: 70px;">COMMAND</button>
+            <div class="os-panel" id="osPanel">
+                <p style="font-size: 8px; opacity: 0.5;">IDENTITY_GATEWAY</p>
+                <button id="auth-trigger">SIGN_IN_WITH_GOOGLE</button>
+                <button id="logout-btn">TERMINATE_UPLINK</button>
+
+                <div id="admin-ui" class="admin-section">
+                    <p style="font-size: 8px; opacity: 0.5; margin-top: 15px;">TERMINAL_OUTPUT</p>
+                    <div class="log-terminal" id="sys-log"></div>
+
+                    <p style="font-size: 8px; opacity: 0.5; margin-top: 15px;">MASTER_CONTROLS</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div id="btn-12h" class="os-btn" onclick="applyMode('12h')">12H</div>
+                        <div id="btn-24h" class="os-btn" onclick="applyMode('24h')">24H</div>
+                        <div id="btn-sec" class="os-btn" onclick="applyMode('sec')">SEC</div>
+                    </div>
+                    <button class="os-btn w-full mt-2" onclick="cycleGlow()">RE-SYNCHRONIZE_GLOW</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="master-interface">
+        <div style="display: flex; align-items: flex-end; gap: 30px;">
+            <div id="main-time">00:00</div>
+            <div class="temporal-metrics">
+                <div id="sec-hex">00</div>
+                <div id="mode-id">AM</div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
+            authDomain: "xclipse-security.firebaseapp.com",
+            databaseURL: "https://xclipse-security-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "xclipse-security",
+            storageBucket: "xclipse-security.firebasestorage.app",
+            messagingSenderId: "161353959200",
+            appId: "1:161353959200:web:d0b36f7817b31842cff945"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        document.getElementById('auth-trigger').onclick = async () => {
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (e) {
+                console.error("Auth Failure:", e);
+                alert("ERR: Unauthorized Domain or Environment. Please run via Local Server.");
+            }
+        };
+        
+        document.getElementById('logout-btn').onclick = () => signOut(auth);
+
+        onAuthStateChanged(auth, (user) => {
+            const adminUI = document.getElementById('admin-ui');
+            const authBtn = document.getElementById('auth-trigger');
+            const logoutBtn = document.getElementById('logout-btn');
+            const tag = document.getElementById('admin-tag');
+
+            if (user) {
+                adminUI.style.display = "block";
+                authBtn.style.display = "none";
+                logoutBtn.style.display = "block";
+                tag.innerText = "ADMIN_VERIFIED";
+                tag.style.color = "#00ff88";
+                logSystemEvent("UPLINK_STABLE", user.email);
+            } else {
+                adminUI.style.display = "none";
+                authBtn.style.display = "block";
+                logoutBtn.style.display = "none";
+                tag.innerText = "GUEST_LINK";
+                tag.style.color = "#a855f7";
+                resetToSafeMode();
+            }
+        });
+    </script>
+
+    <script>
+        let state = { is12h: true, showSec: true, glow: 1 };
+
+        function logSystemEvent(action, detail = "N/A") {
+            const log = document.getElementById('sys-log');
+            if(!log) return;
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `> [${new Date().toLocaleTimeString()}] ${action} :: ${detail}`;
+            log.prepend(entry);
+        }
+
+        function resetToSafeMode() {
+            state = { is12h: true, showSec: true, glow: 1 };
+            document.documentElement.style.setProperty('--glow-mult', 1);
+            updateUI();
+        }
+
+        function applyMode(type) {
+            if(type === '12h') state.is12h = true;
+            if(type === '24h') state.is12h = false;
+            if(type === 'sec') state.showSec = !state.showSec;
+            logSystemEvent("MODE_CHANGE", type.toUpperCase());
+            updateUI();
+        }
+
+        function cycleGlow() {
+            state.glow = state.glow >= 2.5 ? 0.5 : state.glow + 0.5;
+            document.documentElement.style.setProperty('--glow-mult', state.glow);
+            logSystemEvent("VISUAL_RECALIB", "GLOW_" + state.glow);
+        }
+
+        function updateUI() {
+            document.getElementById('btn-12h').classList.toggle('active', state.is12h);
+            document.getElementById('btn-24h').classList.toggle('active', !state.is12h);
+            document.getElementById('btn-sec').classList.toggle('active', state.showSec);
+            document.getElementById('sec-hex').style.opacity = state.showSec ? "0.9" : "0";
+            document.getElementById('mode-id').style.opacity = state.is12h ? "1" : "0";
+        }
+
+        function updateClock() {
+            const now = new Date();
+            let hh = now.getHours();
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            const ampm = hh >= 12 ? "PM" : "AM";
+            if (state.is12h) hh = hh % 12 || 12;
+            document.getElementById('main-time').innerText = `${String(hh).padStart(2, '0')}:${mm}`;
+            document.getElementById('sec-hex').innerText = ss;
+            document.getElementById('mode-id').innerText = ampm;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+        updateUI();
+    </script>
+</body>
+</html>
