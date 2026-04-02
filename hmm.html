@@ -3,218 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | ARCHITECT_OS_v12.0</title>
+    <title>XCLIPSE | ARCHITECT_OS_v22.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #a855f7;
             --primary-glow: rgba(168, 85, 247, 0.4);
+            --spotify: #1DB954;
             --bg-dark: #010101;
+            --panel-bg: rgba(5, 5, 5, 0.98);
             --glow-mult: 1;
         }
 
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg-dark); color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; }
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: var(--bg-dark); color: #fff; 
+            font-family: 'JetBrains Mono', monospace; overflow: hidden; 
+        }
 
-        @keyframes textShimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        /* Background Entropy Layer */
+        #entropy-canvas { position: fixed; inset: 0; z-index: 0; opacity: 0.15; pointer-events: none; }
 
+        /* OS UI Elements */
         .os-header { position: fixed; top: 30px; left: 40px; right: 40px; display: flex; justify-content: space-between; z-index: 100; }
-        .system-status { font-size: 8px; letter-spacing: 0.5em; color: var(--primary); }
+        .system-status { font-size: 8px; letter-spacing: 0.5em; color: var(--primary); text-transform: uppercase; }
 
+        /* Settings Panel */
         .os-panel {
-            position: absolute; top: 50px; right: 0; width: 360px;
-            background: rgba(5,5,5,0.98); border: 1px solid var(--primary);
-            padding: 25px; display: none; flex-direction: column; gap: 15px;
-            box-shadow: 0 0 60px rgba(0,0,0,1); clip-path: polygon(0 0, 100% 0, 100% 95%, 95% 100%, 0 100%);
+            position: absolute; top: 60px; right: 0; width: 420px;
+            background: var(--panel-bg); border: 1px solid rgba(168, 85, 247, 0.3);
+            padding: 30px; display: none; flex-direction: column;
+            box-shadow: 0 0 100px rgba(0,0,0,1);
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 90% 100%, 0 100%);
             z-index: 1000; border-top: 4px solid var(--primary);
+            backdrop-filter: blur(20px);
         }
-        .os-panel.active { display: flex; }
+        .os-panel.active { display: flex; animation: panelSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        .log-terminal {
-            background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
-            height: 120px; overflow-y: auto; padding: 10px; font-size: 8px; color: #00ff88;
+        @keyframes panelSlide {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
-        .log-entry { opacity: 0.7; border-left: 1px solid #00ff88; padding-left: 5px; margin-bottom: 4px; }
 
-        .os-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 10px; font-size: 9px; text-transform: uppercase; font-weight: 800; cursor: pointer; transition: 0.2s; text-align: center; color: #fff; }
-        .os-btn.active { background: var(--primary); color: #000; box-shadow: 0 0 15px var(--primary-glow); }
-        
-        #auth-trigger { border: 1px solid var(--primary); color: var(--primary); padding: 12px; width: 100%; font-size: 9px; letter-spacing: 0.2em; font-weight: 800; cursor: pointer; }
-        #logout-btn { border: 1px solid #ff4444; color: #ff4444; padding: 12px; width: 100%; font-size: 9px; letter-spacing: 0.2em; font-weight: 800; cursor: pointer; display: none; }
+        /* Tab Navigation */
+        .tab-btn { 
+            font-size: 9px; letter-spacing: 0.2em; padding: 8px 12px; 
+            cursor: pointer; opacity: 0.4; transition: 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-btn.active { opacity: 1; color: var(--primary); border-bottom: 2px solid var(--primary); }
 
+        .os-btn { 
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); 
+            padding: 10px; font-size: 9px; text-transform: uppercase; font-weight: 800; 
+            cursor: pointer; transition: 0.2s; text-align: center; color: #fff; 
+        }
+        .os-btn:hover { background: var(--primary); color: #000; }
+
+        /* Main Temporal Interface */
         .master-interface { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10; pointer-events: none; }
-        
         #main-time {
             font-family: 'Montserrat', sans-serif;
-            font-size: clamp(5rem, 18vw, 22rem);
-            font-weight: 900; font-style: italic; letter-spacing: -0.06em;
-            line-height: 0.8;
-            background: linear-gradient(90deg, #fff, rgba(168, 85, 247, 0.8), #fff);
-            background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            animation: textShimmer 8s linear infinite;
-            filter: drop-shadow(0 0 calc(30px * var(--glow-mult)) var(--primary-glow));
+            font-size: clamp(8rem, 22vw, 26rem);
+            font-weight: 900; font-style: italic; letter-spacing: -0.06em; line-height: 0.7;
+            color: #ffffff; mix-blend-mode: overlay;
+            filter: drop-shadow(0 0 calc(50px * var(--glow-mult)) var(--primary-glow));
         }
 
-        .temporal-metrics { display: flex; flex-direction: column; gap: 8px; margin-bottom: 25px; align-items: flex-start; }
-        #sec-hex { font-size: 5rem; font-weight: 100; color: var(--primary); line-height: 0.9; text-shadow: 0 0 20px var(--primary-glow); }
-        
-        /* Updated AM/PM Tag */
-        #mode-id {
-            font-size: 11px; font-weight: 800; color: var(--primary);
-            border: 1px solid var(--primary); padding: 4px 12px;
-            letter-spacing: 0.4em; background: rgba(168, 85, 247, 0.1);
-            text-shadow: 0 0 10px var(--primary-glow);
-            clip-path: polygon(15% 0, 100% 0, 85% 100%, 0 100%);
+        /* Sidebar Metrics */
+        .sidebar-metrics { display: flex; flex-direction: column; align-items: flex-start; }
+        #sec-hex { font-size: 7rem; font-weight: 100; color: var(--primary); line-height: 0.8; }
+        #mode-shard { font-size: 10px; font-weight: 800; border: 1px solid var(--primary); padding: 4px 15px; margin-top: 15px; letter-spacing: 0.4em; }
+
+        /* Spotify Node */
+        #spotify-node { position: fixed; bottom: 50px; left: 50px; z-index: 100; }
+        .node-box {
+            background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.05);
+            padding: 15px 25px; border-left: 4px solid var(--spotify);
+            clip-path: polygon(0 0, 95% 0, 100% 20%, 100% 100%, 5% 100%, 0 80%);
+            backdrop-filter: blur(15px);
         }
 
-        .admin-section { display: none; }
+        .log-terminal { 
+            background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.05); 
+            height: 180px; overflow-y: auto; padding: 12px; font-size: 9px; color: #00ff88; 
+        }
     </style>
 </head>
 <body>
 
+    <canvas id="entropy-canvas"></canvas>
+
     <header class="os-header">
-        <div class="system-status">CORE_ACCESS // <span id="admin-tag">GUEST_LINK</span></div>
+        <div class="system-status">UPLINK_STABLE // <span id="admin-tag">GUEST_LINK</span></div>
         <div class="settings-hub">
-            <button class="os-btn" onclick="document.getElementById('osPanel').classList.toggle('active')" style="width: 70px;">COMMAND</button>
+            <button class="os-btn !px-8" onclick="UI.togglePanel()">SYSTEM_MANIFEST</button>
+            
             <div class="os-panel" id="osPanel">
-                <p style="font-size: 8px; opacity: 0.5;">IDENTITY_GATEWAY</p>
-                <button id="auth-trigger">SIGN_IN_WITH_GOOGLE</button>
-                <button id="logout-btn">TERMINATE_UPLINK</button>
+                <div class="flex justify-between mb-8 border-b border-white/10">
+                    <div class="tab-btn active" onclick="UI.switchTab('core', this)">CORE</div>
+                    <div class="tab-btn" onclick="UI.switchTab('media', this)">MEDIA</div>
+                    <div class="tab-btn" onclick="UI.switchTab('net', this)">NET</div>
+                    <div class="tab-btn" onclick="UI.switchTab('auth', this)">AUTH</div>
+                </div>
 
-                <div id="admin-ui" class="admin-section">
-                    <p style="font-size: 8px; opacity: 0.5; margin-top: 15px;">TERMINAL_OUTPUT</p>
-                    <div class="log-terminal" id="sys-log"></div>
-
-                    <p style="font-size: 8px; opacity: 0.5; margin-top: 15px;">MASTER_CONTROLS</p>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div id="btn-12h" class="os-btn" onclick="applyMode('12h')">12H</div>
-                        <div id="btn-24h" class="os-btn" onclick="applyMode('24h')">24H</div>
-                        <div id="btn-sec" class="os-btn" onclick="applyMode('sec')">SEC</div>
+                <div id="tab-core" class="tab-content flex flex-col gap-6">
+                    <div class="flex flex-col gap-2">
+                        <span class="text-[8px] opacity-40 tracking-widest">CHRONOS_MODE</span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="os-btn" onclick="Clock.setMode(12)">12_HOUR</button>
+                            <button class="os-btn" onclick="Clock.setMode(24)">24_HOUR</button>
+                        </div>
                     </div>
-                    <button class="os-btn w-full mt-2" onclick="cycleGlow()">RE-SYNCHRONIZE_GLOW</button>
+                </div>
+
+                <div id="tab-media" class="tab-content hidden flex-col gap-4">
+                    <span class="text-[8px] opacity-40 tracking-widest">SPOTIFY_HANDSHAKE</span>
+                    <button class="os-btn !border-green-500 !text-green-500" onclick="Spotify.auth()">CONNECT_DSP</button>
+                </div>
+
+                <div id="tab-net" class="tab-content hidden flex-col gap-4">
+                    <span class="text-[8px] opacity-40 tracking-widest">NETWORK_METRICS</span>
+                    <div class="text-[10px] flex justify-between"><span>LATENCY</span><span id="ping-val">--ms</span></div>
+                    <div class="text-[10px] flex justify-between"><span>LOAD</span><span id="load-val">--%</span></div>
+                </div>
+
+                <div id="tab-auth" class="tab-content hidden flex-col gap-4">
+                    <span class="text-[8px] opacity-40 tracking-widest">ADMIN_TERMINAL</span>
+                    <div class="log-terminal" id="sys-log"></div>
+                    <button id="fb-login" class="os-btn w-full !border-purple-500">INITIALIZE_CLOUD_SYNC</button>
                 </div>
             </div>
         </div>
     </header>
 
     <main class="master-interface">
-        <div style="display: flex; align-items: flex-end; gap: 30px;">
+        <div class="flex items-baseline gap-12">
             <div id="main-time">00:00</div>
-            <div class="temporal-metrics">
+            <div class="sidebar-metrics pb-16">
                 <div id="sec-hex">00</div>
-                <div id="mode-id">AM</div>
+                <div id="mode-shard">AM</div>
             </div>
         </div>
     </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
-            authDomain: "xclipse-security.firebaseapp.com",
-            databaseURL: "https://xclipse-security-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "xclipse-security",
-            storageBucket: "xclipse-security.firebasestorage.app",
-            messagingSenderId: "161353959200",
-            appId: "1:161353959200:web:d0b36f7817b31842cff945"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-
-        document.getElementById('auth-trigger').onclick = async () => {
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (e) {
-                console.error("Auth Failure:", e);
-                alert("ERR: Unauthorized Domain or Environment. Please run via Local Server.");
-            }
-        };
-        
-        document.getElementById('logout-btn').onclick = () => signOut(auth);
-
-        onAuthStateChanged(auth, (user) => {
-            const adminUI = document.getElementById('admin-ui');
-            const authBtn = document.getElementById('auth-trigger');
-            const logoutBtn = document.getElementById('logout-btn');
-            const tag = document.getElementById('admin-tag');
-
-            if (user) {
-                adminUI.style.display = "block";
-                authBtn.style.display = "none";
-                logoutBtn.style.display = "block";
-                tag.innerText = "ADMIN_VERIFIED";
-                tag.style.color = "#00ff88";
-                logSystemEvent("UPLINK_STABLE", user.email);
-            } else {
-                adminUI.style.display = "none";
-                authBtn.style.display = "block";
-                logoutBtn.style.display = "none";
-                tag.innerText = "GUEST_LINK";
-                tag.style.color = "#a855f7";
-                resetToSafeMode();
-            }
-        });
-    </script>
+    <div id="spotify-node">
+        <div class="node-box">
+            <div class="text-[8px] opacity-40 tracking-widest mb-1">CURRENT_SIGNAL</div>
+            <div id="track-name" class="text-xs font-bold uppercase truncate w-48">CORE_IDLE</div>
+            <div id="artist-name" class="text-[8px] text-green-500 tracking-widest uppercase">Waiting for input...</div>
+        </div>
+    </div>
 
     <script>
-        let state = { is12h: true, showSec: true, glow: 1 };
+        // UI ENGINE
+        const UI = {
+            togglePanel: () => document.getElementById('osPanel').classList.toggle('active'),
+            switchTab: (id, btn) => {
+                document.querySelectorAll('.tab-content').forEach(c => {
+                    c.classList.add('hidden');
+                    c.classList.remove('flex');
+                });
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                
+                const target = document.getElementById(`tab-${id}`);
+                target.classList.remove('hidden');
+                target.classList.add('flex');
+                btn.classList.add('active');
+                System.log("NAV", `Switching to ${id.toUpperCase()}`);
+            },
+            initEntropy: () => {
+                const canvas = document.getElementById('entropy-canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+                const chars = "01X"; const drops = Array(Math.floor(canvas.width/10)).fill(1);
+                function draw() {
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = "#a855f7"; ctx.font = "10px monospace";
+                    drops.forEach((y, i) => {
+                        const text = chars[Math.floor(Math.random()*chars.length)];
+                        ctx.fillText(text, i*10, y*10);
+                        if(y*10 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                        drops[i]++;
+                    });
+                }
+                setInterval(draw, 33);
+            }
+        };
 
-        function logSystemEvent(action, detail = "N/A") {
-            const log = document.getElementById('sys-log');
-            if(!log) return;
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.innerHTML = `> [${new Date().toLocaleTimeString()}] ${action} :: ${detail}`;
-            log.prepend(entry);
-        }
+        // SYSTEM LOGS
+        const System = {
+            log: (tag, msg) => {
+                const term = document.getElementById('sys-log');
+                const div = document.createElement('div');
+                div.innerHTML = `<span class="opacity-40">[${tag}]</span> ${msg}`;
+                term.prepend(div);
+            }
+        };
 
-        function resetToSafeMode() {
-            state = { is12h: true, showSec: true, glow: 1 };
-            document.documentElement.style.setProperty('--glow-mult', 1);
-            updateUI();
-        }
+        // CHRONOS
+        const Clock = {
+            format12: true,
+            setMode: (m) => { Clock.format12 = (m === 12); System.log("CHRONOS", `Mode ${m}H set.`); },
+            update: () => {
+                const now = new Date(); let h = now.getHours();
+                const m = String(now.getMinutes()).padStart(2, '0');
+                const s = String(now.getSeconds()).padStart(2, '0');
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                if(Clock.format12) h = h % 12 || 12;
+                document.getElementById('main-time').innerText = `${String(h).padStart(2, '0')}:${m}`;
+                document.getElementById('sec-hex').innerText = s;
+                document.getElementById('mode-shard').innerText = ampm;
+            }
+        };
 
-        function applyMode(type) {
-            if(type === '12h') state.is12h = true;
-            if(type === '24h') state.is12h = false;
-            if(type === 'sec') state.showSec = !state.showSec;
-            logSystemEvent("MODE_CHANGE", type.toUpperCase());
-            updateUI();
-        }
+        // SPOTIFY
+        const Spotify = {
+            auth: () => {
+                const client = 'ee9cf7fe920d4280804730690b3fb4e8';
+                const uri = encodeURIComponent('https://xclipsestudio.xclipsenetworks.com.au/callback');
+                window.location.href = `https://accounts.spotify.com/authorize?client_id=${client}&response_type=code&redirect_uri=${uri}&scope=user-read-currently-playing`;
+            },
+            sync: async () => {
+                const token = localStorage.getItem('spotify_token');
+                if(!token) return;
+                try {
+                    const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', { headers: { 'Authorization': `Bearer ${token}` }});
+                    if(res.status === 200) {
+                        const d = await res.json();
+                        document.getElementById('track-name').innerText = d.item.name;
+                        document.getElementById('artist-name').innerText = d.item.artists[0].name;
+                    }
+                } catch(e) {}
+            }
+        };
 
-        function cycleGlow() {
-            state.glow = state.glow >= 2.5 ? 0.5 : state.glow + 0.5;
-            document.documentElement.style.setProperty('--glow-mult', state.glow);
-            logSystemEvent("VISUAL_RECALIB", "GLOW_" + state.glow);
-        }
-
-        function updateUI() {
-            document.getElementById('btn-12h').classList.toggle('active', state.is12h);
-            document.getElementById('btn-24h').classList.toggle('active', !state.is12h);
-            document.getElementById('btn-sec').classList.toggle('active', state.showSec);
-            document.getElementById('sec-hex').style.opacity = state.showSec ? "0.9" : "0";
-            document.getElementById('mode-id').style.opacity = state.is12h ? "1" : "0";
-        }
-
-        function updateClock() {
-            const now = new Date();
-            let hh = now.getHours();
-            const mm = String(now.getMinutes()).padStart(2, '0');
-            const ss = String(now.getSeconds()).padStart(2, '0');
-            const ampm = hh >= 12 ? "PM" : "AM";
-            if (state.is12h) hh = hh % 12 || 12;
-            document.getElementById('main-time').innerText = `${String(hh).padStart(2, '0')}:${mm}`;
-            document.getElementById('sec-hex').innerText = ss;
-            document.getElementById('mode-id').innerText = ampm;
-        }
-
-        setInterval(updateClock, 1000);
-        updateClock();
-        updateUI();
+        // INIT
+        window.onload = () => {
+            UI.initEntropy();
+            setInterval(Clock.update, 1000);
+            setInterval(Spotify.sync, 5000);
+            setInterval(() => {
+                document.getElementById('ping-val').innerText = Math.floor(Math.random()*20+20) + "ms";
+                document.getElementById('load-val').innerText = Math.floor(Math.random()*15+30) + "%";
+            }, 3000);
+            Clock.update();
+            System.log("KERNEL", "Architect OS Online.");
+        };
     </script>
 </body>
 </html>
