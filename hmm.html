@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | ARCHITECT_OS_v22.1</title>
+    <title>XCLIPSE | ARCHITECT_OS_v22.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     <style>
@@ -27,8 +27,7 @@
 
         /* OS UI Elements */
         .os-header { position: fixed; top: 30px; left: 40px; right: 40px; display: flex; justify-content: space-between; z-index: 100; }
-        .system-status { font-size: 8px; letter-spacing: 0.5em; color: var(--primary); text-transform: uppercase; }
-
+        
         /* Settings Panel */
         .os-panel {
             position: absolute; top: 60px; right: 0; width: 420px;
@@ -71,8 +70,6 @@
             filter: drop-shadow(0 0 calc(50px * var(--glow-mult)) var(--primary-glow));
         }
 
-        /* Sidebar Metrics */
-        .sidebar-metrics { display: flex; flex-direction: column; align-items: flex-start; }
         #sec-hex { font-size: 7rem; font-weight: 100; color: var(--primary); line-height: 0.8; }
         #mode-shard { font-size: 10px; font-weight: 800; border: 1px solid var(--primary); padding: 4px 15px; margin-top: 15px; letter-spacing: 0.4em; }
 
@@ -96,7 +93,7 @@
     <canvas id="entropy-canvas"></canvas>
 
     <header class="os-header">
-        <div class="system-status">UPLINK_STABLE // <span id="admin-tag">GUEST_LINK</span></div>
+        <div class="system-status text-[8px] tracking-[0.5em] text-purple-400">UPLINK_STABLE // <span id="admin-tag">GUEST_LINK</span></div>
         <div class="settings-hub">
             <button class="os-btn !px-8" onclick="UI.togglePanel()">SYSTEM_MANIFEST</button>
             
@@ -119,8 +116,19 @@
                 </div>
 
                 <div id="tab-media" class="tab-content hidden flex-col gap-4">
-                    <span class="text-[8px] opacity-40 tracking-widest">SPOTIFY_HANDSHAKE</span>
-                    <button class="os-btn !border-green-500 !text-green-500" onclick="Spotify.auth()">CONNECT_DSP</button>
+                    <span class="text-[8px] opacity-40 tracking-widest">NEURAL_CONTROL_UNIT</span>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button class="os-btn !text-[10px]" onclick="Spotify.control('previous')">PREV</button>
+                        <button id="play-pause-btn" class="os-btn !text-[10px] !border-green-500 !text-green-500" onclick="Spotify.control('play')">PLAY</button>
+                        <button class="os-btn !text-[10px]" onclick="Spotify.control('next')">NEXT</button>
+                    </div>
+                    <div class="node-box !bg-white/5 !border-white/10 mt-2">
+                        <span class="text-[7px] opacity-40">SIGNAL_STRENGTH</span>
+                        <div class="h-1 w-full bg-white/10 mt-2">
+                            <div id="track-progress" class="h-full bg-green-500 shadow-[0_0_10px_#1DB954] transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <button class="os-btn w-full mt-2 !opacity-30 !text-[8px]" onclick="Spotify.auth()">RE-AUTHORIZE_UPLINK</button>
                 </div>
 
                 <div id="tab-net" class="tab-content hidden flex-col gap-4">
@@ -218,22 +226,45 @@
             }
         };
 
-        // SPOTIFY
+        // SPOTIFY MODULE v22.5
         const Spotify = {
+            clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
             auth: () => {
-                const client = 'ee9cf7fe920d4280804730690b3fb4e8';
+                const scope = encodeURIComponent('user-read-currently-playing user-read-playback-state user-modify-playback-state');
                 const uri = encodeURIComponent('https://xclipsestudio.xclipsenetworks.com.au/callback');
-                window.location.href = `https://accounts.spotify.com/authorize?client_id=${client}&response_type=code&redirect_uri=${uri}&scope=user-read-currently-playing`;
+                window.location.href = `https://accounts.spotify.com/authorize?client_id=${Spotify.clientId}&response_type=code&redirect_uri=${uri}&scope=${scope}`;
+            },
+            control: async (command) => {
+                const token = localStorage.getItem('spotify_token');
+                if(!token) return System.log("ERROR", "No Active Spotify Uplink.");
+                let method = 'POST';
+                let endpoint = command;
+                if(command === 'play') {
+                    const isPlaying = document.getElementById('play-pause-btn').innerText === 'PAUSE';
+                    endpoint = isPlaying ? 'pause' : 'play';
+                    method = 'PUT';
+                }
+                try {
+                    await fetch(`https://api.spotify.com/v1/me/player/${endpoint}`, {
+                        method: method,
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    System.log("MEDIA", `${endpoint.toUpperCase()} Signal Sent`);
+                    setTimeout(Spotify.sync, 500);
+                } catch(e) { System.log("MEDIA_ERR", "Uplink Failed."); }
             },
             sync: async () => {
                 const token = localStorage.getItem('spotify_token');
                 if(!token) return;
                 try {
-                    const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', { headers: { 'Authorization': `Bearer ${token}` }});
+                    const res = await fetch('https://api.spotify.com/v1/me/player', { headers: { 'Authorization': `Bearer ${token}` }});
                     if(res.status === 200) {
                         const d = await res.json();
                         document.getElementById('track-name').innerText = d.item.name;
-                        document.getElementById('artist-name').innerText = d.item.artists[0].name;
+                        document.getElementById('artist-name').innerText = d.item.artists[0].name.toUpperCase();
+                        const percent = (d.progress_ms / d.item.duration_ms) * 100;
+                        document.getElementById('track-progress').style.width = `${percent}%`;
+                        document.getElementById('play-pause-btn').innerText = d.is_playing ? 'PAUSE' : 'PLAY';
                     }
                 } catch(e) {}
             }
@@ -249,7 +280,7 @@
                 document.getElementById('load-val').innerText = Math.floor(Math.random()*15+30) + "%";
             }, 3000);
             Clock.update();
-            System.log("KERNEL", "Architect OS Online.");
+            System.log("KERNEL", "Architect OS v22.5 Online.");
         };
     </script>
 </body>
