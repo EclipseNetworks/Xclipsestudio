@@ -279,25 +279,37 @@
             }
         };
 
-        window.onload = () => {
-            Canvas.init();
-            setInterval(Clock.tick, 1000);
-            setInterval(Spotify.sync, 5000);
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            if(code) {
-                OS.log("SYS", "Callback_Detected: Synchronizing...");
-                setTimeout(() => {
-                    Spotify.getToken(code).then(() => window.history.replaceState({}, document.title, window.location.pathname));
-                }, 100);
-            } else {
-                OS.log("SYS", "Architect_Ready");
-                if(localStorage.getItem('sp_access_token')) {
-                    document.getElementById('auth-status').innerText = "Link: SECURE_ESTABLISHED";
-                    Spotify.sync();
-                }
-            }
-        };
+window.onload = () => {
+    Canvas.init();
+    setInterval(Clock.tick, 1000);
+    setInterval(Spotify.sync, 5000);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+
+    if (code) {
+        // Handle returning from a fresh login
+        OS.log("SYS", "Callback_Detected: Synchronizing...");
+        Spotify.getToken(code).then(() => {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        });
+    } else {
+        // AUTOMATIC RELOGIN CHECK
+        const savedToken = localStorage.getItem('sp_access_token');
+        const expiry = localStorage.getItem('sp_expiry');
+
+        if (savedToken && expiry && Date.now() < expiry) {
+            OS.log("SYS", "Session_Restored: Uplink_Active");
+            document.getElementById('auth-status').innerText = "Link: SECURE_ESTABLISHED";
+            Spotify.sync();
+        } else if (savedToken) {
+            OS.log("WARN", "Session_Expired: Re-handshake_Required");
+            document.getElementById('auth-status').innerText = "Link: EXPIRED";
+        } else {
+            OS.log("SYS", "Architect_Ready: Awaiting_Uplink");
+        }
+    }
+};
     </script>
 </body>
 </html>
