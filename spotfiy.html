@@ -1,53 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><title>XCLIPSE | NEURAL_DISPLAY</title>
+    <meta charset="UTF-8">
+    <title>XCLIPSE | NEURAL_DISPLAY</title>
     <meta name="author" content="TheKidLeeroy.M">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #a855f7; --bg: #010101; }
         body, html { width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; margin: 0; }
-        #blur-bg { position: fixed; inset: -10%; background-size: cover; background-position: center; filter: blur(100px) brightness(0.15); z-index: 0; transition: background-image 2s ease; animation: pulse-bg 15s infinite alternate; }
+        
+        /* FULLSCREEN DYNAMIC BACKGROUND */
+        #blur-bg { 
+            position: fixed; inset: -10%; 
+            background-size: cover; background-position: center; 
+            filter: blur(100px) brightness(0.15); 
+            z-index: 0; transition: background-image 2s ease; 
+            animation: pulse-bg 15s infinite alternate; 
+        }
         @keyframes pulse-bg { from { transform: scale(1); } to { transform: scale(1.1); } }
-        
-        .hero { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        
-        /* SLEEK MUSIC ELEMENTS */
-        #main-art { width: 300px; height: 300px; object-fit: cover; box-shadow: 0 0 100px rgba(0,0,0,0.9); border: 1px solid rgba(255,255,255,0.05); animation: breathe 8s infinite ease-in-out; margin-bottom: 40px; }
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
-        
-        #track-title { font-family: 'Montserrat', sans-serif; font-size: clamp(1.2rem, 5vw, 3.5rem); font-weight: 900; font-style: italic; text-transform: uppercase; line-height: 1; letter-spacing: -0.02em; background: linear-gradient(to bottom, #fff, rgba(255,255,255,0.3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        #artist-name { font-size: 10px; letter-spacing: 0.8em; opacity: 0.4; margin-top: 20px; font-weight: 400; text-transform: uppercase; }
 
-        /* UI CONTROLS */
+        /* CENTERED CONTENT BOX */
+        .hero { 
+            position: relative; z-index: 10; height: 100vh; 
+            display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; 
+            text-align: center; 
+        }
+
+        #main-art { 
+            width: 300px; height: 300px; object-fit: cover; 
+            box-shadow: 0 0 100px rgba(0,0,0,0.9); 
+            border: 1px solid rgba(255,255,255,0.05); 
+            animation: breathe 8s infinite ease-in-out; 
+            margin-bottom: 40px; 
+        }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+
+        /* SLEEK TYPOGRAPHY */
+        #track-title { 
+            font-family: 'Montserrat', sans-serif; 
+            font-size: clamp(1.2rem, 5vw, 3rem); 
+            font-weight: 900; font-style: italic; 
+            text-transform: uppercase; line-height: 1.1; 
+            letter-spacing: -0.02em; 
+            background: linear-gradient(to bottom, #fff, rgba(255,255,255,0.3)); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+        }
+        #artist-name { 
+            font-size: 10px; letter-spacing: 0.8em; 
+            opacity: 0.4; margin-top: 15px; 
+            font-weight: 400; text-transform: uppercase; 
+        }
+
+        /* THE KIDLEEROY SIGNATURE (MAXIMIZED) */
+        .signature {
+            position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+            font-size: 14px; font-weight: 800; letter-spacing: 1.2em;
+            text-transform: uppercase; color: #fff;
+            text-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary);
+            z-index: 100; animation: sig-glow 4s infinite ease-in-out;
+            white-space: nowrap; pointer-events: none;
+        }
+        @keyframes sig-glow {
+            0%, 100% { opacity: 0.5; filter: brightness(1); transform: translateX(-50%) scale(1); }
+            50% { opacity: 1; filter: brightness(1.6); transform: translateX(-50%) scale(1.05); }
+        }
+
+        /* NAVIGATION & PROGRESS */
         .system-nav { position: fixed; top: 40px; right: 40px; z-index: 200; display: flex; gap: 15px; opacity: 0; transition: 0.5s; }
         body:hover .system-nav { opacity: 1; }
         .relink-btn { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 16px; font-size: 8px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; transition: 0.3s; }
         .relink-btn:hover { background: var(--primary); color: #000; box-shadow: 0 0 20px var(--primary); transform: skewX(-10deg); }
-        
-        .signature { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); font-size: 9px; letter-spacing: 0.6em; opacity: 0.2; pointer-events: none; }
+
         .progress-rail { position: fixed; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.03); }
         #progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 1.2s linear; box-shadow: 0 0 15px var(--primary); }
     </style>
 </head>
 <body>
+
     <div id="blur-bg"></div>
+
     <div class="system-nav">
         <a href="hmm.html" class="relink-btn" style="border-color: white; color: white;">RETURN_TO_OS</a>
         <button onclick="Spotify.relink()" class="relink-btn">RELINK_ACCOUNT</button>
     </div>
 
     <main class="hero">
-        <div id="player-content" class="flex flex-col items-center">
+        <div id="player-content">
             <img id="main-art" src="" alt="">
-            <div id="track-title">SEARCHING_SIGNAL</div>
+            <div id="track-title">SCANNING_SIGNAL</div>
             <div id="artist-name">Uplink_Idle</div>
         </div>
     </main>
 
-    <div class="signature">Created by TheKidLeeroy.M</div>
-    <div class="progress-rail"><div id="progress-fill"></div></div>
+    <div class="signature">
+        CREATED BY <span style="color: var(--primary); margin-left: 10px;">THEKIDLEEROY.M</span>
+    </div>
+
+    <div class="progress-rail">
+        <div id="progress-fill"></div>
+    </div>
 
     <script src="spotify.js"></script>
     <script>
@@ -61,9 +114,14 @@
                     document.getElementById('progress-fill').style.width = (data.progress_ms / data.item.duration_ms) * 100 + "%";
                 });
             };
+
             if(localStorage.getItem('sp_access_token')) {
-                syncUI(); setInterval(syncUI, 3000);
-            } else { Spotify.auth(); }
+                syncUI();
+                setInterval(syncUI, 3000);
+            } else {
+                // Auto-auth if no token found
+                Spotify.auth();
+            }
         };
     </script>
 </body>
