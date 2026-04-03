@@ -12,14 +12,13 @@
         
         #blur-bg { position: fixed; inset: -10%; background-size: cover; background-position: center; filter: blur(100px) brightness(0.15); z-index: 0; transition: background-image 2s ease; }
         
-        /* GITHUB SYNC INDICATOR */
-        .sync-pulse {
-            position: fixed; top: 40px; left: 40px;
-            display: flex; align-items: center; gap: 10px;
-            font-size: 8px; letter-spacing: 0.3em; opacity: 0.4;
+        /* GITHUB WATCHER INDICATOR */
+        .sync-indicator {
+            position: fixed; top: 30px; left: 40px; display: flex; align-items: center; gap: 10px;
+            font-size: 8px; letter-spacing: 0.3em; opacity: 0.3; z-index: 100;
         }
-        .pulse-dot { width: 6px; height: 6px; background: #0f0; border-radius: 50%; animation: pulse-blink 2s infinite; }
-        @keyframes pulse-blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; box-shadow: 0 0 10px #0f0; } }
+        .pulse-dot { width: 6px; height: 6px; background: #0f0; border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; box-shadow: 0 0 8px #0f0; } }
 
         /* CONTENT LAYOUT */
         .hero { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
@@ -28,7 +27,7 @@
         #track-title { font-family: 'Montserrat', sans-serif; font-size: clamp(1.2rem, 5vw, 3rem); font-weight: 900; font-style: italic; text-transform: uppercase; line-height: 1.1; letter-spacing: -0.02em; background: linear-gradient(to bottom, #fff, rgba(255,255,255,0.3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         #artist-name { font-size: 10px; letter-spacing: 0.8em; opacity: 0.4; margin-top: 15px; font-weight: 400; text-transform: uppercase; }
 
-        /* CREATED BY THEKIDLEEROY.M (POPPING) */
+        /* THE KIDLEEROY SIGNATURE (MAXIMIZED) */
         .signature {
             position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
             font-size: 14px; font-weight: 800; letter-spacing: 1.2em;
@@ -38,30 +37,42 @@
             white-space: nowrap; pointer-events: none;
         }
         @keyframes sig-glow {
-            0%, 100% { opacity: 0.5; filter: brightness(1); transform: translateX(-50%) scale(1); }
-            50% { opacity: 1; filter: brightness(1.6); transform: translateX(-50%) scale(1.05); }
+            0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+            50% { opacity: 1; transform: translateX(-50%) scale(1.05); filter: brightness(1.4); }
         }
 
+        /* NAVIGATION & PROGRESS */
+        .system-nav { position: fixed; top: 40px; right: 40px; z-index: 200; display: flex; gap: 15px; opacity: 0; transition: 0.5s; }
+        body:hover .system-nav { opacity: 1; }
+        .relink-btn { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 16px; font-size: 8px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; transition: 0.3s; }
+        .relink-btn:hover { background: var(--primary); color: #000; box-shadow: 0 0 20px var(--primary); transform: skewX(-10deg); }
+
         .progress-rail { position: fixed; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.03); }
-        #progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 1.2s linear; }
+        #progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 1.2s linear; box-shadow: 0 0 15px var(--primary); }
         
-        .glitch-overlay { position: fixed; inset: 0; background: #fff; z-index: 1000; opacity: 0; pointer-events: none; }
+        /* REBOOT OVERLAY */
+        #reboot-glitch { position: fixed; inset: 0; background: #fff; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.2s; }
     </style>
 </head>
 <body>
 
     <div id="blur-bg"></div>
-    <div class="glitch-overlay" id="glitch"></div>
+    <div id="reboot-glitch"></div>
 
-    <div class="sync-pulse">
+    <div class="sync-indicator">
         <div class="pulse-dot"></div>
-        GIT_SYNC: ACTIVE
+        GIT_SYNC: ECLIPSENETWORKS
+    </div>
+
+    <div class="system-nav">
+        <a href="hmm.html" class="relink-btn" style="border-color: white; color: white;">RETURN_TO_OS</a>
+        <button onclick="Spotify.relink()" class="relink-btn">RELINK_ACCOUNT</button>
     </div>
 
     <main class="hero">
         <div id="player-content">
             <img id="main-art" src="" alt="">
-            <div id="track-title">SCANNING_SIGNAL</div>
+            <div id="track-title">SIGNAL_SCANNING</div>
             <div id="artist-name">Uplink_Idle</div>
         </div>
     </main>
@@ -74,29 +85,30 @@
 
     <script src="spotify.js"></script>
     <script>
-        // CONFIG FOR GITHUB AUTO-REFRESH
-        const GITHUB_REPO = 'TheKidLeeroy/Xclipse-OS'; // CHANGE THIS TO YOUR REPO
-        let lastCommitHash = null;
+        // --- GITHUB WATCHER CONFIG ---
+        const GITHUB_REPO = 'EclipseNetworks/Xclipsestudio';
+        let currentSHA = null;
 
         async function checkGitHubUpdates() {
             try {
                 const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/commits/main`);
                 const data = await res.json();
-                if (lastCommitHash && lastCommitHash !== data.sha) {
-                    console.log("UPDATE_PUSHED: Refreshing OS...");
-                    document.getElementById('glitch').style.opacity = '1';
-                    setTimeout(() => window.location.reload(), 800);
+                
+                // If we have a hash and it's different from the current one
+                if (currentSHA && currentSHA !== data.sha) {
+                    console.log("OS_UPDATE: NEW_BUILD_PULLED");
+                    document.getElementById('reboot-glitch').style.opacity = '1';
+                    setTimeout(() => window.location.reload(true), 600);
                 }
-                lastCommitHash = data.sha;
-            } catch (e) { console.error("GIT_ERR", e); }
+                currentSHA = data.sha;
+            } catch (e) { console.warn("GIT_LINK_INTERRUPTED"); }
         }
 
         window.onload = () => {
-            // Check GitHub every 60 seconds
+            // Initial Git Sync
             checkGitHubUpdates();
-            setInterval(checkGitHubUpdates, 60000);
+            setInterval(checkGitHubUpdates, 60000); // Check every 60 seconds
 
-            // Spotify Sync
             const syncUI = () => {
                 Spotify.sync((data) => {
                     document.getElementById('track-title').innerText = data.item.name;
@@ -110,7 +122,9 @@
             if(localStorage.getItem('sp_access_token')) {
                 syncUI();
                 setInterval(syncUI, 3000);
-            } else { Spotify.auth(); }
+            } else {
+                Spotify.relink();
+            }
         };
     </script>
 </body>
