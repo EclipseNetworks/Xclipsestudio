@@ -1,4 +1,4 @@
-/** * XCLIPSE // DYNAMIC UPLINK ENGINE v2.7
+/** * XCLIPSE // DYNAMIC UPLINK ENGINE v2.8
  * AUTHOR: TheKidLeeroy.M
  */
 
@@ -6,37 +6,25 @@ const Spotify = {
     clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
     redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback',
 
-    // THE RELINK FIX
+    // Standardized Token Retrieval
+    getToken: () => localStorage.getItem('sp_access_token'),
+
     relink: function() {
-        console.log("SYSTEM_PURGE: Clearing Session...");
-        // 1. Clear all possible token keys
+        console.log("SYSTEM_PURGE");
         localStorage.removeItem('sp_access_token');
-        localStorage.removeItem('sp_refresh_token');
         localStorage.removeItem('sp_expiry');
         localStorage.removeItem('code_verifier');
-        localStorage.removeItem('spotify_token'); // clearing old version key just in case
-        
-        // 2. Short delay to ensure storage is clear, then trigger fresh auth
-        setTimeout(() => {
-            this.auth();
-        }, 300);
+        this.auth();
     },
 
     auth: async function() {
-        // Create a fresh security verifier
         const verifier = Array.from(crypto.getRandomValues(new Uint8Array(64)))
-            .map(x => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x % 62])
-            .join('');
-        
-        // Hash it for Spotify PKCE
+            .map(x => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x % 62]).join('');
         const hashed = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
         const challenge = btoa(String.fromCharCode.apply(null, new Uint8Array(hashed)))
             .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
         
-        // Save new verifier for the callback to use
         localStorage.setItem('code_verifier', verifier);
-
-        // Determine where to send the user back to (hmm.html or spotify.html)
         const origin = window.location.pathname.split("/").pop() || 'hmm.html';
 
         const params = new URLSearchParams({
@@ -53,23 +41,20 @@ const Spotify = {
     },
 
     sync: async function(callback) {
-        const token = localStorage.getItem('sp_access_token');
-        if (!token) return;
+        const token = this.getToken();
+        if (!token) return false;
 
         try {
-            const res = await fetch('https://api.spotify.com/v1/me/player', {
+            const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (res.status === 401) {
-                // If token is dead, don't just stop, force a relink
-                this.relink(); 
-                return;
-            }
-            if (res.status === 204) return;
+            if (res.status === 401) { this.relink(); return false; }
+            if (res.status === 204) return false;
 
             const data = await res.json();
             if (callback) callback(data);
-        } catch (e) { console.error("SYNC_ERR", e); }
+            return true;
+        } catch (e) { return false; }
     }
 };
