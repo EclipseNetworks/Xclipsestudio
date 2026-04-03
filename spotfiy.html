@@ -19,32 +19,19 @@
             background: var(--bg-dark); 
             color: #fff; 
             font-family: 'JetBrains Mono', monospace; 
-            overflow: hidden; 
-            margin: 0;
+            overflow: hidden; margin: 0;
         }
 
-        /* --- FULLSCREEN BACKGROUND ART --- */
         #blur-bg {
             position: fixed;
             inset: -50px;
             background-size: cover;
             background-position: center;
-            filter: blur(80px) brightness(0.4);
+            filter: blur(80px) brightness(0.3);
             z-index: 0;
             transition: background-image 1.5s ease-in-out;
-            transform: scale(1.1);
         }
 
-        /* --- VIGNETTE & GRAIN --- */
-        .overlay {
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%);
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        /* --- CENTER CONTENT --- */
         .hero-container {
             position: relative;
             z-index: 10;
@@ -54,48 +41,78 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 0 10%;
+        }
+
+        /* --- LOGIN STATES --- */
+        #auth-overlay {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        .auth-btn {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 20px 40px;
+            font-weight: 800;
+            letter-spacing: 0.5em;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .auth-btn:hover {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 30px var(--primary);
         }
 
         #main-art {
-            width: 350px;
-            height: 350px;
+            width: 400px;
+            height: 400px;
             object-fit: cover;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 0 100px rgba(0,0,0,0.5);
+            box-shadow: 0 0 100px rgba(0,0,0,0.8);
             margin-bottom: 40px;
-            clip-path: polygon(0 0, 100% 0, 100% 90%, 90% 100%, 0 100%);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         #track-title {
             font-family: 'Montserrat', sans-serif;
-            font-size: clamp(3rem, 8vw, 7rem);
+            font-size: clamp(3rem, 10vw, 8rem);
             font-weight: 900;
             font-style: italic;
-            line-height: 0.9;
-            letter-spacing: -0.05em;
+            line-height: 0.8;
             text-transform: uppercase;
-            margin-bottom: 10px;
-            text-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
 
-        #artist-name {
-            font-size: 1.2rem;
-            letter-spacing: 0.5em;
-            color: var(--primary);
-            text-transform: uppercase;
-            font-weight: 800;
-            opacity: 0.8;
+        /* --- MINI NAV --- */
+        .system-nav {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            z-index: 100;
+            opacity: 0;
+            transition: 0.5s;
+        }
+        body:hover .system-nav { opacity: 1; }
+
+        .nav-link {
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            color: #fff;
+            text-decoration: none;
         }
 
-        /* --- PROGRESS BAR --- */
         .progress-rail {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 6px;
-            background: rgba(255,255,255,0.05);
+            height: 4px;
+            background: rgba(255,255,255,0.1);
             z-index: 20;
         }
 
@@ -104,65 +121,99 @@
             background: var(--primary);
             width: 0%;
             transition: width 1s linear;
-            box-shadow: 0 0 20px var(--primary);
-        }
-
-        /* --- UI OVERLAYS --- */
-        .system-info {
-            position: absolute;
-            top: 40px;
-            left: 40px;
-            font-size: 10px;
-            letter-spacing: 0.3em;
-            opacity: 0.4;
-            z-index: 20;
         }
     </style>
 </head>
 <body>
 
     <div id="blur-bg"></div>
-    <div class="overlay"></div>
-
-    <div class="system-info">ARCHITECT_OS // MEDIA_IMMERSION_MODE</div>
+    
+    <div class="system-nav">
+        <a href="hmm.html" class="nav-link">RETURN_TO_OS</a>
+        <button onclick="Spotify.auth()" class="nav-link ml-2">RE_AUTH</button>
+    </div>
 
     <main class="hero-container">
-        <img id="main-art" src="" alt="">
-        <div id="track-title">STATION_IDLE</div>
-        <div id="artist-name">Awaiting Uplink</div>
+        <div id="auth-overlay">
+            <div class="text-xs tracking-[1em] mb-4 opacity-50">CONNECTION_LOST</div>
+            <button class="auth-btn" onclick="Spotify.auth()">Initiate_Handshake</button>
+        </div>
+
+        <div id="player-content">
+            <img id="main-art" src="" alt="">
+            <div id="track-title">STATION_IDLE</div>
+            <div id="artist-name" class="text-purple-500 tracking-[0.4em] font-bold mt-4">AWAITING_UPLINK</div>
+        </div>
     </main>
 
     <div class="progress-rail">
         <div id="progress-fill"></div>
     </div>
 
-    <script src="spotify.js"></script>
     <script>
-        // Automatic Relogin & Sync Logic
-        window.onload = () => {
-            const token = localStorage.getItem('sp_access_token');
-            const expiry = localStorage.getItem('sp_expiry');
+        const Spotify = {
+            clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
+            redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback',
 
-            if (token && expiry && Date.now() < expiry) {
-                console.log("UPLINK_RESTORED");
-                Spotify.token = token;
+            auth: async () => {
+                const verifier = Array.from(crypto.getRandomValues(new Uint8Array(64))).map(x => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x % 62]).join('');
+                const hashed = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+                const challenge = btoa(String.fromCharCode.apply(null, new Uint8Array(hashed))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
                 
-                // Override the sync function to match this specific UI's IDs
-                const originalSync = Spotify.sync;
-                Spotify.sync = async function() {
-                    await originalSync.call(this);
-                    // Map the generic spotify.js logic to our specific IDs if they differ
-                    const fill = document.getElementById('progress-fill');
-                    if (fill) fill.style.width = this.progress + "%";
-                };
+                // Store origin so callback knows to send us back to spotify.html
+                const origin = window.location.pathname.split("/").pop() || 'spotify.html';
+                localStorage.setItem('code_verifier', verifier);
+                
+                const params = new URLSearchParams({ 
+                    response_type: 'code', 
+                    client_id: Spotify.clientId, 
+                    scope: 'user-read-currently-playing user-modify-playback-state', 
+                    redirect_uri: Spotify.redirectUri, 
+                    code_challenge_method: 'S256', 
+                    code_challenge: challenge,
+                    state: origin
+                });
+                window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+            },
 
-                Spotify.sync();
-                setInterval(() => Spotify.sync(), 5000);
-            } else {
-                // If no token, redirect to login or show auth button
-                document.getElementById('track-title').innerText = "AUTH_REQUIRED";
-                document.getElementById('artist-name').innerHTML = '<button onclick="location.href=\'callback.html\'" style="cursor:pointer; text-decoration:underline;">INITIATE_HANDSHAKE</button>';
+            sync: async function() {
+                const token = localStorage.getItem('sp_access_token');
+                if(!token) return this.showAuth();
+
+                try {
+                    const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (res.status === 401) return this.showAuth();
+                    if (res.status === 204) return;
+
+                    const data = await res.json();
+                    document.getElementById('track-title').innerText = data.item.name;
+                    document.getElementById('artist-name').innerText = data.item.artists[0].name.toUpperCase();
+                    
+                    const img = data.item.album.images[0].url;
+                    document.getElementById('main-art').src = img;
+                    document.getElementById('blur-bg').style.backgroundImage = `url(${img})`;
+                    
+                    const progress = (data.progress_ms / data.item.duration_ms) * 100;
+                    document.getElementById('progress-fill').style.width = progress + "%";
+
+                    // Hide auth if we have data
+                    document.getElementById('auth-overlay').style.display = 'none';
+                    document.getElementById('player-content').style.display = 'flex';
+                } catch (e) { console.error(e); }
+            },
+
+            showAuth: () => {
+                document.getElementById('auth-overlay').style.display = 'flex';
+                document.getElementById('player-content').style.display = 'none';
             }
+        };
+
+        window.onload = () => {
+            Spotify.sync();
+            setInterval(() => Spotify.sync(), 5000);
         };
     </script>
 </body>
