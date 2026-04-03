@@ -266,21 +266,29 @@
             }
         };
 
-        window.onload = () => {
-            Canvas.init();
-            setInterval(Clock.tick, 1000);
-            setInterval(Spotify.sync, 5000);
-            const code = new URLSearchParams(window.location.search).get('code');
-            if(code) {
-                Spotify.getToken(code).then(() => window.history.replaceState({}, document.title, window.location.pathname));
-            } else {
-                OS.log("SYS", "Architect_Ready");
-                if(localStorage.getItem('sp_access_token')) {
-                    document.getElementById('auth-status').innerText = "Link: SECURE_ESTABLISHED";
-                    Spotify.sync();
-                }
-            }
-        };
+window.onload = () => {
+    Canvas.init();
+    setInterval(Clock.tick, 1000);
+    
+    // Check if we are on the callback page with a code
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    
+    if (code) {
+        OS.log("SYS", "Callback_Detected: Synchronizing...");
+        // Small delay to ensure localStorage/Cookies are accessible
+        setTimeout(() => {
+            Spotify.getToken(code);
+        }, 100);
+    } else {
+        OS.log("SYS", "Architect_Ready");
+        // Existing session check
+        if(localStorage.getItem('sp_access_token')) {
+            document.getElementById('auth-status').innerText = "Link: SECURE_ESTABLISHED";
+            Spotify.sync();
+        }
+    }
+};
     </script>
 </body>
 </html>
