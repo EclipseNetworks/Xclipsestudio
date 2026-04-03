@@ -1,76 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | NEURAL_DISPLAY</title>
-    <meta name="author" content="TheKidLeeroy.M">
+    <meta charset="UTF-8"><title>XCLIPSE | NEURAL_DISPLAY</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #a855f7; --bg-dark: #010101; --glitch: 0; }
-        body, html { width: 100%; height: 100%; background: var(--bg-dark); color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; }
-        #blur-bg { position: fixed; inset: -10%; background-size: cover; background-position: center; filter: blur(100px) brightness(0.25); z-index: 0; transition: background-image 2s ease; animation: pulse 12s infinite alternate; }
+        :root { --primary: #a855f7; --bg: #010101; }
+        body, html { width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; margin: 0; }
+        #blur-bg { position: fixed; inset: -10%; background-size: cover; background-position: center; filter: blur(100px) brightness(0.2); z-index: 0; transition: background-image 2s ease; animation: pulse 12s infinite alternate; }
         @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
-        .glitch-overlay { position: fixed; inset: 0; background: var(--primary); z-index: 100; opacity: var(--glitch); pointer-events: none; mix-blend-mode: overlay; }
+        .glitch-overlay { position: fixed; inset: 0; background: var(--primary); z-index: 100; opacity: 0; pointer-events: none; mix-blend-mode: overlay; transition: 0.3s; }
         .hero { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        #main-art { width: 400px; height: 400px; object-fit: cover; box-shadow: 0 0 80px rgba(0,0,0,0.5); margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.1); animation: breathe 8s infinite ease-in-out; }
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-        #track-title { font-family: 'Montserrat', sans-serif; font-size: clamp(2rem, 10vw, 7rem); font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: -0.05em; text-align: center; line-height: 0.8; }
-        .signature { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); font-size: 10px; letter-spacing: 0.8em; text-transform: uppercase; opacity: 0.2; font-weight: 400; }
-        .progress-rail { position: fixed; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.1); }
-        #progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 1.2s linear; }
+        #main-art { width: 400px; height: 400px; object-fit: cover; box-shadow: 0 0 100px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); animation: breathe 8s infinite ease-in-out; margin-bottom: 40px; }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+        #track-title { font-family: 'Montserrat', sans-serif; font-size: clamp(2rem, 10vw, 7rem); font-weight: 900; font-style: italic; text-transform: uppercase; text-align: center; line-height: 0.8; letter-spacing: -0.05em; }
+        .system-nav { position: fixed; top: 40px; right: 40px; z-index: 200; opacity: 0; transition: 0.5s; }
+        body:hover .system-nav { opacity: 1; }
+        .signature { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); font-size: 10px; letter-spacing: 0.8em; text-transform: uppercase; opacity: 0.2; }
+        .progress-rail { position: fixed; bottom: 0; left: 0; width: 100%; height: 6px; background: rgba(255,255,255,0.05); }
+        #progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 1.2s linear; box-shadow: 0 0 20px var(--primary); }
     </style>
 </head>
 <body>
     <div id="blur-bg"></div>
     <div class="glitch-overlay" id="glitch"></div>
+    
+    <div class="system-nav">
+        <a href="hmm.html" class="border border-white/20 px-4 py-2 text-[10px] hover:bg-white hover:text-black">BACK_TO_OS</a>
+        <button onclick="Spotify.relink()" class="ml-2 border border-red-500/30 text-red-500 px-4 py-2 text-[10px] hover:bg-red-500 hover:text-white">RELINK</button>
+    </div>
+
     <main class="hero">
-        <img id="main-art" src="" alt="">
-        <div id="track-title">SCANNING...</div>
-        <div id="artist-name" class="text-xs tracking-[0.5em] opacity-50 mt-4 uppercase font-bold">Establishing Uplink</div>
-        <button id="login-btn" class="hidden mt-8 border border-white/20 px-8 py-4 uppercase font-bold text-[10px] tracking-widest hover:bg-white hover:text-black transition" onclick="Spotify.auth()">Initiate Handshake</button>
+        <div id="login-container" class="hidden"><button class="border border-purple-500 text-purple-500 px-10 py-5 font-bold tracking-[0.5em] hover:bg-purple-500 hover:text-black" onclick="Spotify.auth()">INITIATE_HANDSHAKE</button></div>
+        <div id="player-content" class="flex flex-col items-center">
+            <img id="main-art" src="" alt="">
+            <div id="track-title">SIGNAL_LOST</div>
+            <div id="artist-name" class="text-xs tracking-[0.5em] opacity-40 mt-6 uppercase font-bold">Scanning...</div>
+        </div>
     </main>
+
     <div class="signature">Created by TheKidLeeroy.M</div>
     <div class="progress-rail"><div id="progress-fill"></div></div>
 
+    <script src="spotify.js"></script>
     <script>
-        const Spotify = {
-            clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback',
-            lastId: null,
+        document.addEventListener('trackChange', () => {
+            const g = document.getElementById('glitch');
+            g.style.opacity = '0.4';
+            setTimeout(() => g.style.opacity = '0', 300);
+        });
 
-            auth: async () => {
-                const verifier = Array.from(crypto.getRandomValues(new Uint8Array(64))).map(x => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x % 62]).join('');
-                localStorage.setItem('code_verifier', verifier);
-                window.location.href = `https://accounts.spotify.com/authorize?response_type=code&client_id=${Spotify.clientId}&scope=user-read-currently-playing&redirect_uri=${Spotify.redirectUri}&state=spotify.html`;
-            },
-
-            sync: async () => {
-                const token = localStorage.getItem('sp_access_token');
-                if(!token) { document.getElementById('login-btn').classList.remove('hidden'); return; }
-                try {
-                    const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
-                        headers: { 'Authorization': `Bearer ${token}` }
+        window.onload = () => {
+            if(!localStorage.getItem('sp_access_token')) {
+                document.getElementById('login-container').classList.remove('hidden');
+                document.getElementById('player-content').classList.add('hidden');
+            } else {
+                setInterval(() => {
+                    Spotify.sync((data) => {
+                        document.getElementById('track-title').innerText = data.item.name;
+                        document.getElementById('artist-name').innerText = data.item.artists[0].name;
+                        document.getElementById('main-art').src = data.item.album.images[0].url;
+                        document.getElementById('blur-bg').style.backgroundImage = `url(${data.item.album.images[0].url})`;
+                        document.getElementById('progress-fill').style.width = (data.progress_ms / data.item.duration_ms) * 100 + "%";
                     });
-                    if(res.status === 200) {
-                        const d = await res.json();
-                        if(this.lastId !== d.item.id) {
-                            this.lastId = d.item.id;
-                            document.getElementById('glitch').style.opacity = 0.4;
-                            setTimeout(() => document.getElementById('glitch').style.opacity = 0, 300);
-                        }
-                        document.getElementById('track-title').innerText = d.item.name;
-                        document.getElementById('artist-name').innerText = d.item.artists[0].name;
-                        document.getElementById('main-art').src = d.item.album.images[0].url;
-                        document.getElementById('blur-bg').style.backgroundImage = `url(${d.item.album.images[0].url})`;
-                        document.getElementById('progress-fill').style.width = (d.progress_ms / d.item.duration_ms) * 100 + "%";
-                        document.getElementById('login-btn').classList.add('hidden');
-                    }
-                } catch(e) {}
+                }, 3000);
             }
         };
-        window.onload = () => { Spotify.sync(); setInterval(Spotify.sync, 3000); };
     </script>
 </body>
 </html>
