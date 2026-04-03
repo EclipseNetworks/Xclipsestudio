@@ -1,141 +1,75 @@
-/** * XCLIPSE // DYNAMIC UPLINK ENGINE v2.5.1
- * Features: User-Auth, Intelligent Auto-Sync, UI Data Mapping, Volume Control, & History
+/** * XCLIPSE // DYNAMIC UPLINK ENGINE v2.7
+ * AUTHOR: TheKidLeeroy.M
  */
 
 const Spotify = {
-    token: localStorage.getItem('sp_access_token') || "",
-    isPlaying: false,
-    progress: 0,
-    timeLeft: 0,
-    currentVolume: 50,
-    lastTrackId: null,
+    clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
+    redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback',
 
-    // Helper for API communication
-    getHeaders: function() {
-        return {
-            'Authorization': `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
-        };
+    // THE RELINK FIX
+    relink: function() {
+        console.log("SYSTEM_PURGE: Clearing Session...");
+        // 1. Clear all possible token keys
+        localStorage.removeItem('sp_access_token');
+        localStorage.removeItem('sp_refresh_token');
+        localStorage.removeItem('sp_expiry');
+        localStorage.removeItem('code_verifier');
+        localStorage.removeItem('spotify_token'); // clearing old version key just in case
+        
+        // 2. Short delay to ensure storage is clear, then trigger fresh auth
+        setTimeout(() => {
+            this.auth();
+        }, 300);
     },
 
-    // Main Data Sync
-    sync: async function() {
-        if (!this.token) return;
+    auth: async function() {
+        // Create a fresh security verifier
+        const verifier = Array.from(crypto.getRandomValues(new Uint8Array(64)))
+            .map(x => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x % 62])
+            .join('');
+        
+        // Hash it for Spotify PKCE
+        const hashed = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+        const challenge = btoa(String.fromCharCode.apply(null, new Uint8Array(hashed)))
+            .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        
+        // Save new verifier for the callback to use
+        localStorage.setItem('code_verifier', verifier);
+
+        // Determine where to send the user back to (hmm.html or spotify.html)
+        const origin = window.location.pathname.split("/").pop() || 'hmm.html';
+
+        const params = new URLSearchParams({
+            response_type: 'code',
+            client_id: this.clientId,
+            scope: 'user-read-currently-playing user-modify-playback-state',
+            redirect_uri: this.redirectUri,
+            code_challenge_method: 'S256',
+            code_challenge: challenge,
+            state: origin
+        });
+
+        window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+    },
+
+    sync: async function(callback) {
+        const token = localStorage.getItem('sp_access_token');
+        if (!token) return;
 
         try {
             const res = await fetch('https://api.spotify.com/v1/me/player', {
-                headers: this.getHeaders()
+                headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (res.status === 204) {
-                this.updateUIOffline();
+            if (res.status === 401) {
+                // If token is dead, don't just stop, force a relink
+                this.relink(); 
                 return;
             }
+            if (res.status === 204) return;
 
-            if (res.status === 200) {
-                const data = await res.json();
-                
-                // 1. Logic for Track Changes
-                if (data.item.id !== this.lastTrackId) {
-                    this.lastTrackId = data.item.id;
-                    console.log(`NEW_TRACK_DETECTED: ${data.item.name}`);
-                }
-
-                // 2. Calculate Timings
-                this.isPlaying = data.is_playing;
-                this.progress = (data.progress_ms / data.item.duration_ms) * 100;
-                this.timeLeft = data.item.duration_ms - data.progress_ms;
-                this.currentVolume = data.device.volume_percent;
-
-                // 3. Update UI Elements
-                this.updateUI(data);
-                
-            } else if (res.status === 401) {
-                console.warn("AUTH_EXPIRED: RE-LINK REQUIRED");
-                // Optional: Trigger refresh token logic here
-            }
-        } catch (e) {
-            console.error("UPLINK_CRITICAL_FAILURE", e);
-        }
-    },
-
-    updateUI: function(data) {
-        const trackTitle = document.getElementById('track-title') || document.getElementById('track-name');
-        const artistName = document.getElementById('artist-name');
-        const mainArt = document.getElementById('main-art') || document.getElementById('main-cover');
-        
-        if (trackTitle) trackTitle.innerText = data.item.name.toUpperCase();
-        if (artistName) artistName.innerText = data.item.artists[0].name.toUpperCase();
-        
-        if (data.item.album.images[0] && mainArt) {
-            const artUrl = data.item.album.images[0].url;
-            mainArt.src = artUrl;
-            const blurBg = document.getElementById('blur-bg');
-            if (blurBg) blurBg.style.backgroundImage = `url("${artUrl}")`;
-        }
-        
-        document.documentElement.style.setProperty('--progress', this.progress + "%");
-        
-        const ppBtn = document.getElementById('play-pause-btn');
-        if (ppBtn) ppBtn.innerText = this.isPlaying ? "PAUSE" : "PLAY";
-    },
-
-    updateUIOffline: function() {
-        console.log("PLAYER_IDLE");
-        const trackTitle = document.getElementById('track-title') || document.getElementById('track-name');
-        if (trackTitle) trackTitle.innerText = "SYSTEM_IDLE";
-    },
-
-    // Playback Controls
-    cmd: async function(type) {
-        if (!this.token) return;
-
-        let endpoint = `https://api.spotify.com/v1/me/player/${type}`;
-        let method = (type === 'next' || type === 'previous') ? 'POST' : 'PUT';
-
-        if (type === 'toggle') {
-            endpoint = `https://api.spotify.com/v1/me/player/${this.isPlaying ? 'pause' : 'play'}`;
-            method = 'PUT';
-        }
-
-        try {
-            const res = await fetch(endpoint, { method: method, headers: this.getHeaders() });
-            if (res.ok) {
-                setTimeout(() => this.sync(), 400);
-            } else {
-                console.error("CMD_FAILED", res.status);
-            }
-        } catch (e) {
-            console.error("EXECUTION_ERROR", e);
-        }
-    },
-
-    // NEW: Volume Control (0 - 100)
-    setVolume: async function(percent) {
-        try {
-            await fetch(`https://api.spotify.com/v1/me/player/volume?volume_percent=${percent}`, {
-                method: 'PUT',
-                headers: this.getHeaders()
-            });
-            this.currentVolume = percent;
-        } catch (e) {
-            console.error("VOLUME_ADJUST_ERROR", e);
-        }
-    },
-
-    // NEW: Fetch Recently Played
-    getHistory: async function() {
-        try {
-            const res = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=5', {
-                headers: this.getHeaders()
-            });
             const data = await res.json();
-            console.log("RECENT_HISTORY_SYNCED", data.items);
-            return data.items;
-        } catch (e) {
-            console.error("HISTORY_FETCH_ERROR", e);
-        }
+            if (callback) callback(data);
+        } catch (e) { console.error("SYNC_ERR", e); }
     }
 };
-
-window.Spotify = Spotify;
