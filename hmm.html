@@ -50,7 +50,8 @@
 
         /* --- SPOTIFY NODE --- */
         #spotify-node { position: fixed; bottom: 80px; left: 80px; z-index: 100; }
-        .node-box { background: rgba(0,0,0,0.9); border: 1px solid var(--border-ui); padding: 25px 35px; border-left: 6px solid var(--spotify); clip-path: polygon(0 0, 96% 0, 100% 18%, 100% 100%, 4% 100%, 0 82%); backdrop-filter: blur(20px); }
+        .node-box { background: rgba(0,0,0,0.9); border: 1px solid var(--border-ui); padding: 25px 35px; border-left: 6px solid var(--spotify); clip-path: polygon(0 0, 96% 0, 100% 18%, 100% 100%, 4% 100%, 0 82%); backdrop-filter: blur(20px); display: flex; align-items: center; gap: 20px; }
+        .album-art { width: 64px; height: 64px; border: 1px solid var(--border-ui); background: #000; flex-shrink: 0; object-fit: cover; }
         .progress-rail { height: 3px; width: 100%; background: rgba(255,255,255,0.06); margin-top: 20px; overflow: hidden; }
         .track-progress-bar { height: 100%; background: var(--spotify); transition: width 1s linear; }
 
@@ -88,10 +89,13 @@
                 </div>
 
                 <div id="tab-media" class="tab-content hidden flex-col gap-8">
-                    <div class="bg-white/5 p-5 border border-white/10">
-                        <div id="mirror-track" class="text-xl font-black uppercase truncate tracking-tighter">Offline</div>
-                        <div id="mirror-artist" class="text-[10px] text-purple-400 font-bold mt-1 uppercase tracking-widest">No Uplink</div>
-                        <div class="progress-rail"><div class="track-progress-bar" id="mirror-progress" style="width: 0%"></div></div>
+                    <div class="bg-white/5 p-5 border border-white/10 flex items-center gap-4">
+                        <img id="mirror-cover" class="w-12 h-12 opacity-50 border border-white/10" src="" alt="">
+                        <div class="flex-1 overflow-hidden">
+                            <div id="mirror-track" class="text-xl font-black uppercase truncate tracking-tighter">Offline</div>
+                            <div id="mirror-artist" class="text-[10px] text-purple-400 font-bold mt-1 uppercase tracking-widest">No Uplink</div>
+                            <div class="progress-rail"><div class="track-progress-bar" id="mirror-progress" style="width: 0%"></div></div>
+                        </div>
                     </div>
                     <div class="grid grid-cols-3 gap-4">
                         <button class="os-btn" onclick="Spotify.command('previous')">PREV</button>
@@ -117,9 +121,12 @@
 
     <div id="spotify-node">
         <div class="node-box">
-            <div id="track-name" class="text-lg font-black uppercase truncate w-64 tracking-tighter">System Ready</div>
-            <div id="artist-name" class="text-[10px] text-purple-400 font-bold mt-1 uppercase tracking-widest">Handshake_Pending</div>
-            <div class="progress-rail"><div class="track-progress-bar" id="main-progress" style="width: 0%"></div></div>
+            <img id="main-cover" class="album-art" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="">
+            <div class="flex flex-col">
+                <div id="track-name" class="text-lg font-black uppercase truncate w-64 tracking-tighter">System Ready</div>
+                <div id="artist-name" class="text-[10px] text-purple-400 font-bold mt-1 uppercase tracking-widest">Handshake_Pending</div>
+                <div class="progress-rail"><div class="track-progress-bar" id="main-progress" style="width: 0%"></div></div>
+            </div>
         </div>
     </div>
 
@@ -158,7 +165,6 @@
         const Spotify = {
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
             clientSecret: 'a81883efd2db4e1484c192222c91599f',
-            // Use current URL origin to avoid domain mismatch during local testing
             redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback',
 
             auth: async () => {
@@ -166,7 +172,6 @@
                 const hashed = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
                 const challenge = btoa(String.fromCharCode.apply(null, new Uint8Array(hashed))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
                 
-                // Explicitly save to localStorage and Cookie for maximum redundancy
                 localStorage.setItem('code_verifier', verifier);
                 document.cookie = `sp_verifier=${verifier}; path=/; max-age=3600; SameSite=Lax`;
                 
@@ -181,13 +186,11 @@
                         code_challenge_method: 'S256', 
                         code_challenge: challenge 
                     });
-                    // Fixed: Added missing $ to template literal
                     window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
                 }, 200);
             },
 
             getToken: async (code) => {
-                // Try recovery from both localStorage and cookies
                 let verifier = localStorage.getItem('code_verifier');
                 if(!verifier) {
                     const match = document.cookie.match(new RegExp('(^| )sp_verifier=([^;]+)'));
@@ -230,9 +233,20 @@
                 if(res.status === 200) {
                     const d = await res.json();
                     if(!d.item) return;
+
                     const progress = (d.progress_ms / d.item.duration_ms) * 100 + "%";
+                    
+                    // Update Text Information
                     document.getElementById('track-name').innerText = document.getElementById('mirror-track').innerText = d.item.name;
                     document.getElementById('artist-name').innerText = document.getElementById('mirror-artist').innerText = d.item.artists[0].name.toUpperCase();
+                    
+                    // Update Album Cover
+                    const coverUrl = d.item.album.images[0].url;
+                    document.getElementById('main-cover').src = coverUrl;
+                    document.getElementById('mirror-cover').src = coverUrl;
+                    document.getElementById('mirror-cover').classList.remove('opacity-50');
+
+                    // Update Progress Bars
                     document.getElementById('main-progress').style.width = document.getElementById('mirror-progress').style.width = progress;
                 }
             },
@@ -242,7 +256,6 @@
                 if(!token) return;
                 let method = (type === 'next' || type === 'previous') ? 'POST' : 'PUT';
                 let endpoint = type === 'play' ? 'play' : (type === 'pause' ? 'pause' : type);
-                // Fixed: Added missing $ to template literal
                 await fetch(`https://api.spotify.com/v1/me/player/${endpoint}`, { method: method, headers: { 'Authorization': `Bearer ${token}` } });
                 setTimeout(Spotify.sync, 400);
             }
@@ -266,29 +279,25 @@
             }
         };
 
-window.onload = () => {
-    Canvas.init();
-    setInterval(Clock.tick, 1000);
-    
-    // Check if we are on the callback page with a code
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    
-    if (code) {
-        OS.log("SYS", "Callback_Detected: Synchronizing...");
-        // Small delay to ensure localStorage/Cookies are accessible
-        setTimeout(() => {
-            Spotify.getToken(code);
-        }, 100);
-    } else {
-        OS.log("SYS", "Architect_Ready");
-        // Existing session check
-        if(localStorage.getItem('sp_access_token')) {
-            document.getElementById('auth-status').innerText = "Link: SECURE_ESTABLISHED";
-            Spotify.sync();
-        }
-    }
-};
+        window.onload = () => {
+            Canvas.init();
+            setInterval(Clock.tick, 1000);
+            setInterval(Spotify.sync, 5000);
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            if(code) {
+                OS.log("SYS", "Callback_Detected: Synchronizing...");
+                setTimeout(() => {
+                    Spotify.getToken(code).then(() => window.history.replaceState({}, document.title, window.location.pathname));
+                }, 100);
+            } else {
+                OS.log("SYS", "Architect_Ready");
+                if(localStorage.getItem('sp_access_token')) {
+                    document.getElementById('auth-status').innerText = "Link: SECURE_ESTABLISHED";
+                    Spotify.sync();
+                }
+            }
+        };
     </script>
 </body>
 </html>
