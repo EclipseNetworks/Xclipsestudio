@@ -3,228 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | NEURAL_ANIMATED_v2</title>
+    <title>XCLIPSE | NEURAL_DISPLAY</title>
+    <meta name="author" content="TheKidLeeroy.M">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
-    
     <style>
-        :root {
-            --primary: #a855f7;
-            --spotify: #1DB954;
-            --bg-dark: #010101;
-            --glitch-opacity: 0;
-        }
-
-        body, html { 
-            width: 100%; height: 100%; 
-            background: var(--bg-dark); 
-            color: #fff; 
-            font-family: 'JetBrains Mono', monospace; 
-            overflow: hidden; margin: 0;
-        }
-
-        /* --- DYNAMIC BACKGROUND --- */
-        #blur-bg {
-            position: fixed;
-            inset: -10%;
-            background-size: cover;
-            background-position: center;
-            filter: blur(100px) brightness(0.25);
-            z-index: 0;
-            transition: background-image 2s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: pulse-bg 10s infinite alternate;
-        }
-
-        @keyframes pulse-bg {
-            0% { transform: scale(1) rotate(0deg); }
-            100% { transform: scale(1.1) rotate(2deg); }
-        }
-
-        /* --- THE REACTIVE CORE --- */
-        .hero-container {
-            position: relative;
-            z-index: 10;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            perspective: 1000px;
-        }
-
-        #main-art {
-            width: 420px;
-            height: 420px;
-            object-fit: cover;
-            box-shadow: 0 0 120px rgba(168, 85, 247, 0.2);
-            margin-bottom: 50px;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            animation: breathe 8s infinite ease-in-out;
-            clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%);
-        }
-
-        @keyframes breathe {
-            0%, 100% { transform: scale(1) translateZ(0); filter: brightness(1); }
-            50% { transform: scale(1.03) translateZ(50px); filter: brightness(1.2); }
-        }
-
-        #track-title {
-            font-family: 'Montserrat', sans-serif;
-            font-size: clamp(3rem, 12vw, 9rem);
-            font-weight: 900;
-            font-style: italic;
-            line-height: 0.75;
-            text-transform: uppercase;
-            letter-spacing: -0.05em;
-            text-align: center;
-            background: linear-gradient(to bottom, #fff 0%, rgba(255,255,255,0.3) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.3));
-        }
-
-        /* --- GLITCH OVERLAY --- */
-        .glitch-flash {
-            position: fixed;
-            inset: 0;
-            background: var(--primary);
-            z-index: 100;
-            opacity: var(--glitch-opacity);
-            pointer-events: none;
-            mix-blend-mode: overlay;
-        }
-
-        /* --- HUD ELEMENTS --- */
-        .hud-ring {
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            border: 1px solid rgba(168, 85, 247, 0.1);
-            border-radius: 50%;
-            animation: spin 20s linear infinite;
-            pointer-events: none;
-        }
-
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        .progress-rail {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: rgba(255,255,255,0.05);
-            overflow: hidden;
-        }
-
-        #progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), #fff);
-            width: 0%;
-            box-shadow: 0 0 20px var(--primary);
-            transition: width 1.2s cubic-bezier(0.1, 0.7, 0.1, 1);
-        }
-
-        .auth-btn {
-            background: #fff; color: #000;
-            padding: 15px 40px; font-weight: 900;
-            text-transform: uppercase; letter-spacing: 0.4em;
-            transition: 0.3s;
-        }
-        .auth-btn:hover { background: var(--primary); transform: skewX(-10deg); }
+        :root { --primary: #a855f7; --bg-dark: #010101; --glitch: 0; }
+        body, html { width: 100%; height: 100%; background: var(--bg-dark); color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; }
+        #blur-bg { position: fixed; inset: -10%; background-size: cover; background-position: center; filter: blur(100px) brightness(0.25); z-index: 0; transition: background-image 2s ease; animation: pulse 12s infinite alternate; }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+        .glitch-overlay { position: fixed; inset: 0; background: var(--primary); z-index: 100; opacity: var(--glitch); pointer-events: none; mix-blend-mode: overlay; }
+        .hero { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #main-art { width: 400px; height: 400px; object-fit: cover; box-shadow: 0 0 80px rgba(0,0,0,0.5); margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.1); animation: breathe 8s infinite ease-in-out; }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        #track-title { font-family: 'Montserrat', sans-serif; font-size: clamp(2rem, 10vw, 7rem); font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: -0.05em; text-align: center; line-height: 0.8; }
+        .signature { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); font-size: 10px; letter-spacing: 0.8em; text-transform: uppercase; opacity: 0.2; font-weight: 400; }
+        .progress-rail { position: fixed; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.1); }
+        #progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 1.2s linear; }
     </style>
 </head>
 <body>
-
     <div id="blur-bg"></div>
-    <div class="glitch-flash" id="glitch"></div>
-    
-    <main class="hero-container">
-        <div class="hud-ring"></div>
-        
-        <div id="auth-overlay" class="hidden flex-col items-center">
-            <button class="auth-btn" onclick="Spotify.auth()">Init_Uplink</button>
-        </div>
-
-        <div id="player-content" class="flex flex-col items-center">
-            <img id="main-art" src="" alt="">
-            <div id="track-title">SIGNAL_LOST</div>
-            <div id="artist-name" class="text-xs tracking-[0.8em] opacity-50 mt-6 font-bold uppercase">Scanning_Frequencies...</div>
-        </div>
+    <div class="glitch-overlay" id="glitch"></div>
+    <main class="hero">
+        <img id="main-art" src="" alt="">
+        <div id="track-title">SCANNING...</div>
+        <div id="artist-name" class="text-xs tracking-[0.5em] opacity-50 mt-4 uppercase font-bold">Establishing Uplink</div>
+        <button id="login-btn" class="hidden mt-8 border border-white/20 px-8 py-4 uppercase font-bold text-[10px] tracking-widest hover:bg-white hover:text-black transition" onclick="Spotify.auth()">Initiate Handshake</button>
     </main>
-
-    <div class="progress-rail">
-        <div id="progress-fill"></div>
-    </div>
+    <div class="signature">Created by TheKidLeeroy.M</div>
+    <div class="progress-rail"><div id="progress-fill"></div></div>
 
     <script>
         const Spotify = {
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
             redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback',
-            lastTrack: null,
+            lastId: null,
 
             auth: async () => {
                 const verifier = Array.from(crypto.getRandomValues(new Uint8Array(64))).map(x => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x % 62]).join('');
-                const hashed = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
-                const challenge = btoa(String.fromCharCode.apply(null, new Uint8Array(hashed))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
                 localStorage.setItem('code_verifier', verifier);
-                
-                const params = new URLSearchParams({ 
-                    response_type: 'code', client_id: Spotify.clientId, 
-                    scope: 'user-read-currently-playing user-modify-playback-state', 
-                    redirect_uri: Spotify.redirectUri, code_challenge_method: 'S256', 
-                    code_challenge: challenge, state: 'spotify.html'
-                });
-                window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+                window.location.href = `https://accounts.spotify.com/authorize?response_type=code&client_id=${Spotify.clientId}&scope=user-read-currently-playing&redirect_uri=${Spotify.redirectUri}&state=spotify.html`;
             },
 
-            triggerGlitch: () => {
-                const g = document.getElementById('glitch');
-                g.style.opacity = '0.3';
-                setTimeout(() => g.style.opacity = '0', 150);
-                setTimeout(() => g.style.opacity = '0.1', 250);
-                setTimeout(() => g.style.opacity = '0', 400);
-            },
-
-            sync: async function() {
+            sync: async () => {
                 const token = localStorage.getItem('sp_access_token');
-                if(!token) { document.getElementById('auth-overlay').classList.remove('hidden'); return; }
-
+                if(!token) { document.getElementById('login-btn').classList.remove('hidden'); return; }
                 try {
                     const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-
-                    if (res.status === 200) {
-                        const data = await res.json();
-                        
-                        // Glitch effect on track change
-                        if (this.lastTrack !== data.item.id) {
-                            this.lastTrack = data.item.id;
-                            this.triggerGlitch();
+                    if(res.status === 200) {
+                        const d = await res.json();
+                        if(this.lastId !== d.item.id) {
+                            this.lastId = d.item.id;
+                            document.getElementById('glitch').style.opacity = 0.4;
+                            setTimeout(() => document.getElementById('glitch').style.opacity = 0, 300);
                         }
-
-                        document.getElementById('track-title').innerText = data.item.name;
-                        document.getElementById('artist-name').innerText = data.item.artists[0].name;
-                        
-                        const img = data.item.album.images[0].url;
-                        document.getElementById('main-art').src = img;
-                        document.getElementById('blur-bg').style.backgroundImage = `url(${img})`;
-                        
-                        const progress = (data.progress_ms / data.item.duration_ms) * 100;
-                        document.getElementById('progress-fill').style.width = progress + "%";
-                        
-                        document.getElementById('auth-overlay').classList.add('hidden');
+                        document.getElementById('track-title').innerText = d.item.name;
+                        document.getElementById('artist-name').innerText = d.item.artists[0].name;
+                        document.getElementById('main-art').src = d.item.album.images[0].url;
+                        document.getElementById('blur-bg').style.backgroundImage = `url(${d.item.album.images[0].url})`;
+                        document.getElementById('progress-fill').style.width = (d.progress_ms / d.item.duration_ms) * 100 + "%";
+                        document.getElementById('login-btn').classList.add('hidden');
                     }
-                } catch (e) { console.error(e); }
+                } catch(e) {}
             }
         };
-
-        window.onload = () => {
-            Spotify.sync();
-            setInterval(() => Spotify.sync(), 3000);
-        };
+        window.onload = () => { Spotify.sync(); setInterval(Spotify.sync, 3000); };
     </script>
 </body>
 </html>
