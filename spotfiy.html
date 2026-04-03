@@ -61,19 +61,27 @@
 
     <script src="spotify.js"></script>
     <script>
-        window.onload = () => {
-            if(localStorage.getItem('sp_access_token')) {
-                setInterval(() => {
-                    Spotify.sync((data) => {
-                        document.getElementById('track-title').innerText = data.item.name;
-                        document.getElementById('artist-name').innerText = data.item.artists[0].name;
-                        document.getElementById('main-art').src = data.item.album.images[0].url;
-                        document.getElementById('blur-bg').style.backgroundImage = `url(${data.item.album.images[0].url})`;
-                        document.getElementById('progress-fill').style.width = (data.progress_ms / data.item.duration_ms) * 100 + "%";
-                    });
-                }, 3000);
-            } else { Spotify.auth(); }
-        };
+window.onload = () => {
+    Canvas.init(); // Your matrix background
+    
+    const checkAndSync = async () => {
+        const hasToken = !!localStorage.getItem('sp_access_token');
+        if (hasToken) {
+            const success = await Spotify.sync((data) => {
+                document.getElementById('track-name').innerText = data.item.name;
+                document.getElementById('artist-name').innerText = data.item.artists[0].name.toUpperCase();
+                document.getElementById('main-cover').src = data.item.album.images[0].url;
+                document.getElementById('main-progress').style.width = (data.progress_ms / data.item.duration_ms) * 100 + "%";
+                document.getElementById('status').innerText = "Uplink: Secure";
+            });
+        } else {
+            document.getElementById('status').innerText = "Uplink: Awaiting Handshake";
+        }
+    };
+
+    checkAndSync();
+    setInterval(checkAndSync, 3000);
+};
     </script>
 </body>
 </html>
