@@ -1,4 +1,4 @@
-/** * XCLIPSE // DYNAMIC UPLINK ENGINE v2.8
+/** * XCLIPSE // DYNAMIC UPLINK ENGINE v3.0
  * AUTHOR: TheKidLeeroy.M
  */
 
@@ -6,15 +6,15 @@ const Spotify = {
     clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
     redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback',
 
-    // Standardized Token Retrieval
+    // Standardized Storage Key
     getToken: () => localStorage.getItem('sp_access_token'),
 
     relink: function() {
-        console.log("SYSTEM_PURGE");
         localStorage.removeItem('sp_access_token');
         localStorage.removeItem('sp_expiry');
         localStorage.removeItem('code_verifier');
-        this.auth();
+        console.log("SYSTEM_PURGE: Session Terminated.");
+        setTimeout(() => this.auth(), 300);
     },
 
     auth: async function() {
