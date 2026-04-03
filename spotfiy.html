@@ -8,37 +8,27 @@
     <style>
         :root { --primary: #a855f7; --bg: #010101; }
         body, html { width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; margin: 0; }
-        #blur-bg { position: fixed; inset: -10%; background-size: cover; background-position: center; filter: blur(100px) brightness(0.2); z-index: 0; transition: background-image 2s ease; }
+        #blur-bg { position: fixed; inset: -10%; background-size: cover; background-position: center; filter: blur(100px) brightness(0.15); z-index: 0; transition: background-image 2s ease; animation: pulse-bg 15s infinite alternate; }
+        @keyframes pulse-bg { from { transform: scale(1); } to { transform: scale(1.1); } }
         
-        /* --- REACTIVE BUTTON ANIMATION --- */
+        .hero { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        
+        /* SLEEK MUSIC ELEMENTS */
+        #main-art { width: 300px; height: 300px; object-fit: cover; box-shadow: 0 0 100px rgba(0,0,0,0.9); border: 1px solid rgba(255,255,255,0.05); animation: breathe 8s infinite ease-in-out; margin-bottom: 40px; }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+        
+        #track-title { font-family: 'Montserrat', sans-serif; font-size: clamp(1.2rem, 5vw, 3.5rem); font-weight: 900; font-style: italic; text-transform: uppercase; line-height: 1; letter-spacing: -0.02em; background: linear-gradient(to bottom, #fff, rgba(255,255,255,0.3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        #artist-name { font-size: 10px; letter-spacing: 0.8em; opacity: 0.4; margin-top: 20px; font-weight: 400; text-transform: uppercase; }
+
+        /* UI CONTROLS */
         .system-nav { position: fixed; top: 40px; right: 40px; z-index: 200; display: flex; gap: 15px; opacity: 0; transition: 0.5s; }
         body:hover .system-nav { opacity: 1; }
-
-        .relink-btn {
-            background: transparent;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            padding: 8px 16px;
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            transition: all 0.3s;
-            box-shadow: inset 0 0 0 rgba(168, 85, 247, 0);
-        }
-        .relink-btn:hover {
-            background: var(--primary);
-            color: #000;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.2), 0 0 30px var(--primary);
-            transform: skewX(-10deg);
-        }
-
-        #main-art { width: 400px; height: 400px; object-fit: cover; box-shadow: 0 0 100px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); animation: breathe 8s infinite ease-in-out; margin-bottom: 40px; }
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
-        #track-title { font-family: 'Montserrat', sans-serif; font-size: clamp(2rem, 10vw, 7rem); font-weight: 900; font-style: italic; text-transform: uppercase; text-align: center; line-height: 0.8; }
-        .signature { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); font-size: 10px; letter-spacing: 0.8em; opacity: 0.2; }
-        .progress-rail { position: fixed; bottom: 0; left: 0; width: 100%; height: 6px; background: rgba(255,255,255,0.05); }
-        #progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 1.2s linear; }
+        .relink-btn { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 16px; font-size: 8px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; transition: 0.3s; }
+        .relink-btn:hover { background: var(--primary); color: #000; box-shadow: 0 0 20px var(--primary); transform: skewX(-10deg); }
+        
+        .signature { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); font-size: 9px; letter-spacing: 0.6em; opacity: 0.2; pointer-events: none; }
+        .progress-rail { position: fixed; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.03); }
+        #progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 1.2s linear; box-shadow: 0 0 15px var(--primary); }
     </style>
 </head>
 <body>
@@ -48,11 +38,11 @@
         <button onclick="Spotify.relink()" class="relink-btn">RELINK_ACCOUNT</button>
     </div>
 
-    <main class="hero flex flex-col items-center justify-center h-screen relative z-10">
+    <main class="hero">
         <div id="player-content" class="flex flex-col items-center">
             <img id="main-art" src="" alt="">
-            <div id="track-title">SIGNAL_LOST</div>
-            <div id="artist-name" class="text-xs tracking-[0.5em] opacity-40 mt-6 uppercase font-bold">Scanning...</div>
+            <div id="track-title">SEARCHING_SIGNAL</div>
+            <div id="artist-name">Uplink_Idle</div>
         </div>
     </main>
 
@@ -61,27 +51,20 @@
 
     <script src="spotify.js"></script>
     <script>
-window.onload = () => {
-    Canvas.init(); // Your matrix background
-    
-    const checkAndSync = async () => {
-        const hasToken = !!localStorage.getItem('sp_access_token');
-        if (hasToken) {
-            const success = await Spotify.sync((data) => {
-                document.getElementById('track-name').innerText = data.item.name;
-                document.getElementById('artist-name').innerText = data.item.artists[0].name.toUpperCase();
-                document.getElementById('main-cover').src = data.item.album.images[0].url;
-                document.getElementById('main-progress').style.width = (data.progress_ms / data.item.duration_ms) * 100 + "%";
-                document.getElementById('status').innerText = "Uplink: Secure";
-            });
-        } else {
-            document.getElementById('status').innerText = "Uplink: Awaiting Handshake";
-        }
-    };
-
-    checkAndSync();
-    setInterval(checkAndSync, 3000);
-};
+        window.onload = () => {
+            const syncUI = () => {
+                Spotify.sync((data) => {
+                    document.getElementById('track-title').innerText = data.item.name;
+                    document.getElementById('artist-name').innerText = data.item.artists[0].name;
+                    document.getElementById('main-art').src = data.item.album.images[0].url;
+                    document.getElementById('blur-bg').style.backgroundImage = `url(${data.item.album.images[0].url})`;
+                    document.getElementById('progress-fill').style.width = (data.progress_ms / data.item.duration_ms) * 100 + "%";
+                });
+            };
+            if(localStorage.getItem('sp_access_token')) {
+                syncUI(); setInterval(syncUI, 3000);
+            } else { Spotify.auth(); }
+        };
     </script>
 </body>
 </html>
