@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XCLIPSE | ARCHITECT_OS_v45.2.7</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #a855f7;
+            --primary-glow: rgba(168, 85, 247, 0.4);
+            --spotify: #1DB954;
+            --bg-dark: #010101;
+            --panel-bg: rgba(5, 5, 5, 0.98);
+            --border-ui: rgba(255, 255, 255, 0.08);
+            --terminal-green: #00ff88;
+        }
+
+        /* --- GLOBAL --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+        body, html { width: 100%; height: 100%; background: var(--bg-dark); color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; -webkit-font-smoothing: antialiased; }
+
+        /* --- VISUALS --- */
+        #entropy-canvas { position: fixed; inset: 0; z-index: 0; opacity: 0.25; pointer-events: none; }
+        .os-grid { position: fixed; inset: 0; z-index: 1; background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
+        .os-lines { position: fixed; inset: 0; z-index: 2; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); background-size: 100% 2px, 3px 100%; pointer-events: none; }
+        .scanline { width: 100%; height: 100px; z-index: 3; position: absolute; background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(168, 85, 247, 0.1) 50%, rgba(0,0,0,0) 100%); opacity: 0.2; pointer-events: none; animation: scan 8s linear infinite; }
+        @keyframes scan { from { top: -100px; } to { top: 100%; } }
+
+        /* --- UI --- */
+        .os-header { position: fixed; top: 40px; left: 50px; right: 50px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 100; }
+        .system-tag { font-size: 11px; letter-spacing: 0.6em; text-transform: uppercase; color: var(--primary); font-weight: 800; text-shadow: 0 0 10px var(--primary-glow); }
+        .os-panel { position: absolute; top: 80px; right: 0; width: 520px; background: var(--panel-bg); border: 1px solid var(--border-ui); padding: 40px; display: none; flex-direction: column; z-index: 1000; border-top: 5px solid var(--primary); backdrop-filter: blur(40px); clip-path: polygon(0 0, 100% 0, 100% 92%, 92% 100%, 0 100%); }
+        .os-panel.active { display: flex; animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideIn { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .os-btn { background: rgba(255,255,255,0.02); border: 1px solid var(--border-ui); padding: 16px; font-size: 10px; text-transform: uppercase; font-weight: 800; cursor: pointer; transition: 0.3s; text-align: center; color: #fff; letter-spacing: 0.1em; }
+        .os-btn:hover { background: var(--primary); color: #000; border-color: var(--primary); }
+        
+        /* --- CLOCK --- */
+        #main-time { font-family: 'Montserrat', sans-serif; font-size: clamp(10rem, 25vw, 32rem); font-weight: 900; font-style: italic; color: #fff; mix-blend-mode: overlay; filter: drop-shadow(0 0 80px var(--primary-glow)); line-height: 0.7; }
+        #sec-hex { font-size: 8rem; font-weight: 100; color: var(--primary); opacity: 0.8; line-height: 0.7; }
+
+        /* --- SPOTIFY NODE --- */
+        #spotify-node { position: fixed; bottom: 80px; left: 80px; z-index: 100; transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .node-box { background: rgba(0,0,0,0.9); border: 1px solid var(--border-ui); padding: 25px 35px; border-left: 6px solid var(--spotify); clip-path: polygon(0 0, 96% 0, 100% 18%, 100% 100%, 4% 100%, 0 82%); backdrop-filter: blur(20px); display: flex; align-items: center; gap: 20px; }
+        .album-art { width: 64px; height: 64px; border: 1px solid var(--border-ui); background: #000; flex-shrink: 0; object-fit: cover; }
+        .progress-rail { height: 3px; width: 100%; background: rgba(255,255,255,0.06); margin-top: 20px; overflow: hidden; }
+        .track-progress-bar { height: 100%; background: var(--spotify); transition: width 1s linear; }
+
+        /* Uplink Button Styling */
+        .connect-btn { border: 1px solid var(--spotify); color: var(--spotify); padding: 15px 30px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3em; background: transparent; transition: 0.3s; clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%); }
+        .connect-btn:hover { background: var(--spotify); color: #000; box-shadow: 0 0 20px rgba(29, 185, 84, 0.3); }
+
+        .log-terminal { background: rgba(0,0,0,0.95); border: 1px solid var(--border-ui); height: 280px; overflow-y: auto; padding: 20px; font-size: 10px; color: var(--terminal-green); }
+    </style>
+</head>
+<body>
+
+    <canvas id="entropy-canvas"></canvas>
+    <div class="os-grid"></div>
+    <div class="os-lines"></div>
+    <div class="scanline"></div>
+
+    <header class="os-header">
+        <div class="flex flex-col">
+            <div class="system-tag">ARCHITECT_OS // v45.2.7</div>
+            <div id="auth-status" class="text-[9px] opacity-40 mt-1 uppercase tracking-widest">Link: Disconnected</div>
+        </div>
+        <button class="os-btn !px-12" onclick="OS.togglePanel()">Settings</button>
+
+        <div class="os-panel" id="osPanel">
+            <div class="flex justify-between mb-10 border-b border-white/5">
+                <div class="tab-btn active" onclick="OS.switchTab('core', this)">01_CORE</div>
+                <div class="tab-btn" onclick="OS.switchTab('media', this)">02_MEDI</div>
+                <div class="tab-btn" onclick="OS.switchTab('auth', this)">03_LOGS</div>
+            </div>
+
+            <div id="tab-core" class="tab-content flex flex-col gap-10">
+                <div class="grid grid-cols-2 gap-4">
+                    <button class="os-btn" onclick="Clock.setMode(12)">12_HOUR</button>
+                    <button class="os-btn" onclick="Clock.setMode(24)">24_HOUR</button>
+                </div>
+            </div>
+
+            <div id="tab-media" class="tab-content hidden flex-col gap-8">
+                <div class="bg-white/5 p-5 border border-white/10 flex items-center gap-4">
+                    <img id="mirror-cover" class="w-12 h-12 opacity-50 border border-white/10" src="" alt="">
+                    <div class="flex-1 overflow-hidden">
+                        <div id="mirror-track" class="text-xl font-black uppercase truncate tracking-tighter">Offline</div>
+                        <div id="mirror-artist" class="text-[10px] text-purple-400 font-bold mt-1 uppercase tracking-widest">No Uplink</div>
+                        <div class="progress-rail"><div class="track-progress-bar" id="mirror-progress" style="width: 0%"></div></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <button class="os-btn" onclick="Spotify.command('previous')">PREV</button>
+                    <button id="play-pause-btn" class="os-btn" onclick="Spotify.command('play')">PLAY</button>
+                    <button class="os-btn" onclick="Spotify.command('next')">NEXT</button>
+                </div>
+                <button class="os-btn w-full !border-dashed !text-purple-400" onclick="Spotify.auth()">RESET_HANDSHAKE</button>
+            </div>
+
+            <div id="tab-auth" class="tab-content hidden flex flex-col">
+                <div class="log-terminal" id="sys-log"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+        <div class="flex items-baseline gap-12">
+            <div id="main-time">00:00</div>
+            <div id="sec-hex" class="pb-20">00</div>
+        </div>
+    </main>
+
+    <div id="spotify-node">
+        </div>
+
+    <script>
+        const OS = {
+            togglePanel: () => document.getElementById('osPanel').classList.toggle('active'),
+            switchTab: (id, btn) => {
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById(`tab-${id}`).classList.remove('hidden');
+                btn.classList.add('active');
+            },
+            log: (tag, msg) => {
+                const log = document.getElementById('sys-log');
+                if(!log) return;
+                const entry = document.createElement('div');
+                entry.className = "mb-1";
+                entry.innerHTML = `<span class="opacity-20">${new Date().toLocaleTimeString()}</span> <span class="text-purple-500">[${tag}]</span> ${msg}`;
+                log.prepend(entry);
+            }
+        };
+
+        const Clock = {
+            mode: 12,
+            setMode: (m) => Clock.mode = m,
+            tick: () => {
+                const now = new Date(); let h = now.getHours();
+                const m = String(now.getMinutes()).padStart(2, '0');
+                const s = String(now.getSeconds()).padStart(2, '0');
+                if(Clock.mode === 12) h = h % 12 || 12;
+                document.getElementById('main-time').innerText = `${String(h).padStart(2, '0')}:${m}`;
+                document.getElementById('sec-hex').innerText = s;
+            }
+        };
+
+        const Spotify = {
+            clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
+            clientSecret: 'a81883efd2db4e1484c192222c91599f',
+            redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback',
+
+            updateUI: (isConnected, data = null) => {
+                const node = document.getElementById('spotify-node');
+                if (!isConnected) {
+                    node.innerHTML = `<button class="connect-btn" onclick="Spotify.auth()">CONNECT_SPOTIFY</button>`;
+                } else if (data) {
+                    node.innerHTML = `
+                        <div class="node-box animate-pulse-slow">
+                            <img id="main-cover" class="album-art" src="${data.item.album.images[0].url}" alt="">
+                            <div class="flex flex-col">
+                                <div id="track-name" class="text-lg font-black uppercase truncate w-64 tracking-tighter">${data.item.name}</div>
+                                <div id="artist-name" class="text-[10px] text-purple-400 font-bold mt-1 uppercase tracking-widest">${data.item.artists[0].name.toUpperCase()}</div>
+                                <div class="progress-rail"><div class="track-progress-bar" style="width: ${(data.progress_ms / data.item.duration_ms) * 100}%"></div></div>
+                            </div>
+                        </div>`;
+                }
+            },
+
+            auth: async () => {
+                const verifier = Array.from(crypto.getRandomValues(new Uint8Array(64))).map(x => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x % 62]).join('');
+                const hashed = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+                const challenge = btoa(String.fromCharCode.apply(null, new Uint8Array(hashed))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+                localStorage.setItem('code_verifier', verifier);
+                const params = new URLSearchParams({ response_type: 'code', client_id: Spotify.clientId, scope: 'user-read-currently-playing user-modify-playback-state', redirect_uri: Spotify.redirectUri, code_challenge_method: 'S256', code_challenge: challenge });
+                window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+            },
+
+            sync: async () => {
+                const token = localStorage.getItem('sp_access_token');
+                if(!token) {
+                    Spotify.updateUI(false);
+                    return;
+                }
+                try {
+                    const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', { headers: { 'Authorization': `Bearer ${token}` } });
+                    if(res.status === 200) {
+                        const d = await res.json();
+                        Spotify.updateUI(true, d);
+                        document.getElementById('auth-status').innerText = "Link: SECURE";
+                    } else if (res.status === 401) {
+                        Spotify.updateUI(false);
+                    }
+                } catch(e) {
+                    Spotify.updateUI(false);
+                }
+            },
+
+            command: async (type) => {
+                const token = localStorage.getItem('sp_access_token');
+                if(!token) return;
+                let method = (type === 'next' || type === 'previous') ? 'POST' : 'PUT';
+                let endpoint = type === 'play' ? 'play' : (type === 'pause' ? 'pause' : type);
+                await fetch(`https://api.spotify.com/v1/me/player/${endpoint}`, { method: method, headers: { 'Authorization': `Bearer ${token}` } });
+                setTimeout(Spotify.sync, 400);
+            }
+        };
+
+        const Canvas = {
+            init: () => {
+                const c = document.getElementById('entropy-canvas');
+                const ctx = c.getContext('2d');
+                c.width = window.innerWidth; c.height = window.innerHeight;
+                const drops = Array(Math.floor(c.width/10)).fill(1);
+                setInterval(() => {
+                    ctx.fillStyle = "rgba(0,0,0,0.15)"; ctx.fillRect(0,0,c.width,c.height);
+                    ctx.fillStyle = "#a855f7"; ctx.font = "12px monospace";
+                    drops.forEach((y, i) => {
+                        ctx.fillText(Math.random() > 0.5 ? "0" : "1", i*10, y*10);
+                        if(y*10 > c.height && Math.random() > 0.97) drops[i] = 0;
+                        drops[i]++;
+                    });
+                }, 35);
+            }
+        };
+
+        window.onload = () => {
+            Canvas.init();
+            setInterval(Clock.tick, 1000);
+            setInterval(Spotify.sync, 5000);
+            Spotify.sync();
+        };
+    </script>
+</body>
+</html>
