@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | ARCHITECT_OS_v45.2.9</title>
+    <title>XCLIPSE | ARCHITECT_OS_v45.3.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     
@@ -18,20 +18,19 @@
             --terminal-green: #00ff88;
         }
 
-        /* --- GLOBAL RESET --- */
+        /* --- GLOBAL --- */
         * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-        body, html { width: 100%; height: 100%; background: var(--bg-dark); color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; -webkit-font-smoothing: antialiased; }
+        body, html { width: 100%; height: 100%; background: var(--bg-dark); color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; }
 
-        /* --- BACKGROUND ARCHITECTURE --- */
+        /* --- VFX --- */
         #entropy-canvas { position: fixed; inset: 0; z-index: 0; opacity: 0.25; pointer-events: none; }
         .os-grid { position: fixed; inset: 0; z-index: 1; background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
-        .os-lines { position: fixed; inset: 0; z-index: 2; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); background-size: 100% 2px, 3px 100%; pointer-events: none; }
         .scanline { width: 100%; height: 100px; z-index: 3; position: absolute; background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(168, 85, 247, 0.1) 50%, rgba(0,0,0,0) 100%); opacity: 0.2; pointer-events: none; animation: scan 8s linear infinite; }
         @keyframes scan { from { top: -100px; } to { top: 100%; } }
 
-        /* --- UI COMPONENTS --- */
+        /* --- UI ELEMENTS --- */
         .os-header { position: fixed; top: 40px; left: 50px; right: 50px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 100; }
         .system-tag { font-size: 11px; letter-spacing: 0.6em; text-transform: uppercase; color: var(--primary); font-weight: 800; text-shadow: 0 0 10px var(--primary-glow); }
         
@@ -44,22 +43,20 @@
         .tab-btn { font-size: 10px; letter-spacing: 0.3em; padding: 12px 20px; cursor: pointer; opacity: 0.3; transition: 0.4s; border-bottom: 2px solid transparent; text-transform: uppercase; }
         .tab-btn.active { opacity: 1; color: var(--primary); border-bottom: 2px solid var(--primary); }
 
-        /* --- CLOCK INTERFACE --- */
-        #main-time { font-family: 'Montserrat', sans-serif; font-size: clamp(10rem, 25vw, 32rem); font-weight: 900; font-style: italic; color: #fff; mix-blend-mode: overlay; filter: drop-shadow(0 0 80px var(--primary-glow)); line-height: 0.7; }
+        /* --- CLOCK --- */
+        #main-time { font-family: 'Montserrat', sans-serif; font-size: clamp(10rem, 25vw, 32rem); font-weight: 900; font-style: italic; color: #fff; mix-blend-mode: overlay; line-height: 0.7; }
         #sec-hex { font-size: 8rem; font-weight: 100; color: var(--primary); opacity: 0.8; line-height: 0.7; }
 
         /* --- SPOTIFY NODE --- */
-        #spotify-node { position: fixed; bottom: 80px; left: 80px; z-index: 100; transition: opacity 0.8s ease, transform 0.8s ease; opacity: 0; }
+        #spotify-node { position: fixed; bottom: 80px; left: 80px; z-index: 100; transition: opacity 0.8s ease, transform 0.8s ease; opacity: 0; transform: translateY(20px); }
         .node-box { background: rgba(0,0,0,0.9); border: 1px solid var(--border-ui); padding: 25px 35px; border-left: 6px solid var(--spotify); clip-path: polygon(0 0, 96% 0, 100% 18%, 100% 100%, 4% 100%, 0 82%); backdrop-filter: blur(20px); display: flex; align-items: center; gap: 20px; }
         .album-art { width: 64px; height: 64px; border: 1px solid var(--border-ui); background: #000; flex-shrink: 0; object-fit: cover; }
         .progress-rail { height: 3px; width: 100%; background: rgba(255,255,255,0.06); margin-top: 20px; overflow: hidden; }
         .track-progress-bar { height: 100%; background: var(--spotify); transition: width 1s linear; }
 
-        /* Connect Button Styling */
         .connect-btn { border: 1px solid var(--spotify); color: var(--spotify); padding: 15px 30px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3em; background: transparent; transition: 0.3s; clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%); pointer-events: auto; }
         .connect-btn:hover { background: var(--spotify); color: #000; box-shadow: 0 0 20px rgba(29, 185, 84, 0.4); }
 
-        /* --- LOGS --- */
         .log-terminal { background: rgba(0,0,0,0.95); border: 1px solid var(--border-ui); height: 280px; overflow-y: auto; padding: 20px; font-size: 10px; color: var(--terminal-green); font-family: 'JetBrains Mono', monospace; }
     </style>
 </head>
@@ -67,12 +64,11 @@
 
     <canvas id="entropy-canvas"></canvas>
     <div class="os-grid"></div>
-    <div class="os-lines"></div>
     <div class="scanline"></div>
 
     <header class="os-header">
         <div class="flex flex-col">
-            <div class="system-tag">ARCHITECT_OS // v45.2.9</div>
+            <div class="system-tag">ARCHITECT_OS // v45.3.1</div>
             <div id="auth-status" class="text-[9px] opacity-40 mt-1 uppercase tracking-widest">Link: Disconnected</div>
         </div>
 
@@ -106,7 +102,7 @@
                         <button id="play-pause-btn" class="os-btn" onclick="Spotify.command('play')">PLAY</button>
                         <button class="os-btn" onclick="Spotify.command('next')">NEXT</button>
                     </div>
-                    <button class="os-btn w-full !border-dashed !text-purple-400" onclick="Spotify.auth()">FORCE_HYBRID_HANDSHAKE</button>
+                    <button class="os-btn w-full !border-dashed !text-purple-400" onclick="Spotify.auth()">RESET_GATEWAY</button>
                 </div>
 
                 <div id="tab-auth" class="tab-content hidden flex flex-col">
@@ -215,24 +211,24 @@
                 const challenge = btoa(String.fromCharCode.apply(null, new Uint8Array(hashed))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
                 
                 localStorage.setItem('code_verifier', verifier);
-                
-                // SHH_PROTOCOL: Encode the current URL as state
                 const shh_redirect = btoa(window.location.href);
                 
                 const params = new URLSearchParams({ 
                     response_type: 'code', client_id: Spotify.clientId, 
                     scope: 'user-read-currently-playing user-modify-playback-state', 
                     redirect_uri: Spotify.redirectUri, 
-                    code_challenge_method: 'S256', 
-                    code_challenge: challenge,
-                    state: shh_redirect // Passing current location
+                    code_challenge_method: 'S256', code_challenge: challenge, state: shh_redirect 
                 });
                 window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
             },
 
             getToken: async (code, state) => {
                 const verifier = localStorage.getItem('code_verifier');
-                if(!verifier) return OS.log("ERR", "Handshake_Failed: No_Verifier");
+                if(!verifier) {
+                    OS.log("FATAL", "No_Verifier_Found");
+                    setTimeout(() => window.location.href = window.location.pathname, 1500);
+                    return;
+                }
 
                 const response = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST',
@@ -253,15 +249,17 @@
                     localStorage.setItem('sp_access_token', data.access_token);
                     OS.log("SYS", "Uplink_Secure");
                     
-                    // SHH_REDIRECT EXECUTION
                     if(state) {
                         try {
                             const original_page = atob(state);
                             window.location.href = original_page;
-                        } catch(e) { window.history.replaceState({}, "", "/"); }
+                        } catch(e) { window.location.href = window.location.pathname; }
                     } else {
-                        window.history.replaceState({}, "", "/");
+                        window.location.href = window.location.pathname;
                     }
+                } else {
+                    OS.log("ERR", "Handshake_Denied: " + (data.error_description || "Metadata_Mismatch"));
+                    setTimeout(() => window.location.href = window.location.pathname, 2000);
                 }
             },
 
