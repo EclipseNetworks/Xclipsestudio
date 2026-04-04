@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | ARCHITECT_OS_v45.2.7</title>
+    <title>XCLIPSE | ARCHITECT_OS_v45.2.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     
@@ -18,45 +18,49 @@
             --terminal-green: #00ff88;
         }
 
-        /* --- GLOBAL --- */
+        /* --- GLOBAL RESET --- */
         * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
         body, html { width: 100%; height: 100%; background: var(--bg-dark); color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; -webkit-font-smoothing: antialiased; }
 
-        /* --- VISUALS --- */
+        /* --- BACKGROUND ARCHITECTURE --- */
         #entropy-canvas { position: fixed; inset: 0; z-index: 0; opacity: 0.25; pointer-events: none; }
         .os-grid { position: fixed; inset: 0; z-index: 1; background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
         .os-lines { position: fixed; inset: 0; z-index: 2; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); background-size: 100% 2px, 3px 100%; pointer-events: none; }
         .scanline { width: 100%; height: 100px; z-index: 3; position: absolute; background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(168, 85, 247, 0.1) 50%, rgba(0,0,0,0) 100%); opacity: 0.2; pointer-events: none; animation: scan 8s linear infinite; }
         @keyframes scan { from { top: -100px; } to { top: 100%; } }
 
-        /* --- UI --- */
+        /* --- UI COMPONENTS --- */
         .os-header { position: fixed; top: 40px; left: 50px; right: 50px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 100; }
         .system-tag { font-size: 11px; letter-spacing: 0.6em; text-transform: uppercase; color: var(--primary); font-weight: 800; text-shadow: 0 0 10px var(--primary-glow); }
+        
         .os-panel { position: absolute; top: 80px; right: 0; width: 520px; background: var(--panel-bg); border: 1px solid var(--border-ui); padding: 40px; display: none; flex-direction: column; z-index: 1000; border-top: 5px solid var(--primary); backdrop-filter: blur(40px); clip-path: polygon(0 0, 100% 0, 100% 92%, 92% 100%, 0 100%); }
         .os-panel.active { display: flex; animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideIn { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
         .os-btn { background: rgba(255,255,255,0.02); border: 1px solid var(--border-ui); padding: 16px; font-size: 10px; text-transform: uppercase; font-weight: 800; cursor: pointer; transition: 0.3s; text-align: center; color: #fff; letter-spacing: 0.1em; }
         .os-btn:hover { background: var(--primary); color: #000; border-color: var(--primary); }
-        
-        /* --- CLOCK --- */
+        .tab-btn { font-size: 10px; letter-spacing: 0.3em; padding: 12px 20px; cursor: pointer; opacity: 0.3; transition: 0.4s; border-bottom: 2px solid transparent; text-transform: uppercase; }
+        .tab-btn.active { opacity: 1; color: var(--primary); border-bottom: 2px solid var(--primary); }
+
+        /* --- CLOCK INTERFACE --- */
         #main-time { font-family: 'Montserrat', sans-serif; font-size: clamp(10rem, 25vw, 32rem); font-weight: 900; font-style: italic; color: #fff; mix-blend-mode: overlay; filter: drop-shadow(0 0 80px var(--primary-glow)); line-height: 0.7; }
         #sec-hex { font-size: 8rem; font-weight: 100; color: var(--primary); opacity: 0.8; line-height: 0.7; }
 
         /* --- SPOTIFY NODE --- */
-        #spotify-node { position: fixed; bottom: 80px; left: 80px; z-index: 100; transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        #spotify-node { position: fixed; bottom: 80px; left: 80px; z-index: 100; transition: opacity 0.8s ease, transform 0.8s ease; opacity: 0; }
         .node-box { background: rgba(0,0,0,0.9); border: 1px solid var(--border-ui); padding: 25px 35px; border-left: 6px solid var(--spotify); clip-path: polygon(0 0, 96% 0, 100% 18%, 100% 100%, 4% 100%, 0 82%); backdrop-filter: blur(20px); display: flex; align-items: center; gap: 20px; }
         .album-art { width: 64px; height: 64px; border: 1px solid var(--border-ui); background: #000; flex-shrink: 0; object-fit: cover; }
         .progress-rail { height: 3px; width: 100%; background: rgba(255,255,255,0.06); margin-top: 20px; overflow: hidden; }
         .track-progress-bar { height: 100%; background: var(--spotify); transition: width 1s linear; }
 
-        /* Uplink Button Styling */
-        .connect-btn { border: 1px solid var(--spotify); color: var(--spotify); padding: 15px 30px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3em; background: transparent; transition: 0.3s; clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%); }
-        .connect-btn:hover { background: var(--spotify); color: #000; box-shadow: 0 0 20px rgba(29, 185, 84, 0.3); }
+        /* Connect Button Styling */
+        .connect-btn { border: 1px solid var(--spotify); color: var(--spotify); padding: 15px 30px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3em; background: transparent; transition: 0.3s; clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%); pointer-events: auto; }
+        .connect-btn:hover { background: var(--spotify); color: #000; box-shadow: 0 0 20px rgba(29, 185, 84, 0.4); }
 
-        .log-terminal { background: rgba(0,0,0,0.95); border: 1px solid var(--border-ui); height: 280px; overflow-y: auto; padding: 20px; font-size: 10px; color: var(--terminal-green); }
+        /* --- LOGS --- */
+        .log-terminal { background: rgba(0,0,0,0.95); border: 1px solid var(--border-ui); height: 280px; overflow-y: auto; padding: 20px; font-size: 10px; color: var(--terminal-green); font-family: 'JetBrains Mono', monospace; }
     </style>
 </head>
 <body>
@@ -68,44 +72,46 @@
 
     <header class="os-header">
         <div class="flex flex-col">
-            <div class="system-tag">ARCHITECT_OS // v45.2.7</div>
+            <div class="system-tag">ARCHITECT_OS // v45.2.8</div>
             <div id="auth-status" class="text-[9px] opacity-40 mt-1 uppercase tracking-widest">Link: Disconnected</div>
         </div>
-        <button class="os-btn !px-12" onclick="OS.togglePanel()">Settings</button>
 
-        <div class="os-panel" id="osPanel">
-            <div class="flex justify-between mb-10 border-b border-white/5">
-                <div class="tab-btn active" onclick="OS.switchTab('core', this)">01_CORE</div>
-                <div class="tab-btn" onclick="OS.switchTab('media', this)">02_MEDI</div>
-                <div class="tab-btn" onclick="OS.switchTab('auth', this)">03_LOGS</div>
-            </div>
-
-            <div id="tab-core" class="tab-content flex flex-col gap-10">
-                <div class="grid grid-cols-2 gap-4">
-                    <button class="os-btn" onclick="Clock.setMode(12)">12_HOUR</button>
-                    <button class="os-btn" onclick="Clock.setMode(24)">24_HOUR</button>
+        <div class="relative">
+            <button class="os-btn !px-12" onclick="OS.togglePanel()">Settings</button>
+            <div class="os-panel" id="osPanel">
+                <div class="flex justify-between mb-10 border-b border-white/5">
+                    <div class="tab-btn active" onclick="OS.switchTab('core', this)">01_CORE</div>
+                    <div class="tab-btn" onclick="OS.switchTab('media', this)">02_MEDI</div>
+                    <div class="tab-btn" onclick="OS.switchTab('auth', this)">03_LOGS</div>
                 </div>
-            </div>
 
-            <div id="tab-media" class="tab-content hidden flex-col gap-8">
-                <div class="bg-white/5 p-5 border border-white/10 flex items-center gap-4">
-                    <img id="mirror-cover" class="w-12 h-12 opacity-50 border border-white/10" src="" alt="">
-                    <div class="flex-1 overflow-hidden">
-                        <div id="mirror-track" class="text-xl font-black uppercase truncate tracking-tighter">Offline</div>
-                        <div id="mirror-artist" class="text-[10px] text-purple-400 font-bold mt-1 uppercase tracking-widest">No Uplink</div>
-                        <div class="progress-rail"><div class="track-progress-bar" id="mirror-progress" style="width: 0%"></div></div>
+                <div id="tab-core" class="tab-content flex flex-col gap-10">
+                    <div class="grid grid-cols-2 gap-4">
+                        <button class="os-btn" onclick="Clock.setMode(12)">12_HOUR</button>
+                        <button class="os-btn" onclick="Clock.setMode(24)">24_HOUR</button>
                     </div>
                 </div>
-                <div class="grid grid-cols-3 gap-4">
-                    <button class="os-btn" onclick="Spotify.command('previous')">PREV</button>
-                    <button id="play-pause-btn" class="os-btn" onclick="Spotify.command('play')">PLAY</button>
-                    <button class="os-btn" onclick="Spotify.command('next')">NEXT</button>
-                </div>
-                <button class="os-btn w-full !border-dashed !text-purple-400" onclick="Spotify.auth()">RESET_HANDSHAKE</button>
-            </div>
 
-            <div id="tab-auth" class="tab-content hidden flex flex-col">
-                <div class="log-terminal" id="sys-log"></div>
+                <div id="tab-media" class="tab-content hidden flex-col gap-8">
+                    <div class="bg-white/5 p-5 border border-white/10 flex items-center gap-4">
+                        <img id="mirror-cover" class="w-12 h-12 opacity-50 border border-white/10" src="" alt="">
+                        <div class="flex-1 overflow-hidden">
+                            <div id="mirror-track" class="text-xl font-black uppercase truncate tracking-tighter">Offline</div>
+                            <div id="mirror-artist" class="text-[10px] text-purple-400 font-bold mt-1 uppercase tracking-widest">No Uplink</div>
+                            <div class="progress-rail"><div class="track-progress-bar" id="mirror-progress" style="width: 0%"></div></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                        <button class="os-btn" onclick="Spotify.command('previous')">PREV</button>
+                        <button id="play-pause-btn" class="os-btn" onclick="Spotify.command('play')">PLAY</button>
+                        <button class="os-btn" onclick="Spotify.command('next')">NEXT</button>
+                    </div>
+                    <button class="os-btn w-full !border-dashed !text-purple-400" onclick="Spotify.auth()">FORCE_HYBRID_HANDSHAKE</button>
+                </div>
+
+                <div id="tab-auth" class="tab-content hidden flex flex-col">
+                    <div class="log-terminal" id="sys-log"></div>
+                </div>
             </div>
         </div>
     </header>
@@ -117,8 +123,7 @@
         </div>
     </main>
 
-    <div id="spotify-node">
-        </div>
+    <div id="spotify-node"></div>
 
     <script>
         const OS = {
@@ -159,18 +164,52 @@
 
             updateUI: (isConnected, data = null) => {
                 const node = document.getElementById('spotify-node');
+                
+                // 1. DISCONNECTED: Show Connect Button
                 if (!isConnected) {
+                    node.style.opacity = "1";
+                    node.style.transform = "translateY(0)";
+                    node.style.pointerEvents = "auto";
                     node.innerHTML = `<button class="connect-btn" onclick="Spotify.auth()">CONNECT_SPOTIFY</button>`;
-                } else if (data) {
+                    document.getElementById('auth-status').innerText = "Link: Disconnected";
+                    return;
+                }
+
+                // 2. CONNECTED BUT IDLE: Hide Node
+                if (isConnected && (!data || !data.item)) {
+                    node.style.opacity = "0";
+                    node.style.transform = "translateY(20px)";
+                    node.style.pointerEvents = "none";
+                    document.getElementById('auth-status').innerText = "Link: Secure // Idle";
+                    return;
+                }
+
+                // 3. STREAMING: Reveal and Pop Data
+                if (isConnected && data && data.item) {
+                    node.style.opacity = "1";
+                    node.style.transform = "translateY(0)";
+                    node.style.pointerEvents = "auto";
+                    
+                    const progress = (data.progress_ms / data.item.duration_ms) * 100 + "%";
+                    const cover = data.item.album.images[0].url;
+
                     node.innerHTML = `
-                        <div class="node-box animate-pulse-slow">
-                            <img id="main-cover" class="album-art" src="${data.item.album.images[0].url}" alt="">
+                        <div class="node-box">
+                            <img class="album-art" src="${cover}" alt="">
                             <div class="flex flex-col">
-                                <div id="track-name" class="text-lg font-black uppercase truncate w-64 tracking-tighter">${data.item.name}</div>
-                                <div id="artist-name" class="text-[10px] text-purple-400 font-bold mt-1 uppercase tracking-widest">${data.item.artists[0].name.toUpperCase()}</div>
-                                <div class="progress-rail"><div class="track-progress-bar" style="width: ${(data.progress_ms / data.item.duration_ms) * 100}%"></div></div>
+                                <div class="text-lg font-black uppercase truncate w-64 tracking-tighter">${data.item.name}</div>
+                                <div class="text-[10px] text-purple-400 font-bold mt-1 uppercase tracking-widest">${data.item.artists[0].name.toUpperCase()}</div>
+                                <div class="progress-rail"><div class="track-progress-bar" style="width: ${progress}"></div></div>
                             </div>
                         </div>`;
+
+                    // Update Mirror
+                    document.getElementById('mirror-track').innerText = data.item.name;
+                    document.getElementById('mirror-artist').innerText = data.item.artists[0].name.toUpperCase();
+                    document.getElementById('mirror-progress').style.width = progress;
+                    document.getElementById('mirror-cover').src = cover;
+                    document.getElementById('mirror-cover').style.opacity = "1";
+                    document.getElementById('auth-status').innerText = "Link: Secure // Streaming";
                 }
             },
 
@@ -179,27 +218,32 @@
                 const hashed = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
                 const challenge = btoa(String.fromCharCode.apply(null, new Uint8Array(hashed))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
                 localStorage.setItem('code_verifier', verifier);
-                const params = new URLSearchParams({ response_type: 'code', client_id: Spotify.clientId, scope: 'user-read-currently-playing user-modify-playback-state', redirect_uri: Spotify.redirectUri, code_challenge_method: 'S256', code_challenge: challenge });
+                document.cookie = `sp_verifier=${verifier}; path=/; max-age=3600; SameSite=Lax`;
+                
+                const params = new URLSearchParams({ 
+                    response_type: 'code', client_id: Spotify.clientId, 
+                    scope: 'user-read-currently-playing user-modify-playback-state', 
+                    redirect_uri: Spotify.redirectUri, code_challenge_method: 'S256', code_challenge: challenge 
+                });
                 window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
             },
 
             sync: async () => {
                 const token = localStorage.getItem('sp_access_token');
-                if(!token) {
-                    Spotify.updateUI(false);
-                    return;
-                }
+                if(!token) return Spotify.updateUI(false);
+
                 try {
                     const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', { headers: { 'Authorization': `Bearer ${token}` } });
                     if(res.status === 200) {
                         const d = await res.json();
                         Spotify.updateUI(true, d);
-                        document.getElementById('auth-status').innerText = "Link: SECURE";
+                    } else if (res.status === 204) {
+                        Spotify.updateUI(true, null); // Connected but nothing playing
                     } else if (res.status === 401) {
-                        Spotify.updateUI(false);
+                        Spotify.updateUI(false); // Token dead
                     }
                 } catch(e) {
-                    Spotify.updateUI(false);
+                    console.warn("Uplink_Dropped");
                 }
             },
 
@@ -234,7 +278,7 @@
         window.onload = () => {
             Canvas.init();
             setInterval(Clock.tick, 1000);
-            setInterval(Spotify.sync, 5000);
+            setInterval(Spotify.sync, 4000);
             Spotify.sync();
         };
     </script>
