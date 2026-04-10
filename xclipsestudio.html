@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>★》 XCLIPSE STUDIO | OFFICIAL《★</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        :root { --accent: #ec4899; --bg: #050811; }
+        * { cursor: none !important; }
+        body { 
+            background-color: var(--bg); 
+            color: white; 
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #cursor { 
+            width: 6px; height: 6px; background: var(--accent); 
+            border-radius: 50%; position: fixed; pointer-events: none; 
+            z-index: 999999; transition: transform 0.1s ease-out; 
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .glass { 
+            background: rgba(255, 255, 255, 0.01); 
+            backdrop-filter: blur(25px); 
+            border: 1px solid rgba(255, 255, 255, 0.03); 
+        }
+        
+        .reveal-text {
+            background: linear-gradient(to right, #fff 20%, var(--accent) 40%, var(--accent) 60%, #fff 80%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 8s linear infinite;
+        }
+
+        @keyframes shine { to { background-position: 200% center; } }
+
+        .nav-link { 
+            font-size: 7px;
+            letter-spacing: 0.5em;
+            transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0.5;
+        }
+        .nav-link:hover { color: var(--accent); letter-spacing: 0.7em; opacity: 1; }
+
+        #hero-img { transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1); }
+        
+        /* Ultra Small Typography */
+        h1 { font-size: clamp(1.8rem, 5vw, 3.5rem) !important; font-weight: 900 !important; }
+        h2 { font-size: 11px !important; letter-spacing: 0.6em !important; font-weight: 800 !important; }
+        p { font-size: 8px !important; letter-spacing: 0.2em; }
+        .sc-btn { font-size: 8px !important; letter-spacing: 0.4em !important; }
+    </style>
+</head>
+<body class="pb-24">
+    <div id="cursor"></div>
+
+    <header class="fixed top-0 w-full z-[100] px-12 py-10 flex justify-between items-center mix-blend-difference">
+        <a href="#" class="text-[10px] font-black italic tracking-tighter uppercase">
+            XCLIPSE<span class="text-pink-500">STUDIO</span>
+        </a>
+        <nav class="hidden md:flex gap-12 font-bold uppercase">
+            <a href="/" class="nav-link text-pink-500 opacity-100">PORTAL</a>
+            <a href="https://xclipsestudio.xclipsenetworks.com.au/soundcloud" class="nav-link">SOUNDCLOUD</a>
+            <a href="/contact" class="nav-link">CONTACT</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="min-h-screen flex flex-col items-center justify-center px-6 relative">
+            <div class="text-center z-10" data-aos="fade" data-aos-duration="2500">
+                <div class="relative mb-10 group">
+                    <div class="absolute -inset-1 bg-white rounded-[1.5rem] blur opacity-[0.03] group-hover:opacity-10 transition duration-1000"></div>
+                    <img id="hero-img" src="IMG_9564.png" class="relative w-56 h-56 md:w-[320px] md:h-[320px] object-cover rounded-[1.5rem] border border-white/5" alt="Art">
+                </div>
+                
+                <h1 id="hero-title" class="reveal-text italic tracking-tighter uppercase leading-none mb-6">
+                    INITIALIZING
+                </h1>
+
+                <a href="https://xclipsestudio.xclipsenetworks.com.au/soundcloud" target="_blank" 
+                   class="sc-btn inline-flex items-center gap-3 px-10 py-3 bg-white/5 border border-white/10 rounded-full font-black uppercase transition-all hover:bg-white hover:text-black">
+                    <i class="fab fa-soundcloud text-xs"></i> SOUNDCLOUD
+                </a>
+            </div>
+        </section>
+
+        <section class="max-w-5xl mx-auto px-6 py-16" data-aos="fade-up">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <div class="glass p-1 rounded-[1.5rem]">
+                    <div class="flex items-center justify-between p-5">
+                        <h2 class="uppercase italic">TikTok</h2>
+                        <span class="text-[6px] opacity-20 tracking-widest">LIVE_FEED</span>
+                    </div>
+                    <div class="overflow-hidden rounded-b-[1.3rem]">
+                        <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@xclipsestudio" data-unique-id="xclipsestudio" data-embed-type="creator" style="width: 100%;"> 
+                            <section> <a target="_blank" href="https://www.tiktok.com/@xclipsestudio?refer=creator_embed">@xclipsestudio</a> </section> 
+                        </blockquote> 
+                        <script async src="https://www.tiktok.com/embed.js"></script>
+                    </div>
+                </div>
+
+                <div class="glass p-1 rounded-[1.5rem]">
+                    <div class="flex items-center justify-between p-5">
+                        <h2 class="uppercase italic">Instagram</h2>
+                        <span class="text-[6px] opacity-20 tracking-widest">PORTFOLIO</span>
+                    </div>
+                    <div class="p-2 bg-black/5 rounded-b-[1.3rem]">
+                        <behold-widget feed-id="So7MiaB6rvCKyCXpDCex"></behold-widget>
+                        <script>
+                            (() => {
+                                const d=document,s=d.createElement("script");s.type="module";
+                                s.src="https://w.behold.so/widget.js";d.head.append(s);
+                            })();
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="fixed bottom-0 w-full z-[1000] glass border-t border-white/5 px-12 py-3.5 grid grid-cols-1 md:grid-cols-3 items-center gap-4">
+        <div class="flex items-center gap-4">
+            <img id="player-cover" src="IMG_9564.png" class="w-9 h-9 rounded-md object-cover border border-white/5" alt="Art">
+            <div class="min-w-0">
+                <p id="player-title" class="font-bold truncate uppercase italic opacity-80">FETCHING...</p>
+                <p class="text-pink-500 font-black uppercase tracking-[0.5em]" style="font-size: 6px !important;">XCLIPSE STUDIO</p>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center">
+            <div class="flex items-center gap-8">
+                <select id="track-selector" class="bg-transparent border-none text-[7px] font-black uppercase py-2 px-2 outline-none opacity-40 hover:opacity-100 transition">
+                    <option value="" disabled selected>LATEST DROPS</option>
+                </select>
+                <button id="play-btn" class="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 active:scale-90 transition">
+                    <i class="fas fa-play text-[8px] ml-0.5"></i>
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        const RSS_URL = 'https://feeds.soundcloud.com/users/soundcloud:users:1435917656/sounds.rss';
+        const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}`;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            AOS.init({ duration: 1500, once: true });
+            initAudio();
+            initCursor();
+        });
+
+        async function initAudio() {
+            const audio = new Audio();
+            const pBtn = document.getElementById('play-btn');
+            const tL = document.getElementById('track-selector');
+            const pTitle = document.getElementById('player-title');
+            const pCover = document.getElementById('player-cover');
+            const hTitle = document.getElementById('hero-title');
+            const hImg = document.getElementById('hero-img');
+
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    tL.innerHTML = ''; 
+                    data.items.forEach((track, i) => {
+                        const opt = document.createElement('option');
+                        opt.value = track.enclosure.link;
+                        opt.dataset.title = track.title;
+                        opt.dataset.cover = track.thumbnail || 'IMG_9564.png';
+                        opt.innerText = track.title.toUpperCase();
+                        tL.appendChild(opt);
+
+                        if (i === 0) {
+                            audio.src = track.enclosure.link;
+                            updateUI(track.title, track.thumbnail);
+                        }
+                    });
+                }
+            } catch (e) { hTitle.innerText = "OFFLINE"; }
+
+            function updateUI(title, cover) {
+                pTitle.innerText = title;
+                pCover.src = cover;
+                hTitle.innerText = title;
+                hImg.src = cover;
+            }
+
+            tL.addEventListener('change', (e) => {
+                const opt = e.target.options[e.target.selectedIndex];
+                audio.src = opt.value;
+                updateUI(opt.dataset.title, opt.dataset.cover);
+                audio.play();
+                pBtn.innerHTML = '<i class="fas fa-pause text-[8px]"></i>';
+            });
+
+            pBtn.addEventListener('click', () => {
+                if(!audio.src) return;
+                if(audio.paused) { audio.play(); pBtn.innerHTML = '<i class="fas fa-pause text-[8px]"></i>'; }
+                else { audio.pause(); pBtn.innerHTML = '<i class="fas fa-play text-[8px] ml-0.5"></i>'; }
+            });
+        }
+
+        function initCursor() {
+            const c = document.getElementById('cursor');
+            document.addEventListener('mousemove', (e) => {
+                window.requestAnimationFrame(() => {
+                    c.style.transform = `translate3d(${e.clientX - 3}px, ${e.clientY - 3}px, 0)`;
+                });
+            });
+        }
+    </script>
+</body>
+</html>
