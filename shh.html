@@ -151,13 +151,6 @@
         @keyframes pulse-accent { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
         .pulse { animation: pulse-accent 2s infinite; }
 
-        .close-btn {
-            position: absolute; top: 40px; right: 40px;
-            width: 40px; height: 40px; border: 1px solid var(--glass-border);
-            display: flex; align-items: center; justify-content: center;
-            transition: 0.3s;
-        }
-
         #system-log {
             font-family: 'JetBrains Mono', monospace;
             font-size: 9px; color: var(--text-dim);
@@ -187,7 +180,7 @@
     </header>
 
     <aside id="panel-settings" class="side-panel">
-        <div class="close-btn" onclick="UI.closeAll()"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></div>
+        <div class="close-btn p-4 absolute top-10 right-10" onclick="UI.closeAll()"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></div>
         <div class="panel-header">System_Settings</div>
         <div class="control-group">
             <label class="control-label">Time Format</label>
@@ -202,7 +195,7 @@
     </aside>
 
     <aside id="panel-environment" class="side-panel">
-        <div class="close-btn" onclick="UI.closeAll()"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></div>
+        <div class="close-btn p-4 absolute top-10 right-10" onclick="UI.closeAll()"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></div>
         <div class="panel-header">Atmosphere_Control</div>
         <div class="control-group">
             <label class="control-label">Accent Profile</label>
@@ -248,7 +241,7 @@
                     let h = now.getHours();
                     if(this.mode === 12) h = h % 12 || 12;
                     document.getElementById('clock-face').innerText = `${String(h).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-                    document.getElementById('clock-seconds').innerText = `SEC_${String(now.getSeconds()).padStart(2, '0')}`;
+                    document.getElementById('clock-seconds').innerText = `${String(now.getSeconds()).padStart(2, '0')}`;
                     document.getElementById('clock-date').innerText = now.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase().replace(/ /g, '_');
                     requestAnimationFrame(update);
                 };
@@ -282,50 +275,24 @@
 
         const Spotify = {
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8', 
-            redirectUri: 'http://127.0.0.1:8000',
+            redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/shh.html',
             scopes: 'user-read-currently-playing user-read-playback-state',
 
             connect() {
-                UI.log("INIT_UPLINK_PROTOCOL...");
-                // Reverted to 'token' for direct browser access
-                const url = `https://accounts.spotify.com/authorize?client_id=${this.clientId}&response_type=token&redirect_uri=${encodeURIComponent(this.redirectUri)}&scope=${encodeURIComponent(this.scopes)}`;
+                UI.log("INIT_AUTH_CODE_FLOW...");
+                const url = `https://accounts.spotify.com/authorize?client_id=${this.clientId}&response_type=code&redirect_uri=${encodeURIComponent(this.redirectUri)}&scope=${encodeURIComponent(this.scopes)}`;
                 window.location.href = url;
             },
 
             handleCallback() {
-                // Check for token in hash (Implicit Grant)
-                const hash = window.location.hash.substring(1);
-                const params = new URLSearchParams(hash);
-                const token = params.get('access_token');
+                const urlParams = new URLSearchParams(window.location.search);
+                const code = urlParams.get('code');
 
-                if (token) {
-                    UI.log("ACCESS_GRANTED // SYNC_START");
+                if (code) {
+                    UI.log("AUTH_CODE_RECEIVED");
+                    UI.log(`CODE: ${code.substring(0, 12)}...`);
+                    // Exchange logic would happen here with a backend
                     history.pushState("", document.title, window.location.pathname);
-                    // Start the update loop every 3 seconds
-                    setInterval(() => this.update(token), 3000);
-                    this.update(token);
-                }
-            },
-
-            async update(token) {
-                try {
-                    const r = await fetch('https://api.spotify.com/v1/me/player/currently-playing', { 
-                        headers: { 'Authorization': `Bearer ${token}` } 
-                    });
-                    if (r.status === 200) {
-                        const d = await r.json();
-                        document.getElementById('sp-title').innerText = d.item.name;
-                        document.getElementById('sp-artist').innerText = d.item.artists[0].name;
-                        document.getElementById('media-progress').style.width = (d.progress_ms / d.item.duration_ms * 100) + '%';
-                        if(d.item.album.images[0]) {
-                            document.getElementById('sp-art').innerHTML = `<img src="${d.item.album.images[0].url}" class="w-full h-full object-cover">`;
-                        }
-                    } else if (r.status === 204) {
-                        document.getElementById('sp-title').innerText = "IDLE_STATE";
-                        document.getElementById('sp-artist').innerText = "NO_ACTIVE_PLAYBACK";
-                    }
-                } catch(e) {
-                    UI.log("SYNC_ERROR");
                 }
             }
         };
@@ -334,34 +301,14 @@
             activePanel: null,
             togglePanel(id) {
                 if (this.activePanel === id) this.closeAll();
-                else { 
-                    this.closeAll(); 
-                    document.getElementById(`panel-${id}`).classList.add('active'); 
-                    this.activePanel = id; 
-                }
+                else { this.closeAll(); document.getElementById(`panel-${id}`).classList.add('active'); this.activePanel = id; }
             },
-            closeAll() { 
-                document.querySelectorAll('.side-panel').forEach(p => p.classList.remove('active')); 
-                this.activePanel = null; 
-            },
-            setAccent(c) { 
-                document.documentElement.style.setProperty('--accent', c); 
-                this.log(`COLOR_SET: ${c}`);
-            },
-            log(m) { 
-                const l = document.getElementById('system-log');
-                const e = document.createElement('div'); 
-                e.className = "mt-1";
-                e.innerText = `> ${m}`; 
-                l.prepend(e); 
-                if(l.children.length > 6) l.lastChild.remove();
-            }
+            closeAll() { document.querySelectorAll('.side-panel').forEach(p => p.classList.remove('active')); this.activePanel = null; },
+            setAccent(c) { document.documentElement.style.setProperty('--accent', c); },
+            log(m) { const l = document.getElementById('system-log'), e = document.createElement('div'); e.innerText = `> ${m}`; l.prepend(e); }
         };
 
-        window.onload = () => { 
-            Core.init(); 
-            Spotify.handleCallback(); 
-        };
+        window.onload = () => { Core.init(); Spotify.handleCallback(); };
     </script>
 </body>
 </html>
