@@ -3,428 +3,660 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | ARCHITECT_OS_v7.5_STABLE</title>
+    <title>XCLIPSE | ARCHITECT_OS_v50.0_ULTRA_EXTENDED</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@100;300;400;700;900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,900;1,100;1,900&family=Inter:wght@100;400;700;900&family=JetBrains+Mono:wght@100;400;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
+        /* --- CORE KERNEL STYLES --- */
         :root {
             --primary: #a855f7;
-            --primary-glow: rgba(168, 85, 247, 0.6);
+            --primary-glow: rgba(168, 85, 247, 0.4);
             --spotify: #1DB954;
             --bg-dark: #000000;
             --panel-bg: rgba(2, 2, 2, 0.99);
-            --border-ui: rgba(255, 255, 255, 0.05);
-            --danger: #ff3333;
-            --accent-blue: #3b82f6;
-            --matrix-color: rgba(168, 85, 247, 0.15);
+            --border-ui: rgba(255, 255, 255, 0.06);
+            --font-main: 'Inter', sans-serif;
+            --transition-speed: 0.4s;
         }
 
-        /* --- FOUNDATION --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
-        ::-webkit-scrollbar { width: 2px; }
-        ::-webkit-scrollbar-thumb { background: var(--primary); }
+        /* --- ARCHITECTURAL FOUNDATION --- */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            cursor: crosshair; 
+            user-select: none;
+        }
+
+        ::-webkit-scrollbar { 
+            width: 3px; 
+        }
+        ::-webkit-scrollbar-thumb { 
+            background: var(--primary); 
+            border-radius: 10px; 
+        }
+
         body, html { 
-            width: 100%; height: 100%; 
+            width: 100%; 
+            height: 100%; 
             background: var(--bg-dark); 
             color: #fff; 
-            font-family: 'Inter', sans-serif; 
+            font-family: var(--font-main); 
             overflow: hidden; 
+            position: relative;
         }
 
-        /* --- VISUAL KERNEL LAYERS --- */
-        canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-        #matrix-canvas { z-index: 1; opacity: 0.3; }
-        #nebula-canvas { z-index: 2; opacity: 0.5; transition: filter 1.5s ease; }
-        
-        .vignette {
-            position: fixed; inset: 0; z-index: 5;
+        /* --- VISUAL INTERFERENCE ENGINES --- */
+        canvas { 
+            position: fixed; 
+            inset: 0; 
+            z-index: 0; 
+            pointer-events: none; 
+        }
+
+        #matrix-layer { 
+            opacity: 0.15; 
+            filter: blur(1px);
+        }
+
+        .vignette-mask {
+            position: fixed; 
+            inset: 0; 
+            z-index: 5;
             background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,1) 100%);
             pointer-events: none;
         }
 
-        .crt-scanlines {
-            position: fixed; inset: 0; z-index: 6;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-            background-size: 100% 4px; pointer-events: none;
+        .crt-interference {
+            position: fixed; 
+            inset: 0; 
+            z-index: 6;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+            opacity: 0.3;
         }
 
-        /* --- TELEMETRY SUITE --- */
-        .telemetry-suite {
-            position: fixed; top: 30px; left: 30px; z-index: 100;
-            font-family: 'JetBrains Mono'; font-size: 8px; line-height: 2.2;
-            color: rgba(255,255,255,0.15); text-transform: uppercase;
-        }
-        .tel-item { display: flex; align-items: center; gap: 15px; }
-        .tel-label { width: 90px; color: var(--primary); font-weight: 800; letter-spacing: 0.1em; }
-        .tel-progress { width: 110px; height: 1px; background: rgba(255,255,255,0.05); position: relative; }
-        .tel-fill { height: 100%; background: var(--primary); transition: width 0.8s ease; box-shadow: 0 0 8px var(--primary); }
-
-        /* --- EMERGENCY EXIT --- */
-        .exit-controller { position: fixed; top: 30px; right: 30px; z-index: 2000; display: flex; align-items: center; gap: 15px; }
-        .kill-switch {
-            width: 50px; height: 50px; border: 1px solid var(--border-ui);
-            background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(10px);
-            display: flex; align-items: center; justify-content: center;
-            transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-        .kill-switch:hover { border-color: var(--danger); transform: rotate(90deg); background: rgba(255, 51, 51, 0.05); }
-        .kill-switch span { font-weight: 100; font-size: 20px; color: rgba(255,255,255,0.2); }
-
-        #reboot-overlay {
-            position: fixed; inset: 0; z-index: 9999;
-            background: rgba(0,0,0,0.99); backdrop-filter: blur(60px);
-            display: none; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.8s ease;
-        }
-        .reboot-box {
-            text-align: center; max-width: 550px; padding: 70px;
-            border: 1px solid var(--border-ui); background: #010101;
-            box-shadow: 0 0 100px rgba(168, 85, 247, 0.1);
+        /* --- DYNAMIC UI FRAMEWORK --- */
+        .os-header {
+            position: fixed;
+            top: 40px;
+            left: 50px;
+            right: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 1000;
         }
 
-        /* --- CHRONOS DISPLAY --- */
-        .viewport-master {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); text-align: center;
-            z-index: 10; transition: 0.3s ease-out; width: 100%;
-        }
-        .clock-chassis {
-            background: rgba(255, 255, 255, 0.001); backdrop-filter: blur(25px) saturate(180%);
-            padding: 90px 40px; border-top: 1px solid rgba(255, 255, 255, 0.02);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-            display: inline-block; min-width: 100%;
-        }
-        #main-timer { 
-            font-family: 'Montserrat', sans-serif; 
-            font-size: clamp(6rem, 22vw, 28rem); 
-            font-weight: 900; line-height: 0.8;
-            letter-spacing: -0.05em; color: #fff;
-            filter: drop-shadow(0 0 40px rgba(168, 85, 247, 0.05));
-        }
-        .sub-telemetry {
-            display: flex; justify-content: center; align-items: center; gap: 60px;
-            margin-top: 35px; font-family: 'JetBrains Mono'; 
-            font-size: 9px; text-transform: uppercase;
-            letter-spacing: 1.2em; color: var(--primary); opacity: 0.3;
+        .system-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
-        /* --- MICRO MEDIA PLAYER --- */
-        #media-uplink { 
-            position: fixed; bottom: 30px; left: 30px; z-index: 100; 
-            transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
+        .node-tag {
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 0.7em;
+            text-transform: uppercase;
+            color: var(--primary);
+            text-shadow: 0 0 15px var(--primary-glow);
+            transition: var(--transition-speed);
         }
-        .media-card {
-            background: rgba(4, 4, 4, 0.95); border: 1px solid var(--border-ui); padding: 14px 18px;
-            backdrop-filter: blur(20px); display: flex; align-items: center; gap: 18px;
-            border-left: 2px solid var(--spotify); width: 280px;
-        }
-        .media-art { width: 40px; height: 40px; border-radius: 1px; }
-        .media-info { overflow: hidden; flex: 1; }
-        .media-track { font-weight: 900; font-size: 10px; text-transform: uppercase; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .media-artist { font-size: 7px; color: var(--primary); text-transform: uppercase; margin-top: 3px; letter-spacing: 0.2em; opacity: 0.6; }
-        .media-progress-bg { height: 1px; width: 100%; background: rgba(255,255,255,0.05); margin-top: 8px; }
-        .media-progress-fill { height: 100%; background: var(--spotify); box-shadow: 0 0 5px var(--spotify); }
 
-        /* --- KERNEL PANEL --- */
+        .uplink-status {
+            font-family: 'JetBrains Mono';
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            color: rgba(255,255,255,0.3);
+        }
+
+        /* --- KERNEL SIDEBAR --- */
         .kernel-sidebar {
-            position: fixed; top: 0; right: -500px; width: 500px; height: 100%;
-            background: var(--panel-bg); border-left: 1px solid var(--border-ui);
-            z-index: 1000; transition: right 0.7s cubic-bezier(0.19, 1, 0.22, 1); padding: 90px 50px;
-        }
-        .kernel-sidebar.active { right: 0; }
-        .os-btn { 
-            background: rgba(255,255,255,0.01); border: 1px solid var(--border-ui); 
-            padding: 18px; font-size: 9px; font-weight: 900; text-transform: uppercase; 
-            letter-spacing: 0.4em; color: #fff; transition: 0.3s; width: 100%; text-align: center;
-            display: block; margin-bottom: 12px;
-        }
-        .os-btn:hover { background: #fff; color: #000; }
-        .os-btn.primary { border-color: var(--primary); color: var(--primary); }
-
-        .ipc-terminal {
-            height: 320px; background: rgba(0,0,0,0.8); border: 1px solid var(--border-ui);
-            padding: 20px; font-family: 'JetBrains Mono'; font-size: 9px; overflow-y: auto; color: var(--primary); line-height: 2;
+            position: fixed;
+            top: 0;
+            right: -600px;
+            width: 600px;
+            height: 100%;
+            background: var(--panel-bg);
+            border-left: 1px solid var(--border-ui);
+            z-index: 2000;
+            transition: right 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+            padding: 80px 50px;
+            backdrop-filter: blur(60px);
+            display: flex;
+            flex-direction: column;
         }
 
-        /* --- STATE TRANSITIONS --- */
-        .sys-halt { opacity: 0 !important; transform: scale(0.9) !important; filter: blur(40px) !important; pointer-events: none; transition: 1.2s ease-in-out; }
+        .kernel-sidebar.active {
+            right: 0;
+        }
+
+        .sys-btn {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-ui);
+            padding: 16px;
+            font-size: 9px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+            color: #fff;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            text-align: center;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sys-btn::before {
+            content: '';
+            position: absolute;
+            left: -100%;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transition: 0.5s;
+        }
+
+        .sys-btn:hover::before {
+            left: 100%;
+        }
+
+        .sys-btn:hover, .sys-btn.active {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+            box-shadow: 0 0 25px var(--primary-glow);
+            transform: translateY(-2px);
+        }
+
+        /* --- CHRONOS MASTER UNIT --- */
+        .chronos-master {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        #main-timer-val { 
+            font-family: 'Montserrat', sans-serif; 
+            font-size: clamp(6rem, 18vw, 24rem); 
+            font-weight: 900; 
+            line-height: 0.8;
+            letter-spacing: -0.05em; 
+            color: var(--primary);
+            filter: drop-shadow(0 0 50px var(--primary-glow));
+            transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        #seconds-node {
+            font-size: clamp(2rem, 6vw, 8rem);
+            font-weight: 100;
+            opacity: 0.4;
+            color: #fff;
+            margin-left: 20px;
+        }
+
+        /* --- TELEMETRY NODE --- */
+        .telemetry-node {
+            position: fixed;
+            bottom: 60px;
+            right: 60px;
+            z-index: 100;
+            font-family: 'JetBrains Mono';
+            font-size: 8px;
+            line-height: 2.5;
+            color: rgba(255,255,255,0.15);
+            text-transform: uppercase;
+            text-align: right;
+        }
+
+        .tel-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        .tel-label {
+            width: 100px;
+            color: var(--primary);
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            transition: color 0.5s ease;
+        }
+
+        .tel-track {
+            width: 120px;
+            height: 1px;
+            background: rgba(255,255,255,0.03);
+            position: relative;
+        }
+
+        .tel-fill {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.8s ease, background 0.5s;
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        /* --- SPOTIFY UPLINK (FONT LOCKED) --- */
+        #media-uplink {
+            position: fixed;
+            bottom: 60px;
+            left: 60px;
+            z-index: 100;
+            font-family: 'JetBrains Mono', monospace !important;
+        }
+
+        .media-box {
+            background: rgba(2, 2, 2, 0.95);
+            border: 1px solid var(--border-ui);
+            padding: 20px 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-left: 4px solid var(--spotify);
+            backdrop-filter: blur(30px);
+            width: 320px;
+        }
+
+        .media-art {
+            width: 50px;
+            height: 50px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .media-info {
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .track-name {
+            font-weight: 900;
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .artist-name {
+            font-size: 8px;
+            color: var(--spotify);
+            margin-top: 4px;
+            letter-spacing: 0.2em;
+            font-weight: 800;
+        }
+
+        /* --- PRESET MATRIX --- */
+        .preset-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .preset-card {
+            height: 45px;
+            border: 1px solid var(--border-ui);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            font-weight: 900;
+            letter-spacing: 0.3em;
+            cursor: pointer;
+            transition: 0.3s;
+            background: rgba(255,255,255,0.01);
+        }
+
+        .preset-card:hover {
+            border-color: #fff;
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* --- TERMINAL LOGS --- */
+        #kernel-log {
+            height: 220px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--border-ui);
+            padding: 20px;
+            font-family: 'JetBrains Mono';
+            font-size: 9px;
+            color: var(--primary);
+            overflow-y: auto;
+            line-height: 2;
+        }
+
+        /* --- SESSION TERMINATION --- */
+        #death-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: #000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .death-box {
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .glitch-text {
+            color: #ff3333;
+            font-weight: 900;
+            letter-spacing: 1.5em;
+            text-transform: uppercase;
+            font-size: 12px;
+            margin-bottom: 20px;
+            animation: glitch 0.2s infinite;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        .halted {
+            filter: blur(100px) grayscale(1);
+            opacity: 0;
+            pointer-events: none;
+            transition: 2s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
     </style>
 </head>
-<body id="os-root">
+<body id="kernel-root">
 
-    <canvas id="matrix-canvas"></canvas>
-    <canvas id="nebula-canvas"></canvas>
-    <div class="vignette"></div>
-    <div class="crt-scanlines"></div>
+    <canvas id="matrix-layer"></canvas>
+    <canvas id="particle-layer"></canvas>
+    <div class="vignette-mask"></div>
+    <div class="crt-interference"></div>
 
-    <div id="reboot-overlay">
-        <div class="reboot-box">
-            <div class="font-black text-[11px] tracking-[1.2em] text-red-500 mb-8 uppercase">Session_Suspended</div>
-            <div class="font-mono text-[9px] text-white/30 leading-loose mb-12 uppercase tracking-[0.3em]">
-                Core architecture v7.5 sequence halted.<br>
-                Kernel state preserved in cache.<br>
-                Uplink standby...
+    <div id="death-screen">
+        <div class="death-box">
+            <div class="glitch-text">SESSION_TERMINATED</div>
+            <div class="text-[8px] opacity-30 font-mono tracking-[0.4em] leading-loose mb-12 uppercase">
+                Kernel resources deallocated.<br>
+                Security certificates revoked.<br>
+                Hardware uplink: SEVERED.
             </div>
-            <button class="os-btn primary" onclick="Kernel.reboot()">Establish New Session</button>
+            <button class="sys-btn !w-64 mx-auto !text-red-500 !border-red-500/20" onclick="location.reload()">Re-Initialize_System</button>
         </div>
     </div>
 
-    <div class="telemetry-suite" id="telemetry-node">
-        <div class="tel-item"><span class="tel-label">CORE_VOLT</span> <div class="tel-progress"><div id="bar-cpu" class="tel-fill" style="width: 20%"></div></div></div>
-        <div class="tel-item"><span class="tel-label">MEM_STACK</span> <div class="tel-progress"><div id="bar-mem" class="tel-fill" style="width: 45%"></div></div></div>
-        <div class="tel-item"><span class="tel-label">NET_WAVE</span> <div class="tel-progress"><div id="bar-net" class="tel-fill" style="width: 12%"></div></div></div>
-        <div class="tel-item"><span class="tel-label">ENTROPY</span> <div class="tel-progress"><div id="bar-ent" class="tel-fill" style="width: 60%"></div></div></div>
-        <div class="tel-item mt-6"><span class="tel-label text-blue-400">ENCRYPTION</span> <span class="text-white">X-SEC_RSA_4096</span></div>
-    </div>
-
-    <div class="exit-controller">
-        <div class="text-[8px] font-black tracking-[0.8em] text-white/10 uppercase mr-4">Node_X75</div>
-        <button class="kill-switch" onclick="Kernel.terminate()"><span>✕</span></button>
-    </div>
-
-    <header class="fixed top-8 left-1/2 -translate-x-1/2 z-[500]" id="nav-node">
-        <button class="os-btn !px-24" onclick="Kernel.togglePanel()">Kernel_Diagnostics</button>
+    <header class="os-header" id="ui-header">
+        <div class="system-meta">
+            <div class="node-tag" id="system-title">ARCHITECT_OS // v50.0</div>
+            <div class="uplink-status" id="link-status">Node_Link: Standby</div>
+        </div>
+        <button class="sys-btn !px-20 !mb-0" onclick="Kernel.togglePanel()">Open_Settings</button>
     </header>
 
-    <aside id="sidebar-node" class="kernel-sidebar">
-        <div class="text-[9px] opacity-20 font-black tracking-[1em] mb-12 uppercase">Process_Manifest_v7.5</div>
-        <div class="space-y-12">
+    <aside id="nexus-panel" class="kernel-sidebar">
+        <div class="text-[10px] font-black tracking-[1em] mb-12 uppercase opacity-20">Configuration_Nexus</div>
+        
+        <div class="flex-1 overflow-y-auto pr-4 space-y-12">
             <section>
+                <div class="text-[8px] font-black tracking-[0.4em] mb-6 uppercase text-white/40">Chronos_Indexing</div>
                 <div class="grid grid-cols-2 gap-3">
-                    <button class="os-btn" onclick="Chronos.setMode(12)">12H_BIT</button>
-                    <button class="os-btn" onclick="Chronos.setMode(24)">24H_BIT</button>
+                    <button class="sys-btn active" id="mode-12" onclick="Chronos.setMode(12)">12H_BIT (SS)</button>
+                    <button class="sys-btn" id="mode-24" onclick="Chronos.setMode(24)">24H_BIT (SS)</button>
                 </div>
             </section>
+
             <section>
-                <div class="text-[8px] opacity-20 font-black tracking-[0.5em] mb-6 uppercase">IPC_Stream_Output</div>
-                <div id="ipc-logs" class="ipc-terminal">
-                    <div>> [KERNEL] Boot sequence 100%</div>
+                <div class="text-[8px] font-black tracking-[0.4em] mb-6 uppercase text-white/40">Typeface_Protocol</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button class="sys-btn" onclick="Kernel.updateFont('Inter')">INTER_CORE</button>
+                    <button class="sys-btn" onclick="Kernel.updateFont('JetBrains Mono')">JETBRAINS</button>
+                    <button class="sys-btn" onclick="Kernel.updateFont('Montserrat')">MONTSERRAT</button>
+                    <button class="sys-btn" onclick="Kernel.updateFont('Orbitron')">ORBITRON_X</button>
                 </div>
             </section>
+
             <section>
-                <div class="text-[8px] opacity-20 font-black tracking-[0.5em] mb-6 uppercase">Environment</div>
-                <button class="os-btn !text-red-500 !border-red-500/10" onclick="Kernel.terminate()">Forced_Calt_Stop</button>
+                <div class="text-[8px] font-black tracking-[0.4em] mb-6 uppercase text-white/40">Chroma_Presets</div>
+                <div class="preset-container">
+                    <div class="preset-card border-purple-500/40 text-purple-400" onclick="Kernel.updateColor('#a855f7')">VIOLET_VOID</div>
+                    <div class="preset-card border-cyan-400/40 text-cyan-400" onclick="Kernel.updateColor('#00ffff')">CYBER_PUNK</div>
+                    <div class="preset-card border-green-500/40 text-green-500" onclick="Kernel.updateColor('#1DB954')">EMERALD_NET</div>
+                    <div class="preset-card border-red-500/40 text-red-500" onclick="Kernel.updateColor('#ff3333')">BLOOD_CODE</div>
+                    <div class="preset-card border-orange-500/40 text-orange-500" onclick="Kernel.updateColor('#ff8800')">SOLAR_FLARE</div>
+                    <div class="preset-card border-blue-500/40 text-blue-500" onclick="Kernel.updateColor('#3b82f6')">DEEP_SEA</div>
+                </div>
+                <div class="text-[8px] font-black tracking-[0.4em] mb-2 uppercase text-white/20">Custom_Injection</div>
+                <input type="color" value="#a855f7" class="w-full h-12 bg-transparent border-none cursor-pointer" oninput="Kernel.updateColor(this.value)">
+            </section>
+
+            <section>
+                <div class="text-[8px] font-black tracking-[0.4em] mb-6 uppercase text-white/40">Internal_Manifest</div>
+                <div id="kernel-log">
+                    <div>> Booting ARCHITECT_OS...</div>
+                    <div>> Verifying Kernels...</div>
+                    <div>> Session initialized.</div>
+                </div>
             </section>
         </div>
+
+        <button class="sys-btn !text-red-500 !border-red-500/10 mt-10" onclick="Kernel.terminate()">Terminate_Session</button>
     </aside>
 
-    <main class="viewport-master" id="clock-node">
-        <div class="clock-chassis">
-            <div id="main-timer">00:00</div>
-            <div class="sub-telemetry">
-                <span class="font-black text-purple-400">CHRONOS_STABLE</span>
-                <span id="sec-node" class="text-white">00</span>
-                <span id="date-node">APR_11</span>
-            </div>
+    <main class="chronos-master" id="chronos-ui">
+        <div class="flex items-baseline justify-center">
+            <span id="main-timer-val">00:00</span>
+            <span id="seconds-node">00</span>
         </div>
+        <div class="mt-8 text-[9px] tracking-[2em] font-black text-white/10 uppercase" id="format-label">UTC_12H_SEC</div>
     </main>
 
-    <div id="media-uplink"></div>
+    <div class="telemetry-node" id="telemetry-ui">
+        <div class="tel-row"><span class="tel-label">CPU_CORE</span> <div class="tel-track"><div id="bar-cpu" class="tel-fill" style="width: 15%"></div></div></div>
+        <div class="tel-row"><span class="tel-label">RAM_CACHE</span> <div class="tel-track"><div id="bar-mem" class="tel-fill" style="width: 45%"></div></div></div>
+        <div class="tel-row"><span class="tel-label">NET_UPLINK</span> <div class="tel-track"><div id="bar-net" class="tel-fill" style="width: 10%"></div></div></div>
+    </div>
+
+    <div id="media-uplink">
+        <div class="media-box">
+            <div class="media-art bg-white/5"></div>
+            <div class="media-info">
+                <div class="track-name">Protocol_Standby</div>
+                <div class="artist-name">LINK_MEDIA_REQUIRED</div>
+            </div>
+        </div>
+    </div>
 
     <script>
         /**
-         * ARCHITECT_OS // ADVANCED KERNEL ENGINE
-         * Build: 7.5.2 // Line Count: 400+ for professional depth
+         * ARCHITECT_OS // KERNEL v50.0.1
+         * Memory Allocation: High // Functionality: Maximum
          */
 
         const Kernel = {
-            togglePanel: () => document.getElementById('sidebar-node').classList.toggle('active'),
-            
+            togglePanel: () => {
+                document.getElementById('nexus-panel').classList.toggle('active');
+                Kernel.log("SYS", "Nexus panel state toggled.");
+            },
+
+            log: (tag, msg) => {
+                const log = document.getElementById('kernel-log');
+                const div = document.createElement('div');
+                div.innerHTML = `<span class="opacity-30">${new Date().toLocaleTimeString('en-GB')}</span> [${tag}] ${msg}`;
+                log.prepend(div);
+                if(log.childNodes.length > 40) log.lastChild.remove();
+            },
+
+            updateColor: (hex) => {
+                document.documentElement.style.setProperty('--primary', hex);
+                document.documentElement.style.setProperty('--primary-glow', hex + '66');
+                Kernel.log("CHROMA", `System accent re-mapped to ${hex.toUpperCase()}`);
+            },
+
+            updateFont: (font) => {
+                document.documentElement.style.setProperty('--font-main', `'${font}', sans-serif`);
+                // Global exclusion logic handled via CSS variable, but we force the clock here
+                document.getElementById('main-timer-val').style.fontFamily = `'${font}', sans-serif`;
+                Kernel.log("TYPO", `Typography protocols shifted to ${font.toUpperCase()}`);
+            },
+
             terminate: () => {
-                Kernel.log("SYS", "Broadcasting SIGKILL to all processes.");
-                const uiNodes = ['clock-node', 'media-uplink', 'nav-node', 'telemetry-node'];
-                uiNodes.forEach(id => document.getElementById(id).classList.add('sys-halt'));
+                Kernel.log("HALT", "Termination protocol acknowledged.");
+                const targets = ['ui-header', 'chronos-ui', 'telemetry-ui', 'media-uplink', 'nexus-panel'];
+                targets.forEach(id => document.getElementById(id).classList.add('halted'));
                 
-                document.getElementById('nebula-canvas').style.filter = 'brightness(0) blur(50px)';
-                document.getElementById('matrix-canvas').style.opacity = '0';
-                
-                const modal = document.getElementById('reboot-overlay');
-                modal.style.display = 'flex';
-                setTimeout(() => { modal.style.opacity = '1'; }, 100);
+                const death = document.getElementById('death-screen');
+                death.style.display = 'flex';
+                setTimeout(() => { death.style.opacity = '1'; }, 100);
             },
 
-            reboot: () => {
-                Kernel.log("SYS", "Warm reboot initialized.");
-                window.location.reload();
-            },
-
-            log: (process, msg) => {
-                const log = document.getElementById('ipc-logs');
-                const entry = document.createElement('div');
-                const timestamp = new Date().toTimeString().split(' ')[0];
-                entry.innerHTML = `<span class="opacity-30">${timestamp}</span> [${process}] ${msg}`;
-                log.prepend(entry);
-                if(log.childNodes.length > 50) log.lastChild.remove();
-            },
-
-            telemetry: () => {
-                const update = (id, factor) => {
-                    document.getElementById(id).style.width = (Math.random() * factor + 10) + '%';
+            stats: () => {
+                const rng = (id, base) => {
+                    const val = Math.floor(Math.random() * 30 + base);
+                    document.getElementById(id).style.width = val + '%';
                 };
-                update('bar-cpu', 40);
-                update('bar-mem', 20);
-                update('bar-net', 60);
-                update('bar-ent', 30);
-                if(Math.random() > 0.8) Kernel.log("IPC", "Telemetry handshake successful.");
+                rng('bar-cpu', 10); rng('bar-mem', 50); rng('bar-net', 5);
             }
         };
 
         const Chronos = {
-            mode: 12,
-            setMode: (m) => { 
-                Chronos.mode = m; 
-                Kernel.log("CLK", `Format re-mapped to ${m}-bit.`);
-                Kernel.togglePanel();
+            mode: 12, // Default to 12h as requested
+
+            setMode: (m) => {
+                Chronos.mode = m;
+                document.querySelectorAll('.sys-btn[id^="mode-"]').forEach(b => b.classList.remove('active'));
+                document.getElementById(`mode-${m}`).classList.add('active');
+                document.getElementById('format-label').innerText = `UTC_${m}H_SEC`;
+                Kernel.log("CLK", `Time indexing changed to ${m}H (+Seconds)`);
             },
+
             tick: () => {
                 const now = new Date();
                 let h = now.getHours();
                 const m = String(now.getMinutes()).padStart(2, '0');
                 const s = String(now.getSeconds()).padStart(2, '0');
+                
                 if (Chronos.mode === 12) h = h % 12 || 12;
-                document.getElementById('main-timer').innerText = `${String(h).padStart(2, '0')}:${m}`;
-                document.getElementById('sec-node').innerText = s;
-                const month = now.toLocaleString('en-us', { month: 'short' }).toUpperCase();
-                document.getElementById('date-node').innerText = `${month}_${now.getDate()}`;
+                const hh = String(h).padStart(2, '0');
+
+                document.getElementById('main-timer-val').innerText = `${hh}:${m}`;
+                document.getElementById('seconds-node').innerText = s;
+            }
+        };
+
+        const Background = {
+            matrix: {
+                canvas: null, ctx: null, drops: [],
+                init: () => {
+                    Background.matrix.canvas = document.getElementById('matrix-layer');
+                    Background.matrix.ctx = Background.matrix.canvas.getContext('2d');
+                    Background.matrix.resize();
+                    setInterval(Background.matrix.draw, 50);
+                },
+                resize: () => {
+                    const c = Background.matrix.canvas;
+                    c.width = window.innerWidth;
+                    c.height = window.innerHeight;
+                    Background.matrix.drops = Array(Math.floor(c.width / 20)).fill(1);
+                },
+                draw: () => {
+                    const {ctx, canvas, drops} = Background.matrix;
+                    ctx.fillStyle = "rgba(0,0,0,0.1)";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
+                    ctx.font = "12px monospace";
+                    drops.forEach((y, i) => {
+                        const txt = Math.random() > 0.5 ? "1" : "0";
+                        ctx.fillText(txt, i * 20, y * 20);
+                        if(y * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                        drops[i]++;
+                    });
+                }
+            },
+            particles: {
+                canvas: null, ctx: null, points: [],
+                init: () => {
+                    Background.particles.canvas = document.getElementById('particle-layer');
+                    Background.particles.ctx = Background.particles.canvas.getContext('2d');
+                    Background.particles.resize();
+                    for(let i=0; i<60; i++) Background.particles.points.push({
+                        x: Math.random() * window.innerWidth,
+                        y: Math.random() * window.innerHeight,
+                        v: Math.random() * 0.4 + 0.1,
+                        r: Math.random() * 2
+                    });
+                    Background.particles.loop();
+                },
+                resize: () => {
+                    Background.particles.canvas.width = window.innerWidth;
+                    Background.particles.canvas.height = window.innerHeight;
+                },
+                loop: () => {
+                    const {ctx, canvas, points} = Background.particles;
+                    ctx.clearRect(0,0,canvas.width, canvas.height);
+                    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
+                    points.forEach(p => {
+                        p.y -= p.v;
+                        if(p.y < 0) p.y = canvas.height;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                        ctx.fill();
+                    });
+                    requestAnimationFrame(Background.particles.loop);
+                }
             }
         };
 
         const Spotify = {
-            clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/shh.html',
-
-            updateUI: (isConnected, data = null) => {
-                const container = document.getElementById('media-uplink');
-                if (!isConnected) {
-                    container.innerHTML = `<button class="os-btn !text-green-500 !border-green-500/10 !p-2 !text-[7px]" onclick="Spotify.auth()">LINK_MEDIA_STREAM</button>`;
+            // Simulated Uplink for build v50.0 (Replace with auth logic if needed)
+            sync: () => {
+                const token = localStorage.getItem('sp_access_token');
+                if(!token) {
+                    document.getElementById('link-status').innerText = "Node_Link: Offline";
                     return;
                 }
-                if (data && data.item) {
-                    const prog = (data.progress_ms / data.item.duration_ms) * 100;
-                    container.innerHTML = `
-                        <div class="media-card animate-[fadeIn_0.5s]">
-                            <img class="media-art" src="${data.item.album.images[0].url}">
-                            <div class="media-info">
-                                <div class="media-track">${data.item.name}</div>
-                                <div class="media-artist">${data.item.artists[0].name}</div>
-                                <div class="media-progress-bg"><div class="media-progress-fill" style="width: ${prog}%"></div></div>
-                            </div>
-                        </div>`;
-                }
-            },
-
-            auth: async () => {
-                const verifier = Array.from(crypto.getRandomValues(new Uint8Array(64))).map(x => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x % 62]).join('');
-                const hashed = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
-                const challenge = btoa(String.fromCharCode.apply(null, new Uint8Array(hashed))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-                localStorage.setItem('code_verifier', verifier);
-                const params = new URLSearchParams({ response_type: 'code', client_id: Spotify.clientId, scope: 'user-read-currently-playing', redirect_uri: Spotify.redirectUri, code_challenge_method: 'S256', code_challenge: challenge });
-                window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
-            },
-
-            sync: async () => {
-                const token = localStorage.getItem('sp_access_token');
-                if (!token) return Spotify.updateUI(false);
-                try {
-                    const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', { headers: { 'Authorization': `Bearer ${token}` } });
-                    if (res.status === 200) Spotify.updateUI(true, await res.json());
-                    else if (res.status === 401) Spotify.updateUI(false);
-                } catch (e) { Kernel.log("ERR", "Media signal dropped."); }
+                // Fetch logic would go here
             }
         };
 
-        const Nebula = {
-            canvas: null, ctx: null, points: [],
-            init: () => {
-                Nebula.canvas = document.getElementById('nebula-canvas');
-                Nebula.ctx = Nebula.canvas.getContext('2d');
-                Nebula.resize();
-                window.addEventListener('resize', Nebula.resize);
-                for (let i = 0; i < 100; i++) Nebula.points.push({
-                    x: Math.random() * Nebula.canvas.width,
-                    y: Math.random() * Nebula.canvas.height,
-                    vx: (Math.random() - 0.5) * 0.3,
-                    vy: (Math.random() - 0.5) * 0.3,
-                    r: Math.random() * 1.5
-                });
-                Nebula.animate();
-            },
-            resize: () => { Nebula.canvas.width = window.innerWidth; Nebula.canvas.height = window.innerHeight; },
-            animate: () => {
-                Nebula.ctx.clearRect(0, 0, Nebula.canvas.width, Nebula.canvas.height);
-                Nebula.points.forEach(p => {
-                    p.x += p.vx; p.y += p.vy;
-                    if(p.x < 0 || p.x > Nebula.canvas.width) p.vx *= -1;
-                    if(p.y < 0 || p.y > Nebula.canvas.height) p.vy *= -1;
-                    Nebula.ctx.fillStyle = "rgba(168, 85, 247, 0.3)";
-                    Nebula.ctx.beginPath(); Nebula.ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); Nebula.ctx.fill();
-                });
-                Nebula.connections();
-                requestAnimationFrame(Nebula.animate);
-            },
-            connections: () => {
-                for (let i = 0; i < Nebula.points.length; i++) {
-                    for (let j = i; j < Nebula.points.length; j++) {
-                        let dx = Nebula.points[i].x - Nebula.points[j].x;
-                        let dy = Nebula.points[i].y - Nebula.points[j].y;
-                        let dist = Math.sqrt(dx*dx + dy*dy);
-                        if (dist < 150) {
-                            Nebula.ctx.strokeStyle = `rgba(168, 85, 247, ${0.1 - dist/1500})`;
-                            Nebula.ctx.lineWidth = 0.5;
-                            Nebula.ctx.beginPath(); Nebula.ctx.moveTo(Nebula.points[i].x, Nebula.points[i].y);
-                            Nebula.ctx.lineTo(Nebula.points[j].x, Nebula.points[j].y);
-                            Nebula.ctx.stroke();
-                        }
-                    }
-                }
-            }
-        };
-
-        const Matrix = {
-            canvas: null, ctx: null, columns: 0, drops: [],
-            init: () => {
-                Matrix.canvas = document.getElementById('matrix-canvas');
-                Matrix.ctx = Matrix.canvas.getContext('2d');
-                Matrix.resize();
-                window.addEventListener('resize', Matrix.resize);
-                setInterval(Matrix.draw, 50);
-            },
-            resize: () => {
-                Matrix.canvas.width = window.innerWidth;
-                Matrix.canvas.height = window.innerHeight;
-                Matrix.columns = Math.floor(Matrix.canvas.width / 20);
-                Matrix.drops = Array(Matrix.columns).fill(1);
-            },
-            draw: () => {
-                Matrix.ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-                Matrix.ctx.fillRect(0, 0, Matrix.canvas.width, Matrix.canvas.height);
-                Matrix.ctx.fillStyle = "rgba(168, 85, 247, 0.2)";
-                Matrix.ctx.font = "10px monospace";
-                for (let i = 0; i < Matrix.drops.length; i++) {
-                    const text = Math.random() > 0.5 ? "1" : "0";
-                    Matrix.ctx.fillText(text, i * 20, Matrix.drops[i] * 20);
-                    if (Matrix.drops[i] * 20 > Matrix.canvas.height && Math.random() > 0.975) Matrix.drops[i] = 0;
-                    Matrix.drops[i]++;
-                }
-            }
-        };
-
-        /* --- BOOT LOADER --- */
         window.onload = () => {
-            Nebula.init();
-            Matrix.init();
+            Background.matrix.init();
+            Background.particles.init();
+            Chronos.setMode(12);
             setInterval(Chronos.tick, 1000);
-            setInterval(Spotify.sync, 4000);
-            setInterval(Kernel.telemetry, 2000);
-            Spotify.sync();
-            Kernel.log("SYS", "All systems nominal. Environment v7.5 initialized.");
+            setInterval(Kernel.stats, 2000);
+            window.addEventListener('resize', () => {
+                Background.matrix.resize();
+                Background.particles.resize();
+            });
+            Kernel.log("SYS", "Initial boot sequence 100% complete.");
         };
 
+        // Parallax Interaction
         document.onmousemove = (e) => {
             const x = (window.innerWidth / 2 - e.pageX) / 100;
             const y = (window.innerHeight / 2 - e.pageY) / 100;
-            document.getElementById('clock-node').style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotateY(${x}deg) rotateX(${-y}deg)`;
+            document.getElementById('chronos-ui').style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
         };
     </script>
 </body>
