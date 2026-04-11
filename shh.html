@@ -3,312 +3,310 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARCHITECT_OS // ULTIMATE_EDITION</title>
+    <title>XCLIPSE | ARCHITECT_OS_v45.3.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=Inter:wght@100;300;400;700;900&family=JetBrains+Mono:wght@100;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=Inter:wght@100;300;400;700;900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --accent: #6366f1;
-            --accent-glow: rgba(99, 102, 241, 0.15);
-            --bg-deep: #020203;
-            --glass: rgba(255, 255, 255, 0.02);
-            --glass-border: rgba(255, 255, 255, 0.07);
-            --text-main: #f4f4f5;
-            --text-dim: rgba(161, 161, 170, 0.4);
-            --panel-width: 450px;
+            --primary: #a855f7;
+            --primary-glow: rgba(168, 85, 247, 0.4);
+            --spotify: #1DB954;
+            --bg-dark: #010101;
+            --panel-bg: rgba(5, 5, 5, 0.98);
+            --border-ui: rgba(255, 255, 255, 0.08);
+            --terminal-green: #00ff88;
+            --panel-width: 480px;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+        /* --- GLOBAL & VFX --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+        body, html { width: 100%; height: 100%; background: var(--bg-dark); color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; }
         
-        body, html {
-            width: 100%; height: 100%;
-            background-color: var(--bg-deep);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            overflow: hidden;
-            perspective: 1000px;
-        }
+        #entropy-canvas { position: fixed; inset: 0; z-index: 0; opacity: 0.25; pointer-events: none; }
+        .os-grid { position: fixed; inset: 0; z-index: 1; background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
+        .scanline { width: 100%; height: 100px; z-index: 3; position: absolute; background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(168, 85, 247, 0.1) 50%, rgba(0,0,0,0) 100%); opacity: 0.2; pointer-events: none; animation: scan 8s linear infinite; }
+        @keyframes scan { from { top: -100px; } to { top: 100%; } }
 
-        #core-canvas {
-            position: fixed; inset: 0;
-            z-index: 0; pointer-events: none;
-            opacity: 0.4;
-        }
-
-        .architect-grid {
-            position: fixed; inset: 0;
-            background-image: 
-                linear-gradient(var(--glass-border) 1px, transparent 1px),
-                linear-gradient(90deg, var(--glass-border) 1px, transparent 1px);
-            background-size: 100px 100px;
-            z-index: 1; pointer-events: none;
-            mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
-        }
-
-        #custom-cursor {
-            position: fixed; width: 40px; height: 40px;
-            border: 1px solid var(--accent);
-            border-radius: 50%;
-            pointer-events: none; z-index: 9999;
-            transition: transform 0.1s ease-out, border-color 0.3s;
-            display: flex; align-items: center; justify-content: center;
-        }
-        #custom-cursor::after { content: ''; width: 4px; height: 4px; background: white; border-radius: 50%; }
-
-        .clock-container {
-            position: relative; z-index: 10;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            height: 100vh; pointer-events: none;
-        }
-
-        .main-time {
-            font-family: 'Montserrat', sans-serif;
-            font-size: clamp(8rem, 20vw, 25rem);
-            font-weight: 900; font-style: italic;
-            line-height: 0.75; letter-spacing: -0.05em;
-            color: white; opacity: 0.9;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            filter: drop-shadow(0 0 40px var(--accent-glow));
-        }
-
-        .chrono-unit {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px; font-weight: 700;
-            letter-spacing: 1em; color: var(--accent);
-            margin-top: 40px; opacity: 0.6;
-            text-transform: uppercase;
-        }
-
+        /* --- UI ELEMENTS --- */
+        .os-header { position: fixed; top: 40px; left: 50px; right: 50px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 100; }
+        .system-tag { font-family: 'JetBrains Mono'; font-size: 11px; letter-spacing: 0.6em; text-transform: uppercase; color: var(--primary); font-weight: 800; text-shadow: 0 0 10px var(--primary-glow); }
+        
         .side-panel {
             position: fixed; top: 0; right: calc(var(--panel-width) * -1);
             width: var(--panel-width); height: 100%;
-            background: var(--glass);
-            backdrop-filter: blur(60px) saturate(180%);
-            border-left: 1px solid var(--glass-border);
-            z-index: 1000;
-            transition: right 0.8s cubic-bezier(0.19, 1, 0.22, 1);
-            padding: 60px 50px;
-            display: flex; flex-direction: column;
+            background: var(--panel-bg); border-left: 1px solid var(--border-ui);
+            z-index: 1000; transition: right 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            padding: 60px 40px; backdrop-filter: blur(40px);
+            border-top: 5px solid var(--primary);
         }
-
         .side-panel.active { right: 0; }
 
-        .panel-header {
-            font-size: 10px; font-weight: 900; letter-spacing: 0.6em;
-            text-transform: uppercase; color: var(--text-dim);
-            margin-bottom: 60px; display: flex; align-items: center; gap: 20px;
-        }
-        .panel-header::after { content: ''; flex: 1; height: 1px; background: var(--glass-border); }
+        .os-btn { background: rgba(255,255,255,0.02); border: 1px solid var(--border-ui); padding: 14px; font-size: 10px; text-transform: uppercase; font-weight: 800; cursor: pointer; transition: 0.3s; color: #fff; letter-spacing: 0.1em; text-align: center; }
+        .os-btn:hover { background: var(--primary); color: #000; border-color: var(--primary); }
 
-        .control-group { margin-bottom: 40px; }
-        .control-label {
-            font-size: 11px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 0.1em; color: var(--text-main);
-            display: block; margin-bottom: 20px;
-        }
+        .tab-btn { font-family: 'JetBrains Mono'; font-size: 10px; letter-spacing: 0.3em; padding: 12px 20px; cursor: pointer; opacity: 0.3; transition: 0.4s; border-bottom: 2px solid transparent; text-transform: uppercase; }
+        .tab-btn.active { opacity: 1; color: var(--primary); border-bottom: 2px solid var(--primary); }
 
-        .toggle-btn {
-            width: 100%; padding: 18px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--glass-border);
-            color: var(--text-dim); font-size: 10px; font-weight: 800;
-            text-align: left; letter-spacing: 0.2em;
-            transition: 0.3s; margin-bottom: 10px;
-        }
-        .toggle-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(99, 102, 241, 0.05); }
-        .toggle-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+        /* --- CLOCK --- */
+        #main-time { font-family: 'Montserrat', sans-serif; font-size: clamp(8rem, 20vw, 28rem); font-weight: 900; font-style: italic; color: #fff; mix-blend-mode: overlay; line-height: 0.7; }
+        #sec-hex { font-size: 6rem; font-weight: 100; color: var(--primary); opacity: 0.8; line-height: 0.7; font-family: 'JetBrains Mono'; }
 
-        #media-terminal {
-            position: fixed; bottom: 50px; left: 50px;
-            width: 400px; z-index: 100;
-            background: var(--glass);
-            backdrop-filter: blur(30px);
-            border: 1px solid var(--glass-border);
-            padding: 30px;
-            display: flex; flex-direction: column; gap: 20px;
-        }
+        /* --- SPOTIFY NODE --- */
+        #spotify-node { position: fixed; bottom: 80px; left: 80px; z-index: 100; transition: 0.8s ease; opacity: 0; transform: translateY(20px); }
+        .node-box { background: rgba(0,0,0,0.9); border: 1px solid var(--border-ui); padding: 20px 30px; border-left: 4px solid var(--spotify); backdrop-filter: blur(20px); display: flex; align-items: center; gap: 20px; }
+        .album-art { width: 50px; height: 50px; border: 1px solid var(--border-ui); object-fit: cover; }
+        .progress-rail { height: 2px; width: 100%; background: rgba(255,255,255,0.06); margin-top: 10px; overflow: hidden; }
+        .track-progress-bar { height: 100%; background: var(--spotify); transition: width 1s linear; }
 
-        .track-info { display: flex; align-items: center; gap: 20px; }
-        .album-art-stub {
-            width: 50px; height: 50px; background: var(--glass-border);
-            border: 1px solid var(--glass-border); flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center;
-            overflow: hidden;
-        }
-
-        .progress-rail {
-            width: 100%; height: 2px; background: var(--glass-border);
-            position: relative; overflow: hidden;
-        }
-        .progress-bar {
-            position: absolute; left: 0; top: 0; height: 100%;
-            background: var(--accent); width: 0%;
-            transition: width 0.5s linear;
-        }
-
-        @keyframes pulse-accent { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
-        .pulse { animation: pulse-accent 2s infinite; }
-
-        #system-log {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 9px; color: var(--text-dim);
-            height: 100px; overflow-y: hidden;
-            border-top: 1px solid var(--glass-border);
-            padding-top: 20px; margin-top: auto;
-        }
+        .log-terminal { background: rgba(0,0,0,0.5); border: 1px solid var(--border-ui); height: 280px; overflow-y: auto; padding: 15px; font-size: 9px; color: var(--terminal-green); font-family: 'JetBrains Mono'; }
+        .connect-btn { border: 1px solid var(--spotify); color: var(--spotify); padding: 12px 24px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3em; background: transparent; transition: 0.3s; }
+        .connect-btn:hover { background: var(--spotify); color: #000; box-shadow: 0 0 20px rgba(29, 185, 84, 0.4); }
     </style>
 </head>
 <body>
 
-    <canvas id="core-canvas"></canvas>
-    <div class="architect-grid"></div>
-    <div id="custom-cursor"></div>
+    <canvas id="entropy-canvas"></canvas>
+    <div class="os-grid"></div>
+    <div class="scanline"></div>
 
-    <header class="fixed top-0 w-full p-12 flex justify-between items-center z-[500]">
-        <div class="flex items-center gap-6">
-            <div class="flex flex-col">
-                <span class="text-[11px] font-black tracking-[0.6em] uppercase">Architect.OS</span>
-                <span class="text-[8px] font-mono text-indigo-500/60 mt-1">UPLINK_STABLE // 2.0.45</span>
-            </div>
+    <header class="os-header">
+        <div class="flex flex-col">
+            <div class="system-tag">ARCHITECT_OS // v45.3.1</div>
+            <div id="auth-status" class="text-[9px] opacity-40 mt-1 uppercase tracking-widest font-mono">Link: Disconnected</div>
         </div>
-        <div class="flex gap-4">
-            <button class="text-[9px] font-bold tracking-[0.3em] uppercase opacity-40 hover:opacity-100 transition" onclick="UI.togglePanel('settings')">01_CONFIG</button>
-            <button class="text-[9px] font-bold tracking-[0.3em] uppercase opacity-40 hover:opacity-100 transition" onclick="UI.togglePanel('environment')">02_ENV</button>
-        </div>
+        <button class="os-btn !px-10" onclick="OS.togglePanel()">01_SETTINGS</button>
     </header>
 
-    <aside id="panel-settings" class="side-panel">
-        <div class="close-btn p-4 absolute top-10 right-10" onclick="UI.closeAll()"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></div>
-        <div class="panel-header">System_Settings</div>
-        <div class="control-group">
-            <label class="control-label">Time Format</label>
-            <button id="btn-24h" class="toggle-btn active" onclick="Core.setClockMode(24)">24_HOUR_ISO</button>
-            <button id="btn-12h" class="toggle-btn" onclick="Core.setClockMode(12)">12_HOUR_STANDARD</button>
+    <aside id="osPanel" class="side-panel">
+        <div class="flex justify-between mb-10 border-b border-white/5">
+            <div class="tab-btn active" onclick="OS.switchTab('core', this)">01_CORE</div>
+            <div class="tab-btn" onclick="OS.switchTab('media', this)">02_MEDI</div>
+            <div class="tab-btn" onclick="OS.switchTab('auth', this)">03_LOGS</div>
         </div>
-        <div class="control-group">
-            <label class="control-label">Media Uplink</label>
-            <button class="toggle-btn !text-indigo-400 !border-indigo-500/30" onclick="Spotify.connect()">INITIALIZE_SPOTIFY_LINK</button>
+
+        <div id="tab-core" class="tab-content flex flex-col gap-10">
+            <section>
+                <label class="text-[10px] opacity-40 uppercase tracking-widest block mb-4">Chronos_Config</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <button class="os-btn" onclick="Clock.setMode(12)">12_HR</button>
+                    <button class="os-btn" onclick="Clock.setMode(24)">24_HR</button>
+                </div>
+            </section>
         </div>
-        <div id="system-log"><div class="opacity-40">> SYSTEM_READY...</div></div>
+
+        <div id="tab-media" class="tab-content hidden flex-col gap-8">
+            <section>
+                <label class="text-[10px] opacity-40 uppercase tracking-widest block mb-4">Media_Uplink</label>
+                <div class="bg-white/5 p-5 border border-white/10 flex items-center gap-4 mb-4">
+                    <img id="mirror-cover" class="w-12 h-12 opacity-50 bg-black border border-white/10" src="" alt="">
+                    <div class="flex-1 overflow-hidden">
+                        <div id="mirror-track" class="text-sm font-black uppercase truncate tracking-tighter">Offline</div>
+                        <div id="mirror-artist" class="text-[9px] text-purple-400 font-bold uppercase tracking-widest">No Signal</div>
+                        <div class="progress-rail"><div class="track-progress-bar" id="mirror-progress" style="width: 0%"></div></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <button class="os-btn" onclick="Spotify.command('previous')">PREV</button>
+                    <button class="os-btn" onclick="Spotify.command('play')">PLAY</button>
+                    <button class="os-btn" onclick="Spotify.command('next')">NEXT</button>
+                </div>
+                <button class="os-btn w-full mt-4 !border-dashed !text-purple-400" onclick="Spotify.auth()">RESET_GATEWAY</button>
+            </section>
+        </div>
+
+        <div id="tab-auth" class="tab-content hidden flex flex-col">
+            <section>
+                <label class="text-[10px] opacity-40 uppercase tracking-widest block mb-4">System_Logs</label>
+                <div class="log-terminal" id="sys-log"></div>
+            </section>
+        </div>
     </aside>
 
-    <aside id="panel-environment" class="side-panel">
-        <div class="close-btn p-4 absolute top-10 right-10" onclick="UI.closeAll()"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></div>
-        <div class="panel-header">Atmosphere_Control</div>
-        <div class="control-group">
-            <label class="control-label">Accent Profile</label>
-            <div class="grid grid-cols-2 gap-2">
-                <button class="toggle-btn" onclick="UI.setAccent('#6366f1')">INDIGO</button>
-                <button class="toggle-btn" onclick="UI.setAccent('#10b981')">EMERALD</button>
-                <button class="toggle-btn" onclick="UI.setAccent('#f43f5e')">ROSE</button>
-                <button class="toggle-btn" onclick="UI.setAccent('#f59e0b')">AMBER</button>
-            </div>
+    <main class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+        <div class="flex items-baseline gap-8">
+            <div id="main-time">00:00</div>
+            <div id="sec-hex" class="pb-16">00</div>
         </div>
-    </aside>
-
-    <main class="clock-container">
-        <div class="main-time" id="clock-face">00:00</div>
-        <div class="chrono-unit"><span class="pulse">●</span> <span id="clock-seconds">00</span> <span id="clock-date" class="ml-10 opacity-30 text-white font-thin">APR_11_2026</span></div>
     </main>
 
-    <section id="media-terminal">
-        <div class="track-info">
-            <div class="album-art-stub" id="sp-art">
-                <svg width="20" height="20" fill="currentColor" class="opacity-20" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-            </div>
-            <div class="flex flex-col min-w-0">
-                <span id="sp-title" class="text-[11px] font-black uppercase tracking-widest truncate">Awaiting_Signal</span>
-                <span id="sp-artist" class="text-[9px] font-mono opacity-30 uppercase mt-1">Status: Standby</span>
-            </div>
-        </div>
-        <div class="progress-rail"><div id="media-progress" class="progress-bar"></div></div>
-    </section>
+    <div id="spotify-node"></div>
 
     <script>
-        const Core = {
-            mode: 24,
-            init() {
-                this.startClock();
-                this.initCanvas();
-                this.initCursor();
-                window.addEventListener('resize', () => this.initCanvas());
+        const OS = {
+            togglePanel: () => document.getElementById('osPanel').classList.toggle('active'),
+            switchTab: (id, btn) => {
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById(`tab-${id}`).classList.remove('hidden');
+                btn.classList.add('active');
             },
-            startClock() {
-                const update = () => {
-                    const now = new Date();
-                    let h = now.getHours();
-                    if(this.mode === 12) h = h % 12 || 12;
-                    document.getElementById('clock-face').innerText = `${String(h).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-                    document.getElementById('clock-seconds').innerText = `${String(now.getSeconds()).padStart(2, '0')}`;
-                    document.getElementById('clock-date').innerText = now.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase().replace(/ /g, '_');
-                    requestAnimationFrame(update);
-                };
-                update();
-            },
-            setClockMode(m) {
-                this.mode = m;
-                document.querySelectorAll('#panel-settings .toggle-btn').forEach(b => b.classList.remove('active'));
-                document.getElementById(`btn-${m}h`).classList.add('active');
-            },
-            initCanvas() {
-                const c = document.getElementById('core-canvas'), ctx = c.getContext('2d');
-                c.width = window.innerWidth; c.height = window.innerHeight;
-                const p = Array.from({ length: 40 }, () => ({ x: Math.random()*c.width, y: Math.random()*c.height, vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3 }));
-                const draw = () => {
-                    ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle = 'rgba(255,255,255,0.1)';
-                    p.forEach(i => { i.x+=i.vx; i.y+=i.vy; if(i.x<0||i.x>c.width) i.vx*=-1; if(i.y<0||i.y>c.height) i.vy*=-1; ctx.beginPath(); ctx.arc(i.x,i.y,1,0,Math.PI*2); ctx.fill(); });
-                    requestAnimationFrame(draw);
-                };
-                draw();
-            },
-            initCursor() {
-                const cursor = document.getElementById('custom-cursor');
-                document.addEventListener('mousemove', (e) => {
-                    cursor.style.transform = `translate(${e.clientX - 20}px, ${e.clientY - 20}px)`;
-                    const moveX = (e.clientX - window.innerWidth / 2) / 30, moveY = (e.clientY - window.innerHeight / 2) / 30;
-                    document.getElementById('clock-face').style.transform = `translate3d(${moveX}px, ${moveY}px, 0) rotateX(${-moveY/2}deg) rotateY(${moveX/2}deg)`;
-                });
+            log: (tag, msg) => {
+                const log = document.getElementById('sys-log');
+                if(!log) return;
+                const entry = document.createElement('div');
+                entry.className = "mb-1";
+                entry.innerHTML = `<span class="opacity-30">${new Date().toLocaleTimeString()}</span> <span class="text-purple-500">[${tag}]</span> ${msg}`;
+                log.prepend(entry);
+            }
+        };
+
+        const Clock = {
+            mode: 12,
+            setMode: (m) => Clock.mode = m,
+            tick: () => {
+                const now = new Date(); let h = now.getHours();
+                const m = String(now.getMinutes()).padStart(2, '0');
+                const s = String(now.getSeconds()).padStart(2, '0');
+                if(Clock.mode === 12) h = h % 12 || 12;
+                document.getElementById('main-time').innerText = `${String(h).padStart(2, '0')}:${m}`;
+                document.getElementById('sec-hex').innerText = s;
             }
         };
 
         const Spotify = {
-            clientId: 'ee9cf7fe920d4280804730690b3fb4e8', 
+            clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
+            clientSecret: 'a81883efd2db4e1484c192222c91599f',
             redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/shh.html',
-            scopes: 'user-read-currently-playing user-read-playback-state',
 
-            connect() {
-                UI.log("INIT_AUTH_CODE_FLOW...");
-                const url = `https://accounts.spotify.com/authorize?client_id=${this.clientId}&response_type=code&redirect_uri=${encodeURIComponent(this.redirectUri)}&scope=${encodeURIComponent(this.scopes)}`;
-                window.location.href = url;
+            updateUI: (isConnected, data = null) => {
+                const node = document.getElementById('spotify-node');
+                
+                if (!isConnected) {
+                    node.style.opacity = "1";
+                    node.style.transform = "translateY(0)";
+                    node.innerHTML = `<button class="connect-btn" onclick="Spotify.auth()">CONNECT_SPOTIFY</button>`;
+                    document.getElementById('auth-status').innerText = "Link: Disconnected";
+                    return;
+                }
+
+                if (data && data.item) {
+                    node.style.opacity = "1";
+                    node.style.transform = "translateY(0)";
+                    const progress = (data.progress_ms / data.item.duration_ms) * 100 + "%";
+                    const cover = data.item.album.images[0].url;
+
+                    node.innerHTML = `
+                        <div class="node-box">
+                            <img class="album-art" src="${cover}">
+                            <div class="flex flex-col">
+                                <div class="text-sm font-black uppercase truncate w-48 tracking-tighter">${data.item.name}</div>
+                                <div class="text-[9px] text-purple-400 font-bold uppercase tracking-widest">${data.item.artists[0].name.toUpperCase()}</div>
+                                <div class="progress-rail"><div class="track-progress-bar" style="width: ${progress}"></div></div>
+                            </div>
+                        </div>`;
+
+                    document.getElementById('mirror-track').innerText = data.item.name;
+                    document.getElementById('mirror-artist').innerText = data.item.artists[0].name.toUpperCase();
+                    document.getElementById('mirror-cover').src = cover;
+                    document.getElementById('mirror-cover').style.opacity = "1";
+                    document.getElementById('mirror-progress').style.width = progress;
+                    document.getElementById('auth-status').innerText = "Link: Secure // Streaming";
+                } else {
+                    node.style.opacity = "0";
+                    node.style.transform = "translateY(20px)";
+                    document.getElementById('auth-status').innerText = "Link: Secure // Idle";
+                }
             },
 
-            handleCallback() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const code = urlParams.get('code');
+            auth: async () => {
+                const verifier = Array.from(crypto.getRandomValues(new Uint8Array(64))).map(x => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x % 62]).join('');
+                const hashed = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+                const challenge = btoa(String.fromCharCode.apply(null, new Uint8Array(hashed))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+                
+                localStorage.setItem('code_verifier', verifier);
+                
+                const params = new URLSearchParams({ 
+                    response_type: 'code', client_id: Spotify.clientId, 
+                    scope: 'user-read-currently-playing user-modify-playback-state user-read-playback-state', 
+                    redirect_uri: Spotify.redirectUri, 
+                    code_challenge_method: 'S256', code_challenge: challenge 
+                });
+                window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+            },
 
-                if (code) {
-                    UI.log("AUTH_CODE_RECEIVED");
-                    UI.log(`CODE: ${code.substring(0, 12)}...`);
-                    // Exchange logic would happen here with a backend
-                    history.pushState("", document.title, window.location.pathname);
+            getToken: async (code) => {
+                const verifier = localStorage.getItem('code_verifier');
+                const response = await fetch('https://accounts.spotify.com/api/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        grant_type: 'authorization_code',
+                        code: code,
+                        redirect_uri: Spotify.redirectUri,
+                        client_id: Spotify.clientId,
+                        code_verifier: verifier
+                    })
+                });
+
+                const data = await response.json();
+                if(data.access_token) {
+                    localStorage.setItem('sp_access_token', data.access_token);
+                    OS.log("SYS", "Uplink_Established");
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    Spotify.sync();
                 }
+            },
+
+            sync: async () => {
+                const token = localStorage.getItem('sp_access_token');
+                if(!token) return Spotify.updateUI(false);
+
+                try {
+                    const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', { headers: { 'Authorization': `Bearer ${token}` } });
+                    if(res.status === 200) {
+                        const d = await res.json();
+                        Spotify.updateUI(true, d);
+                    } else if (res.status === 204) {
+                        Spotify.updateUI(true, null);
+                    } else if (res.status === 401) {
+                        Spotify.updateUI(false);
+                    }
+                } catch(e) { console.warn("Uplink Ghosted"); }
+            },
+
+            command: async (type) => {
+                const token = localStorage.getItem('sp_access_token');
+                if(!token) return;
+                const endpoint = type === 'play' ? 'play' : (type === 'pause' ? 'pause' : type);
+                await fetch(`https://api.spotify.com/v1/me/player/${endpoint}`, { 
+                    method: (type === 'next' || type === 'previous') ? 'POST' : 'PUT', 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
+                setTimeout(Spotify.sync, 500);
             }
         };
 
-        const UI = {
-            activePanel: null,
-            togglePanel(id) {
-                if (this.activePanel === id) this.closeAll();
-                else { this.closeAll(); document.getElementById(`panel-${id}`).classList.add('active'); this.activePanel = id; }
-            },
-            closeAll() { document.querySelectorAll('.side-panel').forEach(p => p.classList.remove('active')); this.activePanel = null; },
-            setAccent(c) { document.documentElement.style.setProperty('--accent', c); },
-            log(m) { const l = document.getElementById('system-log'), e = document.createElement('div'); e.innerText = `> ${m}`; l.prepend(e); }
+        const Canvas = {
+            init: () => {
+                const c = document.getElementById('entropy-canvas');
+                const ctx = c.getContext('2d');
+                c.width = window.innerWidth; c.height = window.innerHeight;
+                const drops = Array(Math.floor(c.width/10)).fill(1);
+                setInterval(() => {
+                    ctx.fillStyle = "rgba(0,0,0,0.15)"; ctx.fillRect(0,0,c.width,c.height);
+                    ctx.fillStyle = "#a855f7"; ctx.font = "12px monospace";
+                    drops.forEach((y, i) => {
+                        ctx.fillText(Math.random() > 0.5 ? "0" : "1", i*10, y*10);
+                        if(y*10 > c.height && Math.random() > 0.97) drops[i] = 0;
+                        drops[i]++;
+                    });
+                }, 35);
+            }
         };
 
-        window.onload = () => { Core.init(); Spotify.handleCallback(); };
+        window.onload = () => {
+            Canvas.init();
+            setInterval(Clock.tick, 1000);
+            setInterval(Spotify.sync, 4000);
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            if(code) Spotify.getToken(code);
+            else Spotify.sync();
+        };
     </script>
 </body>
 </html>
