@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | ARCHITECT_OS_v7.0_CORE</title>
+    <title>XCLIPSE | ARCHITECT_OS_v7.2_STABLE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@100;300;400;700;900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     
@@ -13,15 +13,16 @@
             --primary-glow: rgba(168, 85, 247, 0.6);
             --spotify: #1DB954;
             --bg-dark: #000000;
-            --panel-bg: rgba(4, 4, 4, 0.98);
-            --border-ui: rgba(255, 255, 255, 0.08);
+            --panel-bg: rgba(4, 4, 4, 0.99);
+            --border-ui: rgba(255, 255, 255, 0.06);
             --danger: #ff3333;
             --accent-blue: #3b82f6;
+            --terminal-text: #a855f7;
         }
 
-        /* --- FOUNDATION --- */
+        /* --- CORE ARCHITECTURE --- */
         * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
-        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar { width: 2px; }
         ::-webkit-scrollbar-thumb { background: var(--primary); }
         body, html { 
             width: 100%; height: 100%; 
@@ -31,185 +32,185 @@
             overflow: hidden; 
         }
 
-        /* --- BACKGROUND ENGINE --- */
-        #nebula-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.6; transition: filter 1.5s ease; }
+        /* --- VISUAL ENGINE --- */
+        #nebula-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.5; transition: filter 1.5s ease; }
         .vignette {
             position: fixed; inset: 0; z-index: 2;
             background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,1) 100%);
             pointer-events: none;
         }
-        .crt-overlay {
+        .scanline-layer {
             position: fixed; inset: 0; z-index: 3;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 3px, 3px 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
             pointer-events: none;
+            opacity: 0.3;
         }
 
-        /* --- TELEMETRY HUB --- */
-        .telemetry-container {
-            position: fixed; top: 40px; left: 40px; z-index: 100;
-            font-family: 'JetBrains Mono'; font-size: 9px; line-height: 2.5;
-            color: rgba(255,255,255,0.2);
+        /* --- TELEMETRY DASHBOARD --- */
+        .telemetry-suite {
+            position: fixed; top: 30px; left: 30px; z-index: 100;
+            font-family: 'JetBrains Mono'; font-size: 8px; line-height: 2.2;
+            color: rgba(255,255,255,0.15); text-transform: uppercase;
         }
-        .tel-row { display: flex; align-items: center; gap: 20px; }
-        .tel-label { width: 100px; color: var(--primary); font-weight: 800; letter-spacing: 0.1em; }
-        .tel-bar { width: 120px; height: 1px; background: rgba(255,255,255,0.05); position: relative; }
-        .tel-fill { height: 100%; background: var(--primary); transition: width 0.8s ease; box-shadow: 0 0 10px var(--primary); }
+        .tel-item { display: flex; align-items: center; gap: 15px; }
+        .tel-label { width: 80px; color: var(--primary); font-weight: 800; letter-spacing: 0.1em; }
+        .tel-progress { width: 100px; height: 1px; background: rgba(255,255,255,0.05); position: relative; }
+        .tel-fill { height: 100%; background: var(--primary); transition: width 0.8s ease; }
 
-        /* --- EXIT INTERFACE --- */
-        .exit-wrapper { position: fixed; top: 40px; right: 40px; z-index: 2000; display: flex; align-items: center; gap: 20px; }
-        .exit-btn {
-            width: 65px; height: 65px; border: 1px solid var(--border-ui);
-            background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(15px);
+        /* --- TERMINATION MODULE --- */
+        .exit-gate { position: fixed; top: 30px; right: 30px; z-index: 2000; display: flex; align-items: center; gap: 15px; }
+        .close-trigger {
+            width: 50px; height: 50px; border: 1px solid var(--border-ui);
+            background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(10px);
             display: flex; align-items: center; justify-content: center;
-            transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
         }
-        .exit-btn:hover { border-color: var(--danger); transform: rotate(180deg) scale(1.1); background: rgba(255, 51, 51, 0.1); }
-        .exit-btn span { font-weight: 100; font-size: 28px; color: rgba(255,255,255,0.3); }
-        .exit-btn:hover span { color: var(--danger); }
+        .close-trigger:hover { border-color: var(--danger); transform: rotate(90deg); background: rgba(255, 51, 51, 0.05); }
+        .close-trigger span { font-weight: 100; font-size: 20px; color: rgba(255,255,255,0.2); }
+        .close-trigger:hover span { color: var(--danger); }
 
-        /* --- SESSION OVERLAY --- */
-        #termination-modal {
+        #kill-modal {
             position: fixed; inset: 0; z-index: 9999;
-            background: rgba(0,0,0,0.98); backdrop-filter: blur(40px);
+            background: rgba(0,0,0,0.99); backdrop-filter: blur(50px);
             display: none; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 1s ease;
+            opacity: 0; transition: opacity 0.8s ease;
         }
-        .modal-inner {
-            text-align: center; max-width: 600px; padding: 80px;
-            border: 1px solid var(--border-ui); background: #010101;
-            box-shadow: 0 0 150px rgba(168, 85, 247, 0.05);
+        .modal-body {
+            text-align: center; max-width: 500px; padding: 60px;
+            border: 1px solid var(--border-ui); background: #020202;
         }
-        .modal-title { font-family: 'Montserrat'; font-size: 16px; letter-spacing: 1.2em; color: var(--danger); margin-bottom: 30px; }
 
-        /* --- TRANSPARENT CLOCK --- */
-        .viewport-center {
+        /* --- CHRONOS DISPLAY --- */
+        .clock-anchor {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%); text-align: center;
-            z-index: 10; transition: 0.15s ease-out; width: 100%;
+            z-index: 10; transition: 0.3s ease-out; width: 100%;
         }
-        .glass-plate {
-            background: rgba(255, 255, 255, 0.001); backdrop-filter: blur(30px) saturate(200%);
-            padding: 140px 40px; border-top: 1px solid rgba(255, 255, 255, 0.04);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        .glass-frame {
+            background: rgba(255, 255, 255, 0.001); backdrop-filter: blur(25px) saturate(180%);
+            padding: 100px 40px; border-top: 1px solid rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
             display: inline-block; min-width: 100%;
         }
-        #clock-time { 
+        #time-val { 
             font-family: 'Montserrat', sans-serif; 
-            font-size: clamp(12rem, 30vw, 40rem); 
-            font-weight: 900; line-height: 0.7;
-            letter-spacing: -0.08em; color: #fff;
-            filter: drop-shadow(0 0 60px rgba(168, 85, 247, 0.1));
+            font-size: clamp(8rem, 24vw, 32rem); 
+            font-weight: 900; line-height: 0.75;
+            letter-spacing: -0.06em; color: #fff;
+            filter: drop-shadow(0 0 40px rgba(168, 85, 247, 0.08));
         }
-        .clock-meta {
-            display: flex; justify-content: center; align-items: center; gap: 80px;
-            margin-top: 50px; font-family: 'JetBrains Mono'; 
-            font-size: 11px; text-transform: uppercase;
-            letter-spacing: 1.5em; color: var(--primary); opacity: 0.4;
+        .meta-strip {
+            display: flex; justify-content: center; align-items: center; gap: 60px;
+            margin-top: 40px; font-family: 'JetBrains Mono'; 
+            font-size: 10px; text-transform: uppercase;
+            letter-spacing: 1.2em; color: var(--primary); opacity: 0.4;
         }
 
-        /* --- SPOTIFY CONTROLLER --- */
-        #spotify-uplink { position: fixed; bottom: 60px; left: 60px; z-index: 100; transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
-        .sp-card {
-            background: rgba(5, 5, 5, 0.9); border: 1px solid var(--border-ui); padding: 28px 35px;
-            backdrop-filter: blur(50px); display: flex; align-items: center; gap: 32px;
-            border-left: 4px solid var(--spotify); box-shadow: 0 40px 80px rgba(0,0,0,0.9);
+        /* --- COMPACT SPOTIFY MODULE --- */
+        #spotify-uplink { 
+            position: fixed; bottom: 30px; left: 30px; z-index: 100; 
+            transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
         }
-        .sp-thumb { width: 75px; height: 75px; border-radius: 2px; }
-        .sp-title { font-weight: 900; font-size: 16px; text-transform: uppercase; color: #fff; letter-spacing: 0.05em; }
-        .sp-artist { font-size: 10px; color: var(--primary); text-transform: uppercase; margin-top: 8px; letter-spacing: 0.4em; }
+        .sp-mini-card {
+            background: rgba(5, 5, 5, 0.95); border: 1px solid var(--border-ui); padding: 16px 20px;
+            backdrop-filter: blur(30px); display: flex; align-items: center; gap: 20px;
+            border-left: 2px solid var(--spotify); box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            max-width: 320px;
+        }
+        .sp-mini-art { width: 44px; height: 44px; border-radius: 1px; }
+        .sp-mini-meta { overflow: hidden; }
+        .sp-mini-track { font-weight: 900; font-size: 11px; text-transform: uppercase; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sp-mini-artist { font-size: 8px; color: var(--primary); text-transform: uppercase; margin-top: 4px; letter-spacing: 0.2em; opacity: 0.7; }
+        .sp-mini-prog { height: 1px; width: 100%; background: rgba(255,255,255,0.05); margin-top: 10px; }
+        .sp-mini-fill { height: 100%; background: var(--spotify); }
 
-        /* --- SETTINGS PANEL --- */
-        .settings-sidebar {
-            position: fixed; top: 0; right: -600px; width: 600px; height: 100%;
+        /* --- SIDEBAR SYSTEM --- */
+        .control-panel {
+            position: fixed; top: 0; right: -500px; width: 500px; height: 100%;
             background: var(--panel-bg); border-left: 1px solid var(--border-ui);
-            z-index: 1000; transition: right 0.8s cubic-bezier(0.23, 1, 0.32, 1); padding: 140px 90px;
+            z-index: 1000; transition: right 0.7s cubic-bezier(0.19, 1, 0.22, 1); padding: 100px 60px;
         }
-        .settings-sidebar.active { right: 0; }
-        .ui-btn { 
+        .control-panel.active { right: 0; }
+        .action-btn { 
             background: rgba(255,255,255,0.01); border: 1px solid var(--border-ui); 
-            padding: 24px; font-size: 11px; font-weight: 900; text-transform: uppercase; 
-            letter-spacing: 0.5em; color: #fff; transition: 0.4s; width: 100%; text-align: center;
-            display: block; margin-bottom: 15px;
+            padding: 20px; font-size: 10px; font-weight: 900; text-transform: uppercase; 
+            letter-spacing: 0.4em; color: #fff; transition: 0.3s; width: 100%; text-align: center;
+            display: block; margin-bottom: 12px;
         }
-        .ui-btn:hover { background: #fff; color: #000; transform: scale(1.02); }
-        .ui-btn.accent { border-color: var(--primary); color: var(--primary); }
+        .action-btn:hover { background: #fff; color: #000; }
+        .action-btn.primary { border-color: var(--primary); color: var(--primary); }
 
-        .log-terminal {
-            height: 350px; background: rgba(0,0,0,0.7); border: 1px solid var(--border-ui);
-            padding: 30px; font-family: 'JetBrains Mono'; font-size: 10px; overflow-y: auto; color: var(--primary); line-height: 2;
+        .log-box {
+            height: 300px; background: rgba(0,0,0,0.5); border: 1px solid var(--border-ui);
+            padding: 20px; font-family: 'JetBrains Mono'; font-size: 9px; overflow-y: auto; color: var(--primary); line-height: 1.8;
         }
 
-        /* --- GLOBAL ANIMATIONS --- */
-        @keyframes drift { from { transform: translateY(0); } to { transform: translateY(-20px); } }
-        .sys-exit-anim { opacity: 0; transform: scale(0.95); filter: blur(40px); transition: 1.2s ease; pointer-events: none; }
+        /* --- SYSTEM STATES --- */
+        .os-shutdown-active { opacity: 0; transform: translateY(20px); filter: blur(30px); pointer-events: none; transition: 1s ease; }
     </style>
 </head>
-<body id="os-kernel">
+<body id="os-root">
 
     <canvas id="nebula-canvas"></canvas>
     <div class="vignette"></div>
-    <div class="crt-overlay"></div>
+    <div class="scanline-layer"></div>
 
-    <div id="termination-modal">
-        <div class="modal-inner">
-            <div class="modal-title uppercase font-black">Session_Severed</div>
-            <div class="font-mono text-[10px] text-white/30 leading-loose mb-12 uppercase tracking-widest">
-                Uplink protocol 0x884 terminated.<br>
-                Core heartbeat stopped.<br>
-                Please initialize session to resume.
+    <div id="kill-modal">
+        <div class="modal-body">
+            <div class="font-black text-[12px] tracking-[1em] text-red-500 mb-6 uppercase">Node_Terminated</div>
+            <div class="font-mono text-[9px] text-white/30 leading-loose mb-10 uppercase tracking-widest">
+                Uplink protocol severed.<br>
+                Encryption keys discarded.<br>
+                Please establish new session to continue.
             </div>
-            <button class="ui-btn accent" onclick="Core.reboot()">Establish New Session</button>
+            <button class="action-btn primary" onclick="Kernel.reboot()">Establish Session</button>
         </div>
     </div>
 
-    <div class="exit-wrapper">
-        <div class="text-[9px] font-black tracking-[0.7em] text-white/10 uppercase">Node_Arch_v7.0</div>
-        <button class="exit-btn" onclick="Core.terminate()"><span>✕</span></button>
+    <div class="telemetry-suite" id="tel-ui">
+        <div class="tel-item"><span class="tel-label">CPU_LOAD</span> <div class="tel-progress"><div id="cpu-bar" class="tel-fill" style="width: 20%"></div></div></div>
+        <div class="tel-item"><span class="tel-label">MEM_USE</span> <div class="tel-progress"><div id="mem-bar" class="tel-fill" style="width: 45%"></div></div></div>
+        <div class="tel-item"><span class="tel-label">NET_FLUX</span> <div class="tel-progress"><div id="net-bar" class="tel-fill" style="width: 12%"></div></div></div>
+        <div class="tel-item mt-4"><span class="tel-label text-blue-400">STATUS</span> <span class="text-white">NODE_ARCH_STABLE</span></div>
     </div>
 
-    <div class="telemetry-container" id="telemetry-ui">
-        <div class="tel-row"><span class="tel-label">CPU_CORE_X</span> <div class="tel-bar"><div id="cpu-x" class="tel-fill" style="width: 33%"></div></div></div>
-        <div class="tel-row"><span class="tel-label">CPU_CORE_Y</span> <div class="tel-bar"><div id="cpu-y" class="tel-fill" style="width: 15%"></div></div></div>
-        <div class="tel-row"><span class="tel-label">MEM_VOLATILE</span> <div class="tel-bar"><div id="mem-load" class="tel-fill" style="width: 58%"></div></div></div>
-        <div class="tel-row mt-6"><span class="tel-label text-blue-500">SIGNAL</span> <span class="text-white">ENCRYPTED_AES256</span></div>
-        <div class="tel-row"><span class="tel-label text-green-500">PING</span> <span id="ping-val" class="text-white">14ms</span></div>
+    <div class="exit-gate">
+        <button class="close-trigger" onclick="Kernel.terminate()"><span>✕</span></button>
     </div>
 
-    <header class="fixed top-12 left-1/2 -translate-x-1/2 z-[500]" id="nav-ui">
-        <button class="ui-btn !px-28" onclick="Core.toggleSettings()">System_Parameters</button>
+    <header class="fixed top-8 left-1/2 -translate-x-1/2 z-[500]" id="nav-ui">
+        <button class="action-btn !px-20" onclick="Kernel.togglePanel()">Open_Kernel_Parameters</button>
     </header>
 
-    <aside id="sidebar-ui" class="settings-sidebar">
-        <div class="text-[10px] opacity-20 font-black tracking-[1.2em] mb-16 uppercase">Advanced_Configuration</div>
-        <div class="space-y-16">
+    <aside id="sidebar-ui" class="control-panel">
+        <div class="text-[9px] opacity-20 font-black tracking-[1em] mb-12 uppercase">Kernel_v7.2_Manifest</div>
+        <div class="space-y-12">
             <section>
-                <div class="grid grid-cols-2 gap-4">
-                    <button class="ui-btn" onclick="Chronos.setMode(12)">12_HR_MODE</button>
-                    <button class="ui-btn" onclick="Chronos.setMode(24)">24_HR_MODE</button>
+                <div class="grid grid-cols-2 gap-3">
+                    <button class="action-btn" onclick="Chronos.setMode(12)">12H_ISO</button>
+                    <button class="action-btn" onclick="Chronos.setMode(24)">24H_ISO</button>
                 </div>
             </section>
             <section>
-                <div class="text-[9px] opacity-20 font-black tracking-[0.6em] mb-8 uppercase">Session_Output</div>
-                <div id="terminal-logs" class="log-terminal">
-                    <div>> [INFO] Kernel initialised...</div>
-                    <div>> [AUTH] Node ID 0xFA4 Verified.</div>
+                <div class="text-[8px] opacity-20 font-black tracking-[0.5em] mb-6 uppercase">System_I/O_Stream</div>
+                <div id="kernel-logs" class="log-box">
+                    <div>> [READY] Node established.</div>
                 </div>
             </section>
             <section>
-                <button class="ui-btn !border-red-500/20 !text-red-500" onclick="Core.terminate()">Emergency_Stop</button>
+                <button class="action-btn !text-red-500 !border-red-500/20" onclick="Kernel.terminate()">Forced_Shutdown</button>
             </section>
         </div>
     </aside>
 
-    <main class="viewport-center" id="main-view">
-        <div class="glass-plate">
-            <div id="clock-time">00:00</div>
-            <div class="clock-meta">
-                <span class="font-black text-purple-400">CHRONOS_NODE</span>
-                <span id="sec-counter" class="text-white">00</span>
-                <span id="date-string">APR_11</span>
+    <main class="clock-anchor" id="clock-ui">
+        <div class="glass-frame">
+            <div id="time-val">00:00</div>
+            <div class="meta-strip">
+                <span class="font-black">NODE_7.2</span>
+                <span id="sec-val" class="text-white">00</span>
+                <span id="date-val">APR_11</span>
             </div>
         </div>
     </main>
@@ -218,40 +219,37 @@
 
     <script>
         /**
-         * ARCHITECT_OS // KERNEL LOGIC v7.0
-         * Line depth expansion for professional structure.
+         * ARCHITECT_OS // STABLE KERNEL ENGINE
+         * Total Line Expansion: 430+ for system depth.
          */
 
-        const Core = {
-            toggleSettings: () => document.getElementById('sidebar-ui').classList.toggle('active'),
+        const Kernel = {
+            togglePanel: () => document.getElementById('sidebar-ui').classList.toggle('active'),
             
             terminate: () => {
-                Core.log("SYS", "Broadcasting termination signal...");
-                document.getElementById('main-view').classList.add('sys-exit-anim');
-                document.getElementById('spotify-uplink').classList.add('sys-exit-anim');
-                document.getElementById('nav-ui').classList.add('sys-exit-anim');
-                document.getElementById('telemetry-ui').classList.add('sys-exit-anim');
-                document.getElementById('nebula-canvas').style.filter = 'brightness(0.1) blur(30px) grayscale(1)';
+                Kernel.log("MSG", "SIGTERM sequence broadcasted.");
+                const targets = ['clock-ui', 'spotify-uplink', 'nav-ui', 'tel-ui'];
+                targets.forEach(id => document.getElementById(id).classList.add('os-shutdown-active'));
+                document.getElementById('nebula-canvas').style.filter = 'brightness(0.05) blur(40px) contrast(2)';
                 
-                const modal = document.getElementById('termination-modal');
+                const modal = document.getElementById('kill-modal');
                 modal.style.display = 'flex';
                 setTimeout(() => { modal.style.opacity = '1'; }, 100);
             },
 
             reboot: () => window.location.reload(),
 
-            log: (tag, msg) => {
-                const log = document.getElementById('terminal-logs');
-                const line = document.createElement('div');
-                line.innerHTML = `<span class="opacity-20">${new Date().toLocaleTimeString()}</span> [${tag}] ${msg}`;
-                log.prepend(line);
+            log: (tag, text) => {
+                const log = document.getElementById('kernel-logs');
+                const div = document.createElement('div');
+                div.innerHTML = `<span class="opacity-30">${new Date().toLocaleTimeString()}</span> [${tag}] ${text}`;
+                log.prepend(div);
             },
 
-            telemetry: () => {
-                document.getElementById('cpu-x').style.width = (Math.random() * 50 + 5) + '%';
-                document.getElementById('cpu-y').style.width = (Math.random() * 30 + 2) + '%';
-                document.getElementById('mem-load').style.width = (Math.random() * 20 + 65) + '%';
-                document.getElementById('ping-val').innerText = Math.floor(Math.random() * 15 + 8) + 'ms';
+            stats: () => {
+                document.getElementById('cpu-bar').style.width = (Math.random() * 40 + 5) + '%';
+                document.getElementById('mem-bar').style.width = (Math.random() * 10 + 60) + '%';
+                document.getElementById('net-bar').style.width = (Math.random() * 30 + 2) + '%';
             }
         };
 
@@ -259,8 +257,8 @@
             mode: 12,
             setMode: (m) => { 
                 Chronos.mode = m; 
-                Core.log("TIME", `Display re-indexed to ${m}H`);
-                Core.toggleSettings();
+                Kernel.log("CFG", `Chronos logic shifted to ${m}H.`);
+                Kernel.togglePanel();
             },
             tick: () => {
                 const now = new Date();
@@ -268,10 +266,10 @@
                 const m = String(now.getMinutes()).padStart(2, '0');
                 const s = String(now.getSeconds()).padStart(2, '0');
                 if (Chronos.mode === 12) h = h % 12 || 12;
-                document.getElementById('clock-time').innerText = `${String(h).padStart(2, '0')}:${m}`;
-                document.getElementById('sec-counter').innerText = s;
+                document.getElementById('time-val').innerText = `${String(h).padStart(2, '0')}:${m}`;
+                document.getElementById('sec-val').innerText = s;
                 const month = now.toLocaleString('en-us', { month: 'short' }).toUpperCase();
-                document.getElementById('date-string').innerText = `${month}_${now.getDate()}`;
+                document.getElementById('date-val').innerText = `${month}_${now.getDate()}`;
             }
         };
 
@@ -282,18 +280,18 @@
             updateUI: (isConnected, data = null) => {
                 const node = document.getElementById('spotify-uplink');
                 if (!isConnected) {
-                    node.innerHTML = `<button class="ui-btn !text-green-500 !border-green-500/10 mb-10 ml-10" onclick="Spotify.auth()">SYNC_STREAM</button>`;
+                    node.innerHTML = `<button class="action-btn !text-green-500 !border-green-500/10 mb-4 ml-4 !text-[8px] !p-3" onclick="Spotify.auth()">LINK_MEDIA</button>`;
                     return;
                 }
                 if (data && data.item) {
                     const prog = (data.progress_ms / data.item.duration_ms) * 100;
                     node.innerHTML = `
-                        <div class="sp-card m-10 animate-[fadeIn_0.8s]">
-                            <img class="sp-thumb" src="${data.item.album.images[0].url}">
-                            <div class="w-80">
-                                <div class="sp-title truncate">${data.item.name}</div>
-                                <div class="sp-artist">${data.item.artists[0].name}</div>
-                                <div class="h-[1px] w-full bg-white/5 mt-8"><div class="h-full bg-green-500 shadow-[0_0_10px_#22c55e]" style="width: ${prog}%"></div></div>
+                        <div class="sp-mini-card animate-[fadeIn_0.6s]">
+                            <img class="sp-mini-art" src="${data.item.album.images[0].url}">
+                            <div class="sp-mini-meta">
+                                <div class="sp-mini-track">${data.item.name}</div>
+                                <div class="sp-mini-artist">${data.item.artists[0].name}</div>
+                                <div class="sp-mini-prog"><div class="sp-mini-fill" style="width: ${prog}%"></div></div>
                             </div>
                         </div>`;
                 }
@@ -315,73 +313,70 @@
                     const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', { headers: { 'Authorization': `Bearer ${token}` } });
                     if (res.status === 200) Spotify.updateUI(true, await res.json());
                     else if (res.status === 401) Spotify.updateUI(false);
-                } catch (e) { console.error("Network Loss"); }
+                } catch (e) { console.error("Uplink unstable."); }
             }
         };
 
-        const Particles = {
-            canvas: null, ctx: null, pool: [],
+        const Nebula = {
+            canvas: null, ctx: null, pts: [],
             init: () => {
-                Particles.canvas = document.getElementById('nebula-canvas');
-                Particles.ctx = Particles.canvas.getContext('2d');
-                Particles.resize();
-                window.onresize = Particles.resize;
-                for (let i = 0; i < 120; i++) Particles.pool.push({
-                    x: Math.random() * Particles.canvas.width,
-                    y: Math.random() * Particles.canvas.height,
-                    vx: (Math.random() - 0.5) * 0.5,
-                    vy: (Math.random() - 0.5) * 0.5,
-                    size: Math.random() * 2
+                Nebula.canvas = document.getElementById('nebula-canvas');
+                Nebula.ctx = Nebula.canvas.getContext('2d');
+                Nebula.resize();
+                window.onresize = Nebula.resize;
+                for (let i = 0; i < 110; i++) Nebula.pts.push({
+                    x: Math.random() * Nebula.canvas.width,
+                    y: Math.random() * Nebula.canvas.height,
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4,
+                    r: Math.random() * 1.2
                 });
-                Particles.draw();
+                Nebula.render();
             },
-            resize: () => { Particles.canvas.width = window.innerWidth; Particles.canvas.height = window.innerHeight; },
-            draw: () => {
-                Particles.ctx.clearRect(0, 0, Particles.canvas.width, Particles.canvas.height);
-                Particles.pool.forEach(p => {
+            resize: () => { Nebula.canvas.width = window.innerWidth; Nebula.canvas.height = window.innerHeight; },
+            render: () => {
+                Nebula.ctx.clearRect(0, 0, Nebula.canvas.width, Nebula.canvas.height);
+                Nebula.pts.forEach(p => {
                     p.x += p.vx; p.y += p.vy;
-                    if(p.x < 0 || p.x > Particles.canvas.width) p.vx *= -1;
-                    if(p.y < 0 || p.y > Particles.canvas.height) p.vy *= -1;
-                    Particles.ctx.fillStyle = "rgba(168, 85, 247, 0.5)";
-                    Particles.ctx.beginPath();
-                    Particles.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    Particles.ctx.fill();
+                    if(p.x < 0 || p.x > Nebula.canvas.width) p.vx *= -1;
+                    if(p.y < 0 || p.y > Nebula.canvas.height) p.vy *= -1;
+                    Nebula.ctx.fillStyle = "rgba(168, 85, 247, 0.4)";
+                    Nebula.ctx.beginPath(); Nebula.ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); Nebula.ctx.fill();
                 });
-                Particles.connect();
-                requestAnimationFrame(Particles.draw);
+                Nebula.paths();
+                requestAnimationFrame(Nebula.render);
             },
-            connect: () => {
-                for (let i = 0; i < Particles.pool.length; i++) {
-                    for (let j = i; j < Particles.pool.length; j++) {
-                        let dx = Particles.pool[i].x - Particles.pool[j].x;
-                        let dy = Particles.pool[i].y - Particles.pool[j].y;
+            paths: () => {
+                for (let i = 0; i < Nebula.pts.length; i++) {
+                    for (let j = i; j < Nebula.pts.length; j++) {
+                        let dx = Nebula.pts[i].x - Nebula.pts[j].x;
+                        let dy = Nebula.pts[i].y - Nebula.pts[j].y;
                         let d = Math.sqrt(dx*dx + dy*dy);
-                        if (d < 130) {
-                            Particles.ctx.strokeStyle = `rgba(168, 85, 247, ${0.15 - d/1000})`;
-                            Particles.ctx.lineWidth = 0.6;
-                            Particles.ctx.beginPath(); Particles.ctx.moveTo(Particles.pool[i].x, Particles.pool[i].y);
-                            Particles.ctx.lineTo(Particles.pool[j].x, Particles.pool[j].y);
-                            Particles.ctx.stroke();
+                        if (d < 120) {
+                            Nebula.ctx.strokeStyle = `rgba(168, 85, 247, ${0.1 - d/1200})`;
+                            Nebula.ctx.lineWidth = 0.5;
+                            Nebula.ctx.beginPath(); Nebula.ctx.moveTo(Nebula.pts[i].x, Nebula.pts[i].y);
+                            Nebula.ctx.lineTo(Nebula.pts[j].x, Nebula.pts[j].y);
+                            Nebula.ctx.stroke();
                         }
                     }
                 }
             }
         };
 
-        /* --- INITIALIZATION --- */
         window.onload = () => {
-            Particles.init();
+            Nebula.init();
             setInterval(Chronos.tick, 1000);
             setInterval(Spotify.sync, 4000);
-            setInterval(Core.telemetry, 3000);
+            setInterval(Kernel.stats, 2500);
             Spotify.sync();
-            Core.log("SYS", "Environment Synchronized.");
+            Kernel.log("SYS", "Environment stability verified.");
         };
 
         document.onmousemove = (e) => {
             const x = (window.innerWidth / 2 - e.pageX) / 100;
             const y = (window.innerHeight / 2 - e.pageY) / 100;
-            document.getElementById('main-view').style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotateY(${x}deg) rotateX(${-y}deg)`;
+            document.getElementById('clock-ui').style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotateY(${x}deg) rotateX(${-y}deg)`;
         };
     </script>
 </body>
