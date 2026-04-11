@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | ARCHITECT_OS_PREMIUM_v6.5</title>
+    <title>XCLIPSE | ARCHITECT_OS_v7.0_CORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@100;300;400;700;900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --primary: #a855f7;
-            --primary-glow: rgba(168, 85, 247, 0.5);
+            --primary-glow: rgba(168, 85, 247, 0.6);
             --spotify: #1DB954;
             --bg-dark: #000000;
-            --panel-bg: rgba(6, 6, 6, 0.98);
+            --panel-bg: rgba(4, 4, 4, 0.98);
             --border-ui: rgba(255, 255, 255, 0.08);
-            --danger: #ff3e3e;
+            --danger: #ff3333;
+            --accent-blue: #3b82f6;
         }
 
-        /* --- SYSTEM CORE --- */
+        /* --- FOUNDATION --- */
         * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
-        ::-webkit-scrollbar { width: 2px; }
+        ::-webkit-scrollbar { width: 3px; }
         ::-webkit-scrollbar-thumb { background: var(--primary); }
         body, html { 
             width: 100%; height: 100%; 
@@ -30,213 +31,247 @@
             overflow: hidden; 
         }
 
-        /* --- NEURAL NEBULA BACKGROUND --- */
-        #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.4; transition: filter 1s ease; }
+        /* --- BACKGROUND ENGINE --- */
+        #nebula-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.6; transition: filter 1.5s ease; }
         .vignette {
             position: fixed; inset: 0; z-index: 2;
-            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.98) 100%);
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,1) 100%);
+            pointer-events: none;
+        }
+        .crt-overlay {
+            position: fixed; inset: 0; z-index: 3;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%;
             pointer-events: none;
         }
 
-        /* --- EXIT MODULE --- */
-        .exit-gate {
-            position: fixed; top: 40px; right: 40px;
-            z-index: 2000; display: flex; align-items: center; gap: 20px;
+        /* --- TELEMETRY HUB --- */
+        .telemetry-container {
+            position: fixed; top: 40px; left: 40px; z-index: 100;
+            font-family: 'JetBrains Mono'; font-size: 9px; line-height: 2.5;
+            color: rgba(255,255,255,0.2);
         }
-        .close-btn {
-            width: 60px; height: 60px;
-            border: 1px solid var(--border-ui);
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(10px);
+        .tel-row { display: flex; align-items: center; gap: 20px; }
+        .tel-label { width: 100px; color: var(--primary); font-weight: 800; letter-spacing: 0.1em; }
+        .tel-bar { width: 120px; height: 1px; background: rgba(255,255,255,0.05); position: relative; }
+        .tel-fill { height: 100%; background: var(--primary); transition: width 0.8s ease; box-shadow: 0 0 10px var(--primary); }
+
+        /* --- EXIT INTERFACE --- */
+        .exit-wrapper { position: fixed; top: 40px; right: 40px; z-index: 2000; display: flex; align-items: center; gap: 20px; }
+        .exit-btn {
+            width: 65px; height: 65px; border: 1px solid var(--border-ui);
+            background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(15px);
             display: flex; align-items: center; justify-content: center;
-            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-            position: relative; overflow: hidden;
+            transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
         }
-        .close-btn:hover {
-            border-color: var(--danger);
-            transform: rotate(90deg) scale(1.1);
-            box-shadow: 0 0 30px rgba(255, 62, 62, 0.3);
-        }
-        .close-btn span { font-weight: 200; font-size: 24px; color: rgba(255,255,255,0.5); transition: 0.3s; }
-        .close-btn:hover span { color: var(--danger); }
+        .exit-btn:hover { border-color: var(--danger); transform: rotate(180deg) scale(1.1); background: rgba(255, 51, 51, 0.1); }
+        .exit-btn span { font-weight: 100; font-size: 28px; color: rgba(255,255,255,0.3); }
+        .exit-btn:hover span { color: var(--danger); }
 
-        /* --- SESSION CLOSED POPUP --- */
-        #session-modal {
+        /* --- SESSION OVERLAY --- */
+        #termination-modal {
             position: fixed; inset: 0; z-index: 9999;
-            background: rgba(0,0,0,0.9);
-            backdrop-filter: blur(20px);
+            background: rgba(0,0,0,0.98); backdrop-filter: blur(40px);
             display: none; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.5s ease;
+            opacity: 0; transition: opacity 1s ease;
         }
-        .modal-content {
-            text-align: center; max-width: 500px; padding: 60px;
-            border: 1px solid var(--border-ui); background: #050505;
-            box-shadow: 0 0 100px rgba(168, 85, 247, 0.1);
+        .modal-inner {
+            text-align: center; max-width: 600px; padding: 80px;
+            border: 1px solid var(--border-ui); background: #010101;
+            box-shadow: 0 0 150px rgba(168, 85, 247, 0.05);
         }
-        .modal-title { font-family: 'Montserrat'; font-size: 14px; letter-spacing: 0.8em; color: var(--danger); text-transform: uppercase; margin-bottom: 20px; }
-        .modal-text { font-family: 'JetBrains Mono'; font-size: 10px; color: rgba(255,255,255,0.4); line-height: 2; margin-bottom: 40px; text-transform: uppercase; }
+        .modal-title { font-family: 'Montserrat'; font-size: 16px; letter-spacing: 1.2em; color: var(--danger); margin-bottom: 30px; }
 
-        /* --- GHOST CLOCK --- */
-        .clock-center {
+        /* --- TRANSPARENT CLOCK --- */
+        .viewport-center {
             position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center; z-index: 10;
-            transition: transform 0.15s ease-out, opacity 0.8s ease;
-            width: 100%;
+            transform: translate(-50%, -50%); text-align: center;
+            z-index: 10; transition: 0.15s ease-out; width: 100%;
         }
-        .clock-glass {
-            background: rgba(255, 255, 255, 0.003); 
-            backdrop-filter: blur(20px) saturate(180%);
-            padding: 100px 40px;
-            border-top: 1px solid rgba(255, 255, 255, 0.03);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        .glass-plate {
+            background: rgba(255, 255, 255, 0.001); backdrop-filter: blur(30px) saturate(200%);
+            padding: 140px 40px; border-top: 1px solid rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
             display: inline-block; min-width: 100%;
         }
-        #main-time { 
+        #clock-time { 
             font-family: 'Montserrat', sans-serif; 
-            font-size: clamp(12rem, 26vw, 34rem); 
-            font-weight: 900; line-height: 0.75;
-            letter-spacing: -0.07em; color: #fff;
+            font-size: clamp(12rem, 30vw, 40rem); 
+            font-weight: 900; line-height: 0.7;
+            letter-spacing: -0.08em; color: #fff;
+            filter: drop-shadow(0 0 60px rgba(168, 85, 247, 0.1));
+        }
+        .clock-meta {
+            display: flex; justify-content: center; align-items: center; gap: 80px;
+            margin-top: 50px; font-family: 'JetBrains Mono'; 
+            font-size: 11px; text-transform: uppercase;
+            letter-spacing: 1.5em; color: var(--primary); opacity: 0.4;
         }
 
-        /* --- SPOTIFY MODULE --- */
-        #spotify-node {
-            position: fixed; bottom: 50px; left: 50px;
-            z-index: 100; transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        /* --- SPOTIFY CONTROLLER --- */
+        #spotify-uplink { position: fixed; bottom: 60px; left: 60px; z-index: 100; transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .sp-card {
+            background: rgba(5, 5, 5, 0.9); border: 1px solid var(--border-ui); padding: 28px 35px;
+            backdrop-filter: blur(50px); display: flex; align-items: center; gap: 32px;
+            border-left: 4px solid var(--spotify); box-shadow: 0 40px 80px rgba(0,0,0,0.9);
         }
-        .sp-module {
-            background: rgba(0, 0, 0, 0.85); border: 1px solid var(--border-ui); padding: 24px 30px;
-            backdrop-filter: blur(40px); display: flex; align-items: center; gap: 28px;
-            border-left: 3px solid var(--spotify);
-        }
-        .sp-art { width: 64px; height: 64px; border-radius: 2px; }
-        .sp-track { font-weight: 900; font-size: 14px; text-transform: uppercase; color: #fff; }
-        .progress-bar { height: 1px; width: 100%; background: rgba(255,255,255,0.06); margin-top: 20px; }
-        .progress-fill { height: 100%; background: var(--spotify); transition: width 1s linear; }
+        .sp-thumb { width: 75px; height: 75px; border-radius: 2px; }
+        .sp-title { font-weight: 900; font-size: 16px; text-transform: uppercase; color: #fff; letter-spacing: 0.05em; }
+        .sp-artist { font-size: 10px; color: var(--primary); text-transform: uppercase; margin-top: 8px; letter-spacing: 0.4em; }
 
-        /* --- SIDEBAR & BUTTONS --- */
-        .side-panel {
-            position: fixed; top: 0; right: -550px; width: 550px; height: 100%;
+        /* --- SETTINGS PANEL --- */
+        .settings-sidebar {
+            position: fixed; top: 0; right: -600px; width: 600px; height: 100%;
             background: var(--panel-bg); border-left: 1px solid var(--border-ui);
-            z-index: 1000; transition: right 0.7s cubic-bezier(0.16, 1, 0.3, 1); padding: 120px 80px;
+            z-index: 1000; transition: right 0.8s cubic-bezier(0.23, 1, 0.32, 1); padding: 140px 90px;
         }
-        .side-panel.active { right: 0; }
-        .os-btn { 
+        .settings-sidebar.active { right: 0; }
+        .ui-btn { 
             background: rgba(255,255,255,0.01); border: 1px solid var(--border-ui); 
-            padding: 22px; font-size: 10px; font-weight: 900; text-transform: uppercase; 
-            letter-spacing: 0.4em; color: #fff; transition: 0.3s; width: 100%; text-align: center;
-            display: block; margin-bottom: 10px;
+            padding: 24px; font-size: 11px; font-weight: 900; text-transform: uppercase; 
+            letter-spacing: 0.5em; color: #fff; transition: 0.4s; width: 100%; text-align: center;
+            display: block; margin-bottom: 15px;
         }
-        .os-btn:hover { background: #fff; color: #000; transform: translateY(-3px); }
-        .os-btn.primary-action { border-color: var(--primary); color: var(--primary); }
-        .os-btn.primary-action:hover { background: var(--primary); color: #000; }
+        .ui-btn:hover { background: #fff; color: #000; transform: scale(1.02); }
+        .ui-btn.accent { border-color: var(--primary); color: var(--primary); }
 
-        /* --- SYSTEM STATE --- */
-        .sys-shutdown { opacity: 0; pointer-events: none; filter: blur(20px); }
+        .log-terminal {
+            height: 350px; background: rgba(0,0,0,0.7); border: 1px solid var(--border-ui);
+            padding: 30px; font-family: 'JetBrains Mono'; font-size: 10px; overflow-y: auto; color: var(--primary); line-height: 2;
+        }
+
+        /* --- GLOBAL ANIMATIONS --- */
+        @keyframes drift { from { transform: translateY(0); } to { transform: translateY(-20px); } }
+        .sys-exit-anim { opacity: 0; transform: scale(0.95); filter: blur(40px); transition: 1.2s ease; pointer-events: none; }
     </style>
 </head>
-<body id="os-root">
+<body id="os-kernel">
 
-    <canvas id="bg-canvas"></canvas>
+    <canvas id="nebula-canvas"></canvas>
     <div class="vignette"></div>
+    <div class="crt-overlay"></div>
 
-    <div id="session-modal">
-        <div class="modal-content">
-            <div class="modal-title">Session Terminated</div>
-            <div class="modal-text">
-                Uplink dropped. Kernel state preserved.<br>
-                Please press establish session to return to main.
+    <div id="termination-modal">
+        <div class="modal-inner">
+            <div class="modal-title uppercase font-black">Session_Severed</div>
+            <div class="font-mono text-[10px] text-white/30 leading-loose mb-12 uppercase tracking-widest">
+                Uplink protocol 0x884 terminated.<br>
+                Core heartbeat stopped.<br>
+                Please initialize session to resume.
             </div>
-            <button class="os-btn primary-action" onclick="OS.reboot()">Establish New Session</button>
+            <button class="ui-btn accent" onclick="Core.reboot()">Establish New Session</button>
         </div>
     </div>
 
-    <div class="exit-gate">
-        <div class="text-[8px] font-black tracking-[0.5em] text-white/20 uppercase">Session_ID: X-77</div>
-        <button class="close-btn" onclick="OS.terminate()" title="Close Terminal Session">
-            <span>✕</span>
-        </button>
+    <div class="exit-wrapper">
+        <div class="text-[9px] font-black tracking-[0.7em] text-white/10 uppercase">Node_Arch_v7.0</div>
+        <button class="exit-btn" onclick="Core.terminate()"><span>✕</span></button>
     </div>
 
-    <header class="fixed top-12 left-1/2 -translate-x-1/2 z-[500] transition-opacity duration-500" id="header-ui">
-        <button class="os-btn !px-20" onclick="OS.togglePanel()">Kernel_Settings</button>
+    <div class="telemetry-container" id="telemetry-ui">
+        <div class="tel-row"><span class="tel-label">CPU_CORE_X</span> <div class="tel-bar"><div id="cpu-x" class="tel-fill" style="width: 33%"></div></div></div>
+        <div class="tel-row"><span class="tel-label">CPU_CORE_Y</span> <div class="tel-bar"><div id="cpu-y" class="tel-fill" style="width: 15%"></div></div></div>
+        <div class="tel-row"><span class="tel-label">MEM_VOLATILE</span> <div class="tel-bar"><div id="mem-load" class="tel-fill" style="width: 58%"></div></div></div>
+        <div class="tel-row mt-6"><span class="tel-label text-blue-500">SIGNAL</span> <span class="text-white">ENCRYPTED_AES256</span></div>
+        <div class="tel-row"><span class="tel-label text-green-500">PING</span> <span id="ping-val" class="text-white">14ms</span></div>
+    </div>
+
+    <header class="fixed top-12 left-1/2 -translate-x-1/2 z-[500]" id="nav-ui">
+        <button class="ui-btn !px-28" onclick="Core.toggleSettings()">System_Parameters</button>
     </header>
 
-    <aside id="osPanel" class="side-panel">
-        <div class="text-[10px] opacity-20 font-black tracking-[1em] mb-12 uppercase">Kernel_Core</div>
-        <div class="space-y-12">
+    <aside id="sidebar-ui" class="settings-sidebar">
+        <div class="text-[10px] opacity-20 font-black tracking-[1.2em] mb-16 uppercase">Advanced_Configuration</div>
+        <div class="space-y-16">
             <section>
                 <div class="grid grid-cols-2 gap-4">
-                    <button class="os-btn" onclick="Clock.setMode(12)">12_HR</button>
-                    <button class="os-btn" onclick="Clock.setMode(24)">24_HR</button>
+                    <button class="ui-btn" onclick="Chronos.setMode(12)">12_HR_MODE</button>
+                    <button class="ui-btn" onclick="Chronos.setMode(24)">24_HR_MODE</button>
                 </div>
             </section>
             <section>
-                <div id="sys-log" class="h-64 bg-black/40 border border-white/5 p-6 font-mono text-[9px] text-purple-400 overflow-y-auto">
-                    > [READY] System Uplink Optimized.
+                <div class="text-[9px] opacity-20 font-black tracking-[0.6em] mb-8 uppercase">Session_Output</div>
+                <div id="terminal-logs" class="log-terminal">
+                    <div>> [INFO] Kernel initialised...</div>
+                    <div>> [AUTH] Node ID 0xFA4 Verified.</div>
                 </div>
+            </section>
+            <section>
+                <button class="ui-btn !border-red-500/20 !text-red-500" onclick="Core.terminate()">Emergency_Stop</button>
             </section>
         </div>
     </aside>
 
-    <main class="clock-center" id="main-content">
-        <div class="clock-glass">
-            <div id="main-time">00:00</div>
-            <div class="flex justify-center gap-12 mt-8 font-mono text-[10px] tracking-[0.8em] text-purple-500/60">
-                <span>SYSTEM_CHRONOS</span>
-                <span id="sec-hex" class="text-white">00</span>
-                <span id="tel-date">APR_11</span>
+    <main class="viewport-center" id="main-view">
+        <div class="glass-plate">
+            <div id="clock-time">00:00</div>
+            <div class="clock-meta">
+                <span class="font-black text-purple-400">CHRONOS_NODE</span>
+                <span id="sec-counter" class="text-white">00</span>
+                <span id="date-string">APR_11</span>
             </div>
         </div>
     </main>
 
-    <div id="spotify-node"></div>
+    <div id="spotify-uplink"></div>
 
     <script>
         /**
-         * ARCHITECT_OS // SESSION ENGINE
+         * ARCHITECT_OS // KERNEL LOGIC v7.0
+         * Line depth expansion for professional structure.
          */
 
-        const OS = {
-            togglePanel: () => document.getElementById('osPanel').classList.toggle('active'),
+        const Core = {
+            toggleSettings: () => document.getElementById('sidebar-ui').classList.toggle('active'),
             
             terminate: () => {
-                // Fade out main UI components
-                document.getElementById('main-content').classList.add('sys-shutdown');
-                document.getElementById('spotify-node').classList.add('sys-shutdown');
-                document.getElementById('header-ui').classList.add('sys-shutdown');
-                document.getElementById('bg-canvas').style.filter = 'grayscale(1) blur(10px)';
+                Core.log("SYS", "Broadcasting termination signal...");
+                document.getElementById('main-view').classList.add('sys-exit-anim');
+                document.getElementById('spotify-uplink').classList.add('sys-exit-anim');
+                document.getElementById('nav-ui').classList.add('sys-exit-anim');
+                document.getElementById('telemetry-ui').classList.add('sys-exit-anim');
+                document.getElementById('nebula-canvas').style.filter = 'brightness(0.1) blur(30px) grayscale(1)';
                 
-                // Show termination modal
-                const modal = document.getElementById('session-modal');
+                const modal = document.getElementById('termination-modal');
                 modal.style.display = 'flex';
                 setTimeout(() => { modal.style.opacity = '1'; }, 100);
             },
 
-            reboot: () => {
-                // Hard reset the session (returns to main)
-                window.location.reload();
+            reboot: () => window.location.reload(),
+
+            log: (tag, msg) => {
+                const log = document.getElementById('terminal-logs');
+                const line = document.createElement('div');
+                line.innerHTML = `<span class="opacity-20">${new Date().toLocaleTimeString()}</span> [${tag}] ${msg}`;
+                log.prepend(line);
             },
 
-            log: (msg) => {
-                const log = document.getElementById('sys-log');
-                log.innerHTML = `<div>> ${msg}</div>` + log.innerHTML;
+            telemetry: () => {
+                document.getElementById('cpu-x').style.width = (Math.random() * 50 + 5) + '%';
+                document.getElementById('cpu-y').style.width = (Math.random() * 30 + 2) + '%';
+                document.getElementById('mem-load').style.width = (Math.random() * 20 + 65) + '%';
+                document.getElementById('ping-val').innerText = Math.floor(Math.random() * 15 + 8) + 'ms';
             }
         };
 
-        const Clock = {
+        const Chronos = {
             mode: 12,
-            setMode: (m) => Clock.mode = m,
+            setMode: (m) => { 
+                Chronos.mode = m; 
+                Core.log("TIME", `Display re-indexed to ${m}H`);
+                Core.toggleSettings();
+            },
             tick: () => {
                 const now = new Date();
                 let h = now.getHours();
                 const m = String(now.getMinutes()).padStart(2, '0');
                 const s = String(now.getSeconds()).padStart(2, '0');
-                if (Clock.mode === 12) h = h % 12 || 12;
-                document.getElementById('main-time').innerText = `${String(h).padStart(2, '0')}:${m}`;
-                document.getElementById('sec-hex').innerText = s;
+                if (Chronos.mode === 12) h = h % 12 || 12;
+                document.getElementById('clock-time').innerText = `${String(h).padStart(2, '0')}:${m}`;
+                document.getElementById('sec-counter').innerText = s;
                 const month = now.toLocaleString('en-us', { month: 'short' }).toUpperCase();
-                document.getElementById('tel-date').innerText = `${month}_${now.getDate()}`;
+                document.getElementById('date-string').innerText = `${month}_${now.getDate()}`;
             }
         };
 
@@ -245,20 +280,20 @@
             redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/shh.html',
 
             updateUI: (isConnected, data = null) => {
-                const node = document.getElementById('spotify-node');
+                const node = document.getElementById('spotify-uplink');
                 if (!isConnected) {
-                    node.innerHTML = `<button class="os-btn !text-green-500 !border-green-500/10 mb-12 ml-12" onclick="Spotify.auth()">LINK_SPOTIFY</button>`;
+                    node.innerHTML = `<button class="ui-btn !text-green-500 !border-green-500/10 mb-10 ml-10" onclick="Spotify.auth()">SYNC_STREAM</button>`;
                     return;
                 }
                 if (data && data.item) {
                     const prog = (data.progress_ms / data.item.duration_ms) * 100;
                     node.innerHTML = `
-                        <div class="sp-module m-12 animate-[fadeIn_0.5s]">
-                            <img class="sp-art" src="${data.item.album.images[0].url}">
-                            <div class="w-64">
-                                <div class="sp-track truncate">${data.item.name}</div>
-                                <div class="text-[9px] text-purple-400 uppercase tracking-widest mt-2">${data.item.artists[0].name}</div>
-                                <div class="progress-bar"><div class="progress-fill" style="width: ${prog}%"></div></div>
+                        <div class="sp-card m-10 animate-[fadeIn_0.8s]">
+                            <img class="sp-thumb" src="${data.item.album.images[0].url}">
+                            <div class="w-80">
+                                <div class="sp-title truncate">${data.item.name}</div>
+                                <div class="sp-artist">${data.item.artists[0].name}</div>
+                                <div class="h-[1px] w-full bg-white/5 mt-8"><div class="h-full bg-green-500 shadow-[0_0_10px_#22c55e]" style="width: ${prog}%"></div></div>
                             </div>
                         </div>`;
                 }
@@ -269,7 +304,7 @@
                 const hashed = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
                 const challenge = btoa(String.fromCharCode.apply(null, new Uint8Array(hashed))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
                 localStorage.setItem('code_verifier', verifier);
-                const params = new URLSearchParams({ response_type: 'code', client_id: Spotify.clientId, scope: 'user-read-currently-playing user-read-playback-state', redirect_uri: Spotify.redirectUri, code_challenge_method: 'S256', code_challenge: challenge });
+                const params = new URLSearchParams({ response_type: 'code', client_id: Spotify.clientId, scope: 'user-read-currently-playing', redirect_uri: Spotify.redirectUri, code_challenge_method: 'S256', code_challenge: challenge });
                 window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
             },
 
@@ -280,51 +315,73 @@
                     const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', { headers: { 'Authorization': `Bearer ${token}` } });
                     if (res.status === 200) Spotify.updateUI(true, await res.json());
                     else if (res.status === 401) Spotify.updateUI(false);
-                } catch (e) { console.error("Sync Error"); }
+                } catch (e) { console.error("Network Loss"); }
             }
         };
 
-        const Nebula = {
-            canvas: null, ctx: null, particles: [],
+        const Particles = {
+            canvas: null, ctx: null, pool: [],
             init: () => {
-                Nebula.canvas = document.getElementById('bg-canvas');
-                Nebula.ctx = Nebula.canvas.getContext('2d');
-                Nebula.resize();
-                window.onresize = Nebula.resize;
-                for (let i = 0; i < 100; i++) Nebula.particles.push({
-                    x: Math.random() * Nebula.canvas.width,
-                    y: Math.random() * Nebula.canvas.height,
-                    vx: (Math.random() - 0.5) * 0.4,
-                    vy: (Math.random() - 0.5) * 0.4,
-                    s: Math.random() * 2
+                Particles.canvas = document.getElementById('nebula-canvas');
+                Particles.ctx = Particles.canvas.getContext('2d');
+                Particles.resize();
+                window.onresize = Particles.resize;
+                for (let i = 0; i < 120; i++) Particles.pool.push({
+                    x: Math.random() * Particles.canvas.width,
+                    y: Math.random() * Particles.canvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    size: Math.random() * 2
                 });
-                Nebula.animate();
+                Particles.draw();
             },
-            resize: () => { Nebula.canvas.width = window.innerWidth; Nebula.canvas.height = window.innerHeight; },
-            animate: () => {
-                Nebula.ctx.clearRect(0,0,Nebula.canvas.width, Nebula.canvas.height);
-                Nebula.particles.forEach(p => {
+            resize: () => { Particles.canvas.width = window.innerWidth; Particles.canvas.height = window.innerHeight; },
+            draw: () => {
+                Particles.ctx.clearRect(0, 0, Particles.canvas.width, Particles.canvas.height);
+                Particles.pool.forEach(p => {
                     p.x += p.vx; p.y += p.vy;
-                    if(p.x < 0 || p.x > Nebula.canvas.width) p.vx *= -1;
-                    if(p.y < 0 || p.y > Nebula.canvas.height) p.vy *= -1;
-                    Nebula.ctx.fillStyle = "rgba(168, 85, 247, 0.4)";
-                    Nebula.ctx.beginPath(); Nebula.ctx.arc(p.x, p.y, p.s, 0, Math.PI*2); Nebula.ctx.fill();
+                    if(p.x < 0 || p.x > Particles.canvas.width) p.vx *= -1;
+                    if(p.y < 0 || p.y > Particles.canvas.height) p.vy *= -1;
+                    Particles.ctx.fillStyle = "rgba(168, 85, 247, 0.5)";
+                    Particles.ctx.beginPath();
+                    Particles.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    Particles.ctx.fill();
                 });
-                requestAnimationFrame(Nebula.animate);
+                Particles.connect();
+                requestAnimationFrame(Particles.draw);
+            },
+            connect: () => {
+                for (let i = 0; i < Particles.pool.length; i++) {
+                    for (let j = i; j < Particles.pool.length; j++) {
+                        let dx = Particles.pool[i].x - Particles.pool[j].x;
+                        let dy = Particles.pool[i].y - Particles.pool[j].y;
+                        let d = Math.sqrt(dx*dx + dy*dy);
+                        if (d < 130) {
+                            Particles.ctx.strokeStyle = `rgba(168, 85, 247, ${0.15 - d/1000})`;
+                            Particles.ctx.lineWidth = 0.6;
+                            Particles.ctx.beginPath(); Particles.ctx.moveTo(Particles.pool[i].x, Particles.pool[i].y);
+                            Particles.ctx.lineTo(Particles.pool[j].x, Particles.pool[j].y);
+                            Particles.ctx.stroke();
+                        }
+                    }
+                }
             }
         };
 
+        /* --- INITIALIZATION --- */
         window.onload = () => {
-            Nebula.init();
-            setInterval(Clock.tick, 1000);
+            Particles.init();
+            setInterval(Chronos.tick, 1000);
             setInterval(Spotify.sync, 4000);
+            setInterval(Core.telemetry, 3000);
             Spotify.sync();
+            Core.log("SYS", "Environment Synchronized.");
         };
 
         document.onmousemove = (e) => {
             const x = (window.innerWidth / 2 - e.pageX) / 100;
             const y = (window.innerHeight / 2 - e.pageY) / 100;
-            document.getElementById('main-content').style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotateY(${x}deg) rotateX(${-y}deg)`;
+            document.getElementById('main-view').style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotateY(${x}deg) rotateX(${-y}deg)`;
         };
     </script>
 </body>
