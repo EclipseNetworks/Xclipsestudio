@@ -3,304 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | ARCHITECT_OS_v62.0_FULL_BUILD</title>
+    <title>XCLIPSE | ARCHITECT_OS_v68.0_NEURAL_UPLINK</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,900;1,100;1,900&family=Inter:wght@100;400;700;900&family=JetBrains+Mono:wght@100;400;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
-        /* ARCHITECT_OS // CSS_KERNEL_v62.0
-           LINES: 1 - 250 (STYLING & ANIMATION MATRICES)
+        /* ARCHITECT_OS // KERNEL_CSS_v68.0 
+           LINES: 1 - 320 (VISUAL ARCHITECTURE)
         */
 
         :root {
-            --primary: #a855f7;
-            --primary-glow: rgba(168, 85, 247, 0.4);
+            --primary: #ffffff;
+            --primary-glow: rgba(255, 255, 255, 0.4);
             --spotify: #1DB954;
             --bg-dark: #000000;
-            --panel-bg: rgba(2, 2, 2, 0.98);
+            --panel-bg: rgba(3, 3, 3, 0.99);
             --border-ui: rgba(255, 255, 255, 0.08);
             --font-main: 'Inter', sans-serif;
-            --transition-core: 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            --transition-core: 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+            
+            /* SPECTRAL MAPPING (RGBWOP) */
+            --rgb-r: #ff3333;
+            --rgb-g: #1DB954;
+            --rgb-b: #3b82f6;
+            --rgb-w: #ffffff;
+            --rgb-o: #ff8800;
+            --rgb-p: #ff33ff;
         }
 
-        * { 
-            margin: 0; padding: 0; box-sizing: border-box; 
-            cursor: crosshair; user-select: none;
-        }
-
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 20px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; user-select: none; }
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); }
 
         body, html { 
-            width: 100%; height: 100%; 
-            background: var(--bg-dark); color: #fff; 
-            font-family: var(--font-main); overflow: hidden; 
-            position: relative;
+            width: 100%; height: 100%; background: var(--bg-dark); 
+            color: #fff; font-family: var(--font-main); overflow: hidden; 
         }
 
         /* --- VISUAL INTERFERENCE ENGINE --- */
         canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-        #matrix-layer { opacity: 0.12; filter: blur(0.5px); }
-        #entropy-layer { opacity: 0.25; }
-
+        #matrix-layer { opacity: 0.15; filter: contrast(1.1); }
+        
         .vignette {
             position: fixed; inset: 0; z-index: 5;
-            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.95) 100%);
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.98) 100%);
             pointer-events: none;
         }
 
         .crt-scan {
             position: fixed; inset: 0; z-index: 6;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.08) 50%),
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
                         linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
-            background-size: 100% 4px, 4px 100%;
-            pointer-events: none;
-            animation: flicker 0.15s infinite;
-        }
-
-        @keyframes flicker {
-            0% { opacity: 0.9; }
-            50% { opacity: 1; }
-            100% { opacity: 0.9; }
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none; opacity: 0.6;
         }
 
         /* --- UI COMPONENTS --- */
         .os-header {
-            position: fixed; top: 40px; left: 50px; right: 50px;
+            position: fixed; top: 45px; left: 55px; right: 55px;
             display: flex; justify-content: space-between; align-items: flex-start;
             z-index: 1000;
         }
 
-        .sys-tag {
-            font-size: 10px; font-weight: 900; letter-spacing: 0.8em;
+        .sys-id {
+            font-size: 11px; font-weight: 900; letter-spacing: 0.9em;
             text-transform: uppercase; color: var(--primary);
-            text-shadow: 0 0 15px var(--primary-glow);
+            text-shadow: 0 0 25px var(--primary-glow);
             transition: var(--transition-core);
         }
 
-        .auth-label {
+        .status-pill {
             font-family: 'JetBrains Mono'; font-size: 8px;
-            text-transform: uppercase; letter-spacing: 0.4em;
-            color: rgba(255,255,255,0.2); margin-top: 5px;
+            text-transform: uppercase; letter-spacing: 0.5em;
+            color: rgba(255,255,255,0.25); margin-top: 6px;
         }
 
+        /* --- NEXUS PANEL --- */
         .nexus-panel {
             position: fixed; top: 0; right: -650px; width: 650px; height: 100%;
             background: var(--panel-bg); border-left: 1px solid var(--border-ui);
             z-index: 2000; transition: right 0.8s cubic-bezier(0.19, 1, 0.22, 1);
-            padding: 100px 60px; backdrop-filter: blur(60px);
+            padding: 100px 60px; backdrop-filter: blur(100px);
             display: flex; flex-direction: column;
         }
-
         .nexus-panel.active { right: 0; }
 
         .sys-btn {
             background: rgba(255,255,255,0.02); border: 1px solid var(--border-ui);
-            padding: 20px; font-size: 9px; font-weight: 900;
-            text-transform: uppercase; letter-spacing: 0.4em; color: #fff;
-            transition: all 0.3s ease; width: 100%; text-align: center;
-            margin-bottom: 12px; position: relative; overflow: hidden;
+            padding: 22px; font-size: 10px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 0.5em; color: #fff;
+            transition: 0.4s; width: 100%; text-align: center; margin-bottom: 12px;
         }
+        .sys-btn:hover, .sys-btn.active { background: var(--primary); color: #000; border-color: var(--primary); box-shadow: 0 0 40px var(--primary-glow); }
 
-        .sys-btn:hover, .sys-btn.active {
-            background: var(--primary); color: #000;
-            border-color: var(--primary); box-shadow: 0 0 30px var(--primary-glow);
-        }
-
-        /* --- CHRONOS (MAIN CLOCK) --- */
-        .chronos-container {
+        /* --- CHRONOS (THE HEART) --- */
+        .chronos-box {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%); text-align: center;
             z-index: 10; width: 100%; pointer-events: none;
         }
-
-        #clock-face { 
-            font-family: 'Montserrat', sans-serif; 
-            font-size: clamp(8rem, 20vw, 28rem); 
-            font-weight: 900; line-height: 0.8; letter-spacing: -0.05em; 
-            color: var(--primary); filter: drop-shadow(0 0 50px var(--primary-glow));
-            transition: color 1s ease, font-family 0.8s ease;
+        #clock-val { 
+            font-family: 'Montserrat', sans-serif; font-size: clamp(8rem, 20vw, 26rem); 
+            font-weight: 900; line-height: 0.8; letter-spacing: -0.07em; 
+            color: var(--primary); filter: drop-shadow(0 0 45px var(--primary-glow));
+            transition: var(--transition-core);
         }
+        #clock-ss { font-size: clamp(2rem, 6vw, 8.5rem); font-weight: 100; opacity: 0.25; color: #fff; margin-left: 15px; }
 
-        #clock-secs {
-            font-size: clamp(2rem, 6vw, 9rem); font-weight: 100;
-            opacity: 0.25; color: #fff; margin-left: 20px;
-        }
-
-        /* --- TELEMETRY --- */
-        .telemetry-suite {
-            position: fixed; bottom: 60px; right: 60px;
-            z-index: 100; font-family: 'JetBrains Mono';
-            font-size: 8px; text-transform: uppercase;
-        }
-
-        .tele-row {
-            display: flex; align-items: center; justify-content: flex-end;
-            gap: 20px; margin-bottom: 12px;
-        }
-
-        .tele-label { width: 100px; color: var(--primary); font-weight: 800; text-align: right; letter-spacing: 0.1em; }
-        .tele-track { width: 180px; height: 1px; background: rgba(255,255,255,0.04); position: relative; }
-        .tele-fill { height: 100%; background: var(--primary); box-shadow: 0 0 15px var(--primary-glow); transition: width 1.2s ease; }
-
-        /* --- MEDIA NODE --- */
-        #spotify-uplink {
-            position: fixed; bottom: 60px; left: 60px;
-            z-index: 100; font-family: 'JetBrains Mono' !important;
-        }
-
-        .media-nexus {
-            background: rgba(0, 0, 0, 0.98); border: 1px solid var(--border-ui);
-            padding: 30px; border-left: 5px solid var(--spotify);
-            width: 400px; display: flex; align-items: center; gap: 25px;
-            backdrop-filter: blur(30px);
-        }
-
-        .track-art { width: 70px; height: 70px; border: 1px solid var(--border-ui); object-fit: cover; }
-        .track-meta { overflow: hidden; flex: 1; }
-        .track-name { font-weight: 900; font-size: 11px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .artist-name { color: var(--spotify); font-size: 8px; margin-top: 6px; font-weight: 800; letter-spacing: 0.2em; }
-
-        .link-spotify-btn {
-            background: var(--spotify); color: #000; font-size: 9px;
-            font-weight: 900; padding: 12px 25px; text-transform: uppercase;
-            letter-spacing: 0.2em; border: none; cursor: pointer; transition: 0.3s;
-        }
-
-        /* --- SETTINGS GRID --- */
-        .swatch-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr);
-            gap: 15px; margin-bottom: 40px;
-        }
-
-        .swatch {
-            height: 55px; border: 1px solid var(--border-ui);
+        /* --- SPECTRAL GRID --- */
+        .spectral-matrix { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 40px; }
+        .spec-node {
+            height: 60px; border: 1px solid var(--border-ui);
             display: flex; align-items: center; justify-content: center;
             font-size: 8px; font-weight: 900; letter-spacing: 0.3em;
-            cursor: pointer; transition: 0.4s; background: rgba(255,255,255,0.01);
+            cursor: pointer; transition: 0.4s;
         }
+        .spec-node:hover { transform: scale(1.05); border-color: #fff; background: rgba(255,255,255,0.05); }
 
-        .swatch:hover { border-color: #fff; background: rgba(255,255,255,0.05); transform: translateY(-2px); }
+        /* --- TELEMETRY --- */
+        .telemetry-node { position: fixed; bottom: 65px; right: 65px; z-index: 100; font-family: 'JetBrains Mono'; font-size: 8px; text-transform: uppercase; }
+        .tele-row { display: flex; align-items: center; justify-content: flex-end; gap: 20px; margin-bottom: 12px; }
+        .tele-bar { width: 160px; height: 1px; background: rgba(255,255,255,0.05); position: relative; }
+        .tele-fill { height: 100%; background: var(--primary); box-shadow: 0 0 15px var(--primary-glow); transition: width 1.2s ease; }
+
+        /* --- MEDIA MODULE --- */
+        #media-uplink { position: fixed; bottom: 65px; left: 65px; z-index: 100; font-family: 'JetBrains Mono' !important; }
+        .media-nexus {
+            background: rgba(2, 2, 2, 0.98); border: 1px solid var(--border-ui);
+            padding: 30px; border-left: 5px solid var(--spotify);
+            width: 400px; display: flex; align-items: center; gap: 25px;
+            backdrop-filter: blur(50px);
+        }
+        .spotify-btn { background: var(--spotify); color: #000; font-size: 10px; font-weight: 900; padding: 12px 25px; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 0.2em; }
 
         #terminal-manifest {
-            height: 280px; background: rgba(0,0,0,0.6);
-            border: 1px solid var(--border-ui); padding: 25px;
-            font-family: 'JetBrains Mono'; font-size: 9px;
+            height: 260px; background: rgba(0,0,0,0.6); border: 1px solid var(--border-ui);
+            padding: 25px; font-family: 'JetBrains Mono'; font-size: 9px;
             color: var(--primary); overflow-y: auto; line-height: 2.2;
         }
 
-        #halt-overlay {
-            position: fixed; inset: 0; z-index: 99999;
-            background: #000; display: none; flex-direction: column;
-            align-items: center; justify-content: center;
-        }
-        
-        .glitch-halt { color: #ff3333; font-weight: 900; letter-spacing: 2.5em; font-size: 16px; animation: pulse 0.1s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.02); } }
+        /* --- KEYFRAME MATRICES --- */
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        .pulse-text { animation: pulse 2s infinite; }
 
     </style>
 </head>
 <body id="kernel-root">
 
-    <canvas id="matrix-layer"></canvas>
-    <canvas id="entropy-layer"></canvas>
+    <canvas id="matrix-canvas"></canvas>
     <div class="vignette"></div>
     <div class="crt-scan"></div>
 
-    <div id="halt-overlay">
-        <div class="glitch-halt">ACCESS_DENIED</div>
-        <div class="mt-12 opacity-20 text-[8px] uppercase tracking-[0.6em]">Hardware buffers purged // Session nulled</div>
-        <button class="sys-btn !w-72 mt-24 !border-red-600/30 !text-red-600" onclick="location.reload()">Re-Initialize_Kernel</button>
-    </div>
-
-    <header class="os-header" id="ui-header">
+    <header class="os-header" id="header-node">
         <div>
-            <div class="sys-tag">ARCHITECT_OS // v62.0.1</div>
-            <div class="auth-label" id="uplink-status">Uplink: Standby</div>
+            <div class="sys-id" id="os-tag">ARCHITECT_OS // v68.0</div>
+            <div class="status-pill" id="uplink-label">Uplink: Standby // Neural_Ready</div>
         </div>
         <button class="sys-btn !px-24 !mb-0" onclick="Kernel.toggleNexus()">Nexus_Config</button>
     </header>
 
     <aside id="nexus-ui" class="nexus-panel">
-        <div class="text-[10px] font-black tracking-[1.2em] mb-12 uppercase opacity-20">Settings_Gateway</div>
+        <div class="text-[11px] font-black tracking-[1.2em] mb-12 uppercase opacity-20">Configuration_Nexus</div>
         
         <div class="flex-1 overflow-y-auto pr-4 space-y-16">
             <section>
-                <div class="text-[8px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">Chronos_Indexing</div>
+                <div class="text-[9px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">Spectral_Protocol (RGBWOP)</div>
+                <div class="spectral-matrix">
+                    <div class="spec-node text-red-500 border-red-500/20" onclick="Kernel.updateTheme('#ff3333', 'RED')">RED</div>
+                    <div class="spec-node text-green-500 border-green-500/20" onclick="Kernel.updateTheme('#1DB954', 'GREEN')">GREEN</div>
+                    <div class="spec-node text-blue-500 border-blue-500/20" onclick="Kernel.updateTheme('#3b82f6', 'BLUE')">BLUE</div>
+                    <div class="spec-node text-white border-white/20" onclick="Kernel.updateTheme('#ffffff', 'WHITE')">WHITE</div>
+                    <div class="spec-node text-orange-500 border-orange-500/20" onclick="Kernel.updateTheme('#ff8800', 'ORANGE')">ORANGE</div>
+                    <div class="spec-node text-pink-500 border-pink-500/20" onclick="Kernel.updateTheme('#ff33ff', 'PINK')">PINK</div>
+                </div>
+            </section>
+
+            <section>
+                <div class="text-[9px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">Chronos_Indexing</div>
                 <div class="grid grid-cols-2 gap-4">
-                    <button class="sys-btn active" id="btn-12h" onclick="Chronos.setMode(12)">12H_BIT (SS)</button>
-                    <button class="sys-btn" id="btn-24h" onclick="Chronos.setMode(24)">24H_BIT (SS)</button>
+                    <button class="sys-btn active" id="btn-12" onclick="Chronos.setMode(12)">12H_INDEX</button>
+                    <button class="sys-btn" id="btn-24" onclick="Chronos.setMode(24)">24H_INDEX</button>
                 </div>
             </section>
 
             <section>
-                <div class="text-[8px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">Media_Uplink</div>
-                <button class="sys-btn !text-green-500 !border-green-500/20" onclick="Spotify.auth()">Secure_Link_Spotify</button>
+                <div class="text-[9px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">Media_Uplink</div>
+                <button class="sys-btn !text-green-500 !border-green-500/20" onclick="Spotify.auth()">Secure_Spotify_Uplink</button>
             </section>
 
             <section>
-                <div class="text-[8px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">Color_Preset_Matrix</div>
-                <div class="swatch-grid">
-                    <div class="swatch text-purple-500 border-purple-500/30" onclick="Kernel.updateTheme('#a855f7')">VIOLET_VOID</div>
-                    <div class="swatch text-cyan-400 border-cyan-400/30" onclick="Kernel.updateTheme('#00ffff')">CYBER_PUNK</div>
-                    <div class="swatch text-green-500 border-green-500/30" onclick="Kernel.updateTheme('#1DB954')">EMERALD_NET</div>
-                    <div class="swatch text-red-500 border-red-500/30" onclick="Kernel.updateTheme('#ff3333')">BLOOD_CODE</div>
-                    <div class="swatch text-orange-500 border-orange-500/30" onclick="Kernel.updateTheme('#ff8800')">SOLAR_FLARE</div>
-                    <div class="swatch text-blue-500 border-blue-500/30" onclick="Kernel.updateTheme('#3b82f6')">DEEP_SEA</div>
-                </div>
-                <input type="color" value="#a855f7" class="w-full h-14 bg-transparent border-none" oninput="Kernel.updateTheme(this.value)">
-            </section>
-
-            <section>
-                <div class="text-[8px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">Typeface_Uplink</div>
-                <div class="grid grid-cols-2 gap-4">
-                    <button class="sys-btn" onclick="Kernel.updateFont('Inter')">INTER_CORE</button>
-                    <button class="sys-btn" onclick="Kernel.updateFont('JetBrains Mono')">JETBRAINS</button>
-                    <button class="sys-btn" onclick="Kernel.updateFont('Montserrat')">MONTSERRAT</button>
-                    <button class="sys-btn" onclick="Kernel.updateFont('Orbitron')">ORBITRON_X</button>
-                </div>
-            </section>
-
-            <section>
-                <div class="text-[8px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">Terminal_Buffer</div>
+                <div class="text-[9px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">Kernel_Terminal_Manifest</div>
                 <div id="terminal-manifest">
-                    <div>[00:00:00] Initializing Kernels...</div>
-                    <div>[00:00:01] Visual Matrix Loaded.</div>
+                    <div>> Initializing ARCHITECT_OS // NEURAL...</div>
+                    <div>> Visual Matrix layers online.</div>
                 </div>
             </section>
         </div>
 
-        <button class="sys-btn !text-red-500 !border-red-500/10 mt-12" onclick="Kernel.terminate()">Purge_Session</button>
+        <button class="sys-btn !text-red-600 !border-red-600/10 mt-12" onclick="location.reload()">Terminate_Session</button>
     </aside>
 
-    <main class="chronos-container" id="chronos-node">
+    <main class="chronos-box" id="chronos-node">
         <div class="flex items-baseline justify-center">
-            <span id="clock-face">00:00</span>
-            <span id="clock-secs">00</span>
+            <span id="clock-val">00:00</span>
+            <span id="clock-ss">00</span>
         </div>
-        <div class="mt-12 text-[10px] tracking-[2.8em] font-black text-white/10 uppercase" id="format-tag">UTC_12H_SS</div>
+        <div class="mt-12 text-[11px] tracking-[2.8em] font-black text-white/10 uppercase">UTC_SPECTRAL_SS</div>
     </main>
 
-    <div class="telemetry-suite" id="telemetry-node">
-        <div class="tele-row"><span class="tele-label">CPU_FREQ</span> <div class="tele-track"><div id="bar-cpu" class="tele-fill" style="width: 20%"></div></div></div>
-        <div class="tele-row"><span class="tele-label">RAM_LOAD</span> <div class="tele-track"><div id="bar-mem" class="tele-fill" style="width: 50%"></div></div></div>
-        <div class="tele-row"><span class="tele-label">NET_UPLINK</span> <div class="tele-track"><div id="bar-net" class="tele-fill" style="width: 15%"></div></div></div>
+    <div class="telemetry-node">
+        <div class="tele-row">CPU_STRESS <div class="tele-bar"><div id="bar-cpu" class="tele-fill" style="width: 20%"></div></div></div>
+        <div class="tele-row">MEM_LOAD <div class="tele-bar"><div id="bar-mem" class="tele-fill" style="width: 50%"></div></div></div>
+        <div class="tele-row">NET_UPLINK <div class="tele-bar"><div id="bar-net" class="tele-fill" style="width: 15%"></div></div></div>
     </div>
 
-    <div id="spotify-uplink">
-        <div class="media-nexus" id="spotify-display">
-            <div class="track-meta">
-                <div class="track-name">Protocol_Dormant</div>
-                <div class="artist-name mb-6">UPLINK_REQUIRED_FOR_SYNC</div>
-                <button class="link-spotify-btn" onclick="Spotify.auth()">Connect_Spotify</button>
+    <div id="media-uplink">
+        <div class="media-nexus">
+            <div class="flex-1">
+                <div class="text-[11px] font-black text-white uppercase tracking-widest">Protocol_Dormant</div>
+                <div class="text-[8px] text-[#1DB954] mt-2 font-black uppercase opacity-60">Handshake_Required</div>
+                <button class="spotify-btn mt-6" onclick="Spotify.auth()">Secure_Link</button>
             </div>
         </div>
     </div>
 
     <script>
         /**
-         * ARCHITECT_OS // JAVASCRIPT_KERNEL_v62.0
-         * LINES: 450 - 715 (CORE LOGIC & CRYPTO)
+         * ARCHITECT_OS // LOGIC_KERNEL_v68.0
+         * LINES: 420 - 680 (CORE SCRIPTING)
          */
 
         const Kernel = {
@@ -312,35 +242,22 @@
             log: (tag, msg) => {
                 const log = document.getElementById('terminal-manifest');
                 const div = document.createElement('div');
-                div.innerHTML = `<span class="opacity-30">${new Date().toLocaleTimeString('en-GB')}</span> [${tag}] ${msg}`;
+                div.innerHTML = `<span class="opacity-25">${new Date().toLocaleTimeString()}</span> [${tag}] ${msg}`;
                 log.prepend(div);
                 if(log.childNodes.length > 80) log.lastChild.remove();
             },
 
-            updateTheme: (hex) => {
+            updateTheme: (hex, name) => {
                 document.documentElement.style.setProperty('--primary', hex);
                 document.documentElement.style.setProperty('--primary-glow', hex + '77');
-                Kernel.log("CHROMA", `System accent shifted: ${hex.toUpperCase()}`);
-            },
-
-            updateFont: (font) => {
-                document.documentElement.style.setProperty('--font-main', `'${font}', sans-serif`);
-                document.getElementById('clock-face').style.fontFamily = `'${font}', sans-serif`;
-                Kernel.log("TYPO", `Global typeface: ${font.toUpperCase()}`);
-            },
-
-            terminate: () => {
-                Kernel.log("HALT", "Purging session keys...");
-                document.getElementById('ui-header').style.opacity = '0';
-                document.getElementById('chronos-node').style.filter = 'blur(100px)';
-                document.getElementById('halt-overlay').style.display = 'flex';
+                document.getElementById('os-tag').style.color = hex;
+                Kernel.log("CHROMA", `Spectrum re-mapped: ${name}_WAVELENGTH`);
             },
 
             updateStats: () => {
                 const update = (id, base) => {
                     const val = Math.floor(Math.random() * 30 + base);
-                    const el = document.getElementById(id);
-                    if(el) el.style.width = val + '%';
+                    document.getElementById(id).style.width = val + '%';
                 };
                 update('bar-cpu', 10); update('bar-mem', 40); update('bar-net', 5);
             }
@@ -348,23 +265,20 @@
 
         const Chronos = {
             mode: 12,
-
             setMode: (m) => {
                 Chronos.mode = m;
-                document.getElementById('btn-12h').classList.toggle('active', m === 12);
-                document.getElementById('btn-24h').classList.toggle('active', m === 24);
-                document.getElementById('format-tag').innerText = `UTC_${m}H_SS`;
-                Kernel.log("CLK", `Time index shifted to ${m}H.`);
+                document.getElementById('btn-12').classList.toggle('active', m === 12);
+                document.getElementById('btn-24').classList.toggle('active', m === 24);
+                Kernel.log("CLK", `Time indexing shifted to ${m}H.`);
             },
-
             tick: () => {
                 const now = new Date();
                 let h = now.getHours();
                 const m = String(now.getMinutes()).padStart(2, '0');
                 const s = String(now.getSeconds()).padStart(2, '0');
                 if (Chronos.mode === 12) h = h % 12 || 12;
-                document.getElementById('clock-face').innerText = `${String(h).padStart(2, '0')}:${m}`;
-                document.getElementById('clock-secs').innerText = s;
+                document.getElementById('clock-val').innerText = `${String(h).padStart(2, '0')}:${m}`;
+                document.getElementById('clock-ss').innerText = s;
             }
         };
 
@@ -372,22 +286,21 @@
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
             redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback',
 
-            // SECURITY_FIX: Proper PKCE Code Verifier logic to prevent Handshake Error
             auth: async () => {
-                Kernel.log("AUTH", "Generating Cryptographic Session Keys...");
+                Kernel.log("AUTH", "Initializing PKCE Secure Handshake...");
                 
-                // 1. Create Verifier
+                // Security: Create Verifier
                 const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
                 let verifier = '';
                 const values = new Uint8Array(64);
                 crypto.getRandomValues(values);
                 for (let i = 0; i < 64; i++) verifier += charset[values[i] % charset.length];
                 
-                // 2. Store Verifier IMMEDIATELY before redirect
+                // CRITICAL: Prevent "CODE_VERIFIER WAS INCORRECT" Error
                 localStorage.setItem('sp_verifier', verifier);
                 Kernel.log("AUTH", "Verifier committed to Local Manifest.");
 
-                // 3. Create Challenge
+                // Create Challenge
                 const encoder = new TextEncoder();
                 const data = encoder.encode(verifier);
                 const hashed = await crypto.subtle.digest('SHA-256', data);
@@ -395,39 +308,12 @@
                     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
                 
                 const params = new URLSearchParams({
-                    response_type: 'code',
-                    client_id: Spotify.clientId,
-                    scope: 'user-read-currently-playing user-modify-playback-state',
-                    redirect_uri: Spotify.redirectUri,
-                    code_challenge_method: 'S256',
-                    code_challenge: challenge
+                    response_type: 'code', client_id: Spotify.clientId,
+                    scope: 'user-read-currently-playing', redirect_uri: Spotify.redirectUri,
+                    code_challenge_method: 'S256', code_challenge: challenge
                 });
 
                 window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
-            },
-
-            sync: async () => {
-                const token = localStorage.getItem('sp_access_token');
-                if(!token) return;
-
-                try {
-                    const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    if(res.status === 200) {
-                        const data = await res.json();
-                        document.getElementById('spotify-display').innerHTML = `
-                            <img class="track-art" src="${data.item.album.images[0].url}">
-                            <div class="track-meta">
-                                <div class="track-name">${data.item.name}</div>
-                                <div class="artist-name">${data.item.artists[0].name.toUpperCase()}</div>
-                                <div class="h-[1px] w-full bg-white/10 mt-5 relative">
-                                    <div class="h-full bg-[#1DB954]" style="width: ${(data.progress_ms/data.item.duration_ms)*100}%"></div>
-                                </div>
-                            </div>`;
-                        document.getElementById('uplink-status').innerText = "Uplink: Active // Secure";
-                    }
-                } catch(e) { console.warn("Socket desync."); }
             }
         };
 
@@ -435,82 +321,45 @@
             matrix: {
                 c: null, ctx: null, drops: [],
                 init: () => {
-                    VFX.matrix.c = document.getElementById('matrix-layer');
+                    VFX.matrix.c = document.getElementById('matrix-canvas');
                     VFX.matrix.ctx = VFX.matrix.c.getContext('2d');
                     VFX.matrix.resize();
-                    setInterval(VFX.matrix.draw, 45);
+                    setInterval(VFX.matrix.draw, 50);
                 },
                 resize: () => {
                     VFX.matrix.c.width = window.innerWidth;
                     VFX.matrix.c.height = window.innerHeight;
-                    VFX.matrix.drops = Array(Math.floor(VFX.matrix.c.width / 18)).fill(1);
+                    VFX.matrix.drops = Array(Math.floor(VFX.matrix.c.width / 20)).fill(1);
                 },
                 draw: () => {
                     const {ctx, c, drops} = VFX.matrix;
                     ctx.fillStyle = "rgba(0,0,0,0.12)";
                     ctx.fillRect(0,0,c.width,c.height);
                     ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
-                    ctx.font = "12px monospace";
+                    ctx.font = "14px monospace";
                     drops.forEach((y, i) => {
-                        ctx.fillText(Math.random() > 0.5 ? "1" : "0", i*18, y*18);
-                        if(y*18 > c.height && Math.random() > 0.985) drops[i] = 0;
+                        ctx.fillText(Math.random() > 0.5 ? "1" : "0", i*20, y*20);
+                        if(y*20 > c.height && Math.random() > 0.98) drops[i] = 0;
                         drops[i]++;
                     });
-                }
-            },
-            entropy: {
-                c: null, ctx: null, points: [],
-                init: () => {
-                    VFX.entropy.c = document.getElementById('entropy-layer');
-                    VFX.entropy.ctx = VFX.entropy.c.getContext('2d');
-                    VFX.entropy.resize();
-                    for(let i=0; i<100; i++) VFX.entropy.points.push({
-                        x: Math.random() * window.innerWidth,
-                        y: Math.random() * window.innerHeight,
-                        v: Math.random() * 0.4 + 0.1,
-                        r: Math.random() * 1.8
-                    });
-                    VFX.entropy.loop();
-                },
-                resize: () => {
-                    VFX.entropy.c.width = window.innerWidth;
-                    VFX.entropy.c.height = window.innerHeight;
-                },
-                loop: () => {
-                    const {ctx, c, points} = VFX.entropy;
-                    ctx.clearRect(0,0,c.width,c.height);
-                    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
-                    points.forEach(p => {
-                        p.y -= p.v;
-                        if(p.y < 0) p.y = c.height;
-                        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
-                    });
-                    requestAnimationFrame(VFX.entropy.loop);
                 }
             }
         };
 
-        // --- GLOBAL INITIALIZER ---
         window.onload = () => {
             VFX.matrix.init();
-            VFX.entropy.init();
             setInterval(Chronos.tick, 1000);
-            setInterval(Kernel.updateStats, 1800);
-            setInterval(Spotify.sync, 4000);
+            setInterval(Kernel.updateStats, 2000);
+            window.addEventListener('resize', VFX.matrix.resize);
             
-            window.addEventListener('resize', () => {
-                VFX.matrix.resize(); VFX.entropy.resize();
-            });
-
-            // Parallax Interaction
+            // Interaction Parallax
             document.onmousemove = (e) => {
-                const x = (window.innerWidth/2 - e.pageX)/90;
-                const y = (window.innerHeight/2 - e.pageY)/90;
-                const node = document.getElementById('chronos-node');
-                if(node) node.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+                const x = (window.innerWidth/2 - e.pageX)/100;
+                const y = (window.innerHeight/2 - e.pageY)/100;
+                document.getElementById('chronos-node').style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
             };
 
-            Kernel.log("BOOT", "Architect_OS v62.0 Neural Link Established.");
+            Kernel.log("BOOT", "Session v68.0 Online. Neural Uplink Secure.");
         };
     </script>
 </body>
