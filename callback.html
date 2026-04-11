@@ -13,12 +13,11 @@
             --bg: #010101;
         }
         body { 
-            background: var(--bg); color: var(--primary); 
-            font-family: 'JetBrains Mono', monospace; 
-            display: flex; align-items: center; justify-content: center; 
-            height: 100vh; margin: 0; overflow: hidden;
+             background: var(--bg); color: var(--primary); 
+             font-family: 'JetBrains Mono', monospace; 
+             display: flex; align-items: center; justify-content: center; 
+             height: 100vh; margin: 0; overflow: hidden;
         }
-        /* Grain Overlay */
         body::before {
             content: ""; position: fixed; inset: 0;
             background: url('https://grainy-gradients.vercel.app/noise.svg');
@@ -56,77 +55,81 @@
         <div id="main-status" class="glitch-header">INITIALIZING</div>
         <div class="data-stream"><div class="stream-particle"></div></div>
         <div id="sub-status" class="text-[9px] tracking-[0.3em] uppercase opacity-60">Awaiting secure signal...</div>
-        <div id="error-log" class="hidden mt-6 p-4 border border-red-500/30 text-red-500 text-[8px] text-left max-w-xs"></div>
+        <div id="error-log" class="hidden mt-6 p-4 border border-red-500/30 text-red-500 text-[8px] text-left max-w-xs break-words"></div>
     </div>
 
     <script>
         const CONFIG = {
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            clientSecret: 'a81883efd2db4e1484c192222c91599f',
             redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback'
         };
 
-async function start() {
-    const status = document.getElementById('main-status');
-    const sub = document.getElementById('sub-status');
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    const state = urlParams.get('state') || 'hmm.html'; // <--- Get the origin page
+        async function start() {
+            const status = document.getElementById('main-status');
+            const sub = document.getElementById('sub-status');
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state') || 'index.html'; 
 
-    if (!code) {
-        if (localStorage.getItem('sp_access_token')) {
-            status.innerText = "RESTORED";
-            sub.innerText = "Session active. Redirecting...";
-            setTimeout(() => window.location.href = state, 1000); // Redirect to state
-        } else {
-            fail("MISSING_CODE", "No uplink signal from gateway.");
-        }
-        return;
-    }
+            if (!code) {
+                if (localStorage.getItem('sp_access_token')) {
+                    status.innerText = "RESTORED";
+                    sub.innerText = "Session active. Returning to OS...";
+                    setTimeout(() => window.location.href = state, 1000);
+                } else {
+                    fail("MISSING_CODE", "No uplink signal detected.");
+                }
+                return;
+            }
 
-    status.innerText = "NEGOTIATING";
-    sub.innerText = "Exchanging session keys...";
+            status.innerText = "NEGOTIATING";
+            sub.innerText = "Validating PKCE verifier...";
 
-    const verifier = localStorage.getItem('code_verifier');
-    if (!verifier) {
-        fail("VERIFIER_LOST", "Security key missing.");
-        return;
-    }
-
-    try {
-        const res = await fetch('https://accounts.spotify.com/api/token', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': 'Basic ' + btoa(CONFIG.clientId + ':' + CONFIG.clientSecret)
-            },
-            body: new URLSearchParams({
-                grant_type: 'authorization_code',
-                code: code,
-                redirect_uri: CONFIG.redirectUri,
-                code_verifier: verifier
-            })
-        });
-
-        const data = await res.json();
-        
-        if (data.access_token) {
-            localStorage.setItem('sp_access_token', data.access_token);
-            localStorage.setItem('sp_refresh_token', data.refresh_token);
-            localStorage.setItem('sp_expiry', Date.now() + (data.expires_in * 1000));
+            // FIX: Match the key name used in your index.html ('sp_verifier')
+            const verifier = localStorage.getItem('sp_verifier');
             
-            status.innerText = "SUCCESS";
-            sub.innerText = "Handshake verified. Entering OS...";
-            
-            // REDIRECT TO THE PAGE SAVED IN STATE
-            setTimeout(() => window.location.href = state, 1500);
-        } else { 
-            throw new Error(data.error_description || "Handshake Rejected"); 
+            if (!verifier) {
+                fail("VERIFIER_LOST", "The code_verifier was not found in local memory.");
+                return;
+            }
+
+            try {
+                // Spotify Token Endpoint
+                const res = await fetch('https://accounts.spotify.com/api/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        grant_type: 'authorization_code',
+                        code: code,
+                        redirect_uri: CONFIG.redirectUri,
+                        client_id: CONFIG.clientId,
+                        code_verifier: verifier
+                    })
+                });
+
+                const data = await res.json();
+                
+                if (data.access_token) {
+                    localStorage.setItem('sp_access_token', data.access_token);
+                    localStorage.setItem('sp_refresh_token', data.refresh_token);
+                    localStorage.setItem('sp_expiry', Date.now() + (data.expires_in * 1000));
+                    
+                    status.innerText = "SUCCESS";
+                    sub.innerText = "Handshake verified. Entering OS...";
+                    
+                    // Cleanup verifier after successful use
+                    localStorage.removeItem('sp_verifier');
+                    
+                    setTimeout(() => window.location.href = state, 1500);
+                } else { 
+                    throw new Error(data.error_description || data.error || "Handshake Rejected"); 
+                }
+            } catch (e) { 
+                fail("PROTOCOL_ERR", e.message); 
+            }
         }
-    } catch (e) { 
-        fail("PROTOCOL_ERR", e.message); 
-    }
-}
 
         function fail(type, msg) {
             document.getElementById('main-status').innerText = type;
