@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | ARCHITECT_OS_v45.3.1</title>
+    <title>XCLIPSE | ARCHITECT_OS_PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=Inter:wght@100;300;400;700;900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     
@@ -12,123 +12,151 @@
             --primary: #a855f7;
             --primary-glow: rgba(168, 85, 247, 0.4);
             --spotify: #1DB954;
-            --bg-dark: #010101;
-            --panel-bg: rgba(5, 5, 5, 0.98);
-            --border-ui: rgba(255, 255, 255, 0.08);
+            --bg-dark: #050505;
+            --panel-bg: rgba(10, 10, 10, 0.85);
+            --border-ui: rgba(255, 255, 255, 0.05);
             --terminal-green: #00ff88;
-            --panel-width: 480px;
         }
 
-        /* --- GLOBAL & VFX --- */
         * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-        body, html { width: 100%; height: 100%; background: var(--bg-dark); color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; }
-        
-        #entropy-canvas { position: fixed; inset: 0; z-index: 0; opacity: 0.25; pointer-events: none; }
-        .os-grid { position: fixed; inset: 0; z-index: 1; background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
-        .scanline { width: 100%; height: 100px; z-index: 3; position: absolute; background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(168, 85, 247, 0.1) 50%, rgba(0,0,0,0) 100%); opacity: 0.2; pointer-events: none; animation: scan 8s linear infinite; }
-        @keyframes scan { from { top: -100px; } to { top: 100%; } }
-
-        /* --- UI ELEMENTS --- */
-        .os-header { position: fixed; top: 40px; left: 50px; right: 50px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 100; }
-        .system-tag { font-family: 'JetBrains Mono'; font-size: 11px; letter-spacing: 0.6em; text-transform: uppercase; color: var(--primary); font-weight: 800; text-shadow: 0 0 10px var(--primary-glow); }
-        
-        .side-panel {
-            position: fixed; top: 0; right: calc(var(--panel-width) * -1);
-            width: var(--panel-width); height: 100%;
-            background: var(--panel-bg); border-left: 1px solid var(--border-ui);
-            z-index: 1000; transition: right 0.6s cubic-bezier(0.19, 1, 0.22, 1);
-            padding: 60px 40px; backdrop-filter: blur(40px);
-            border-top: 5px solid var(--primary);
+        body, html { 
+            width: 100%; height: 100%; 
+            background: var(--bg-dark); 
+            color: #fff; 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
         }
-        .side-panel.active { right: 0; }
 
-        .os-btn { background: rgba(255,255,255,0.02); border: 1px solid var(--border-ui); padding: 14px; font-size: 10px; text-transform: uppercase; font-weight: 800; cursor: pointer; transition: 0.3s; color: #fff; letter-spacing: 0.1em; text-align: center; }
-        .os-btn:hover { background: var(--primary); color: #000; border-color: var(--primary); }
+        /* --- KINETIC BACKGROUND --- */
+        #entropy-canvas { position: fixed; inset: 0; z-index: 0; opacity: 0.3; pointer-events: none; filter: blur(1px); }
+        .os-grid { 
+            position: fixed; inset: 0; z-index: 1; 
+            background-image: 
+                linear-gradient(var(--border-ui) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-ui) 1px, transparent 1px);
+            background-size: 50px 50px; 
+            pointer-events: none;
+            mask-image: radial-gradient(circle at center, black 20%, transparent 80%);
+        }
 
-        .tab-btn { font-family: 'JetBrains Mono'; font-size: 10px; letter-spacing: 0.3em; padding: 12px 20px; cursor: pointer; opacity: 0.3; transition: 0.4s; border-bottom: 2px solid transparent; text-transform: uppercase; }
-        .tab-btn.active { opacity: 1; color: var(--primary); border-bottom: 2px solid var(--primary); }
+        /* --- REACTIVE CLOCK --- */
+        .clock-wrap {
+            transition: transform 0.1s ease-out;
+            perspective: 1000px;
+        }
+        #main-time { 
+            font-family: 'Montserrat', sans-serif; 
+            font-size: clamp(10rem, 25vw, 32rem); 
+            font-weight: 900; font-style: italic; 
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255,255,255,0.1);
+            line-height: 0.8;
+            transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        #main-time:hover {
+            color: white;
+            -webkit-text-stroke: 0px transparent;
+            filter: drop-shadow(0 0 50px var(--primary-glow));
+        }
+        #sec-hex { font-family: 'JetBrains Mono'; font-size: 6rem; color: var(--primary); opacity: 0.6; }
 
-        /* --- CLOCK --- */
-        #main-time { font-family: 'Montserrat', sans-serif; font-size: clamp(8rem, 20vw, 28rem); font-weight: 900; font-style: italic; color: #fff; mix-blend-mode: overlay; line-height: 0.7; }
-        #sec-hex { font-size: 6rem; font-weight: 100; color: var(--primary); opacity: 0.8; line-height: 0.7; font-family: 'JetBrains Mono'; }
+        /* --- SIDE PANEL (MODERNIZED) --- */
+        .side-panel {
+            position: fixed; top: 0; right: -500px;
+            width: 500px; height: 100%;
+            background: var(--panel-bg);
+            border-left: 1px solid var(--border-ui);
+            backdrop-filter: blur(50px) saturate(150%);
+            z-index: 1000;
+            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+            padding: 80px 50px;
+        }
+        .side-panel.active { right: 0; box-shadow: -50px 0 100px rgba(0,0,0,0.5); }
+
+        .os-btn { 
+            background: rgba(255,255,255,0.03); 
+            border: 1px solid var(--border-ui); 
+            padding: 16px; font-size: 10px; 
+            text-transform: uppercase; font-weight: 800; 
+            transition: 0.4s; letter-spacing: 0.2em;
+            color: rgba(255,255,255,0.5);
+        }
+        .os-btn:hover { background: #fff; color: #000; transform: translateY(-2px); }
+        .os-btn.active { border-color: var(--primary); color: var(--primary); }
 
         /* --- SPOTIFY NODE --- */
-        #spotify-node { position: fixed; bottom: 80px; left: 80px; z-index: 100; transition: 0.8s ease; opacity: 0; transform: translateY(20px); }
-        .node-box { background: rgba(0,0,0,0.9); border: 1px solid var(--border-ui); padding: 20px 30px; border-left: 4px solid var(--spotify); backdrop-filter: blur(20px); display: flex; align-items: center; gap: 20px; }
-        .album-art { width: 50px; height: 50px; border: 1px solid var(--border-ui); object-fit: cover; }
-        .progress-rail { height: 2px; width: 100%; background: rgba(255,255,255,0.06); margin-top: 10px; overflow: hidden; }
-        .track-progress-bar { height: 100%; background: var(--spotify); transition: width 1s linear; }
+        #spotify-node {
+            position: fixed; bottom: 60px; left: 60px;
+            z-index: 100; transition: 0.5s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-ui);
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            border-radius: 2px;
+            display: flex; align-items: center; gap: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .album-art { width: 60px; height: 60px; border-radius: 2px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .track-bar-bg { height: 2px; width: 100%; background: rgba(255,255,255,0.05); margin-top: 12px; }
+        .track-bar-fill { height: 100%; background: var(--spotify); transition: width 1s linear; box-shadow: 0 0 10px var(--spotify); }
 
-        .log-terminal { background: rgba(0,0,0,0.5); border: 1px solid var(--border-ui); height: 280px; overflow-y: auto; padding: 15px; font-size: 9px; color: var(--terminal-green); font-family: 'JetBrains Mono'; }
-        .connect-btn { border: 1px solid var(--spotify); color: var(--spotify); padding: 12px 24px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3em; background: transparent; transition: 0.3s; }
-        .connect-btn:hover { background: var(--spotify); color: #000; box-shadow: 0 0 20px rgba(29, 185, 84, 0.4); }
+        .log-stream { font-family: 'JetBrains Mono'; font-size: 9px; color: var(--terminal-green); height: 200px; overflow-y: auto; opacity: 0.5; }
     </style>
 </head>
 <body>
 
     <canvas id="entropy-canvas"></canvas>
     <div class="os-grid"></div>
-    <div class="scanline"></div>
 
-    <header class="os-header">
+    <header class="fixed top-12 left-12 right-12 flex justify-between items-start z-[100]">
         <div class="flex flex-col">
-            <div class="system-tag">ARCHITECT_OS // v45.3.1</div>
-            <div id="auth-status" class="text-[9px] opacity-40 mt-1 uppercase tracking-widest font-mono">Link: Disconnected</div>
+            <div class="text-[10px] font-black tracking-[0.8em] text-purple-500 uppercase">Architect.OS // Pro</div>
+            <div id="auth-status" class="text-[8px] opacity-30 mt-2 font-mono uppercase tracking-[0.4em]">Signal: Interrupted</div>
         </div>
-        <button class="os-btn !px-10" onclick="OS.togglePanel()">01_SETTINGS</button>
+        <button class="os-btn px-12" onclick="OS.togglePanel()">Menu</button>
     </header>
 
     <aside id="osPanel" class="side-panel">
-        <div class="flex justify-between mb-10 border-b border-white/5">
-            <div class="tab-btn active" onclick="OS.switchTab('core', this)">01_CORE</div>
-            <div class="tab-btn" onclick="OS.switchTab('media', this)">02_MEDI</div>
-            <div class="tab-btn" onclick="OS.switchTab('auth', this)">03_LOGS</div>
+        <div class="flex justify-between items-center mb-16">
+            <span class="text-[10px] font-black tracking-[0.5em] opacity-20">SYSTEM_MODULES</span>
+            <button onclick="OS.togglePanel()" class="text-[10px] hover:text-purple-500 transition">CLOSE_X</button>
         </div>
 
-        <div id="tab-core" class="tab-content flex flex-col gap-10">
+        <div class="space-y-12">
             <section>
-                <label class="text-[10px] opacity-40 uppercase tracking-widest block mb-4">Chronos_Config</label>
+                <label class="text-[9px] opacity-30 uppercase tracking-[0.4em] mb-6 block">Time_Protocol</label>
                 <div class="grid grid-cols-2 gap-4">
-                    <button class="os-btn" onclick="Clock.setMode(12)">12_HR</button>
-                    <button class="os-btn" onclick="Clock.setMode(24)">24_HR</button>
+                    <button id="btn12" class="os-btn active" onclick="Clock.setMode(12)">12_Hour</button>
+                    <button id="btn24" class="os-btn" onclick="Clock.setMode(24)">24_Hour</button>
                 </div>
             </section>
-        </div>
 
-        <div id="tab-media" class="tab-content hidden flex-col gap-8">
             <section>
-                <label class="text-[10px] opacity-40 uppercase tracking-widest block mb-4">Media_Uplink</label>
-                <div class="bg-white/5 p-5 border border-white/10 flex items-center gap-4 mb-4">
-                    <img id="mirror-cover" class="w-12 h-12 opacity-50 bg-black border border-white/10" src="" alt="">
-                    <div class="flex-1 overflow-hidden">
-                        <div id="mirror-track" class="text-sm font-black uppercase truncate tracking-tighter">Offline</div>
-                        <div id="mirror-artist" class="text-[9px] text-purple-400 font-bold uppercase tracking-widest">No Signal</div>
-                        <div class="progress-rail"><div class="track-progress-bar" id="mirror-progress" style="width: 0%"></div></div>
-                    </div>
+                <label class="text-[9px] opacity-30 uppercase tracking-[0.4em] mb-6 block">Media_Gate</label>
+                <div class="bg-white/[0.02] border border-white/5 p-6 mb-4">
+                    <div id="mirror-track" class="text-xs font-bold uppercase tracking-widest truncate">Idle_Stream</div>
+                    <div id="mirror-artist" class="text-[9px] text-purple-400 mt-1 uppercase">Awaiting Link...</div>
                 </div>
                 <div class="grid grid-cols-3 gap-2">
-                    <button class="os-btn" onclick="Spotify.command('previous')">PREV</button>
-                    <button class="os-btn" onclick="Spotify.command('play')">PLAY</button>
-                    <button class="os-btn" onclick="Spotify.command('next')">NEXT</button>
+                    <button class="os-btn !p-3" onclick="Spotify.command('previous')">«</button>
+                    <button class="os-btn !p-3" onclick="Spotify.command('play')">⏵</button>
+                    <button class="os-btn !p-3" onclick="Spotify.command('next')">»</button>
                 </div>
-                <button class="os-btn w-full mt-4 !border-dashed !text-purple-400" onclick="Spotify.auth()">RESET_GATEWAY</button>
             </section>
-        </div>
 
-        <div id="tab-auth" class="tab-content hidden flex flex-col">
             <section>
-                <label class="text-[10px] opacity-40 uppercase tracking-widest block mb-4">System_Logs</label>
-                <div class="log-terminal" id="sys-log"></div>
+                <label class="text-[9px] opacity-30 uppercase tracking-[0.4em] mb-6 block">Kernel_Logs</label>
+                <div class="log-stream" id="sys-log"></div>
             </section>
         </div>
     </aside>
 
     <main class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-        <div class="flex items-baseline gap-8">
+        <div class="clock-wrap flex items-baseline gap-10" id="reactive-clock">
             <div id="main-time">00:00</div>
-            <div id="sec-hex" class="pb-16">00</div>
+            <div id="sec-hex">00</div>
         </div>
     </main>
 
@@ -137,25 +165,22 @@
     <script>
         const OS = {
             togglePanel: () => document.getElementById('osPanel').classList.toggle('active'),
-            switchTab: (id, btn) => {
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.getElementById(`tab-${id}`).classList.remove('hidden');
-                btn.classList.add('active');
-            },
             log: (tag, msg) => {
                 const log = document.getElementById('sys-log');
-                if(!log) return;
-                const entry = document.createElement('div');
-                entry.className = "mb-1";
-                entry.innerHTML = `<span class="opacity-30">${new Date().toLocaleTimeString()}</span> <span class="text-purple-500">[${tag}]</span> ${msg}`;
-                log.prepend(entry);
+                const e = document.createElement('div');
+                e.className = "mb-1";
+                e.innerHTML = `<span class="opacity-20">${new Date().toLocaleTimeString()}</span> [${tag}] ${msg}`;
+                log.prepend(e);
             }
         };
 
         const Clock = {
             mode: 12,
-            setMode: (m) => Clock.mode = m,
+            setMode: (m) => {
+                Clock.mode = m;
+                document.getElementById('btn12').classList.toggle('active', m === 12);
+                document.getElementById('btn24').classList.toggle('active', m === 24);
+            },
             tick: () => {
                 const now = new Date(); let h = now.getHours();
                 const m = String(now.getMinutes()).padStart(2, '0');
@@ -168,46 +193,32 @@
 
         const Spotify = {
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            clientSecret: 'a81883efd2db4e1484c192222c91599f',
             redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/shh.html',
 
             updateUI: (isConnected, data = null) => {
                 const node = document.getElementById('spotify-node');
+                const status = document.getElementById('auth-status');
                 
                 if (!isConnected) {
-                    node.style.opacity = "1";
-                    node.style.transform = "translateY(0)";
-                    node.innerHTML = `<button class="connect-btn" onclick="Spotify.auth()">CONNECT_SPOTIFY</button>`;
-                    document.getElementById('auth-status').innerText = "Link: Disconnected";
+                    node.innerHTML = `<button class="os-btn !text-green-500 !border-green-500/20" onclick="Spotify.auth()">Secure_Link</button>`;
+                    status.innerText = "Signal: Interrupted";
                     return;
                 }
 
                 if (data && data.item) {
-                    node.style.opacity = "1";
-                    node.style.transform = "translateY(0)";
                     const progress = (data.progress_ms / data.item.duration_ms) * 100 + "%";
-                    const cover = data.item.album.images[0].url;
-
                     node.innerHTML = `
-                        <div class="node-box">
-                            <img class="album-art" src="${cover}">
+                        <div class="glass-card">
+                            <img class="album-art" src="${data.item.album.images[0].url}">
                             <div class="flex flex-col">
-                                <div class="text-sm font-black uppercase truncate w-48 tracking-tighter">${data.item.name}</div>
-                                <div class="text-[9px] text-purple-400 font-bold uppercase tracking-widest">${data.item.artists[0].name.toUpperCase()}</div>
-                                <div class="progress-rail"><div class="track-progress-bar" style="width: ${progress}"></div></div>
+                                <div class="text-[11px] font-black uppercase tracking-widest w-48 truncate">${data.item.name}</div>
+                                <div class="text-[8px] text-purple-500 font-bold uppercase mt-1">${data.item.artists[0].name}</div>
+                                <div class="track-bar-bg"><div class="track-bar-fill" style="width: ${progress}"></div></div>
                             </div>
                         </div>`;
-
                     document.getElementById('mirror-track').innerText = data.item.name;
-                    document.getElementById('mirror-artist').innerText = data.item.artists[0].name.toUpperCase();
-                    document.getElementById('mirror-cover').src = cover;
-                    document.getElementById('mirror-cover').style.opacity = "1";
-                    document.getElementById('mirror-progress').style.width = progress;
-                    document.getElementById('auth-status').innerText = "Link: Secure // Streaming";
-                } else {
-                    node.style.opacity = "0";
-                    node.style.transform = "translateY(20px)";
-                    document.getElementById('auth-status').innerText = "Link: Secure // Idle";
+                    document.getElementById('mirror-artist').innerText = data.item.artists[0].name;
+                    status.innerText = "Signal: Secure // Streaming";
                 }
             },
 
@@ -217,7 +228,6 @@
                 const challenge = btoa(String.fromCharCode.apply(null, new Uint8Array(hashed))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
                 
                 localStorage.setItem('code_verifier', verifier);
-                
                 const params = new URLSearchParams({ 
                     response_type: 'code', client_id: Spotify.clientId, 
                     scope: 'user-read-currently-playing user-modify-playback-state user-read-playback-state', 
@@ -233,18 +243,14 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams({
-                        grant_type: 'authorization_code',
-                        code: code,
-                        redirect_uri: Spotify.redirectUri,
-                        client_id: Spotify.clientId,
-                        code_verifier: verifier
+                        grant_type: 'authorization_code', code, 
+                        redirect_uri: Spotify.redirectUri, 
+                        client_id: Spotify.clientId, code_verifier: verifier
                     })
                 });
-
                 const data = await response.json();
                 if(data.access_token) {
                     localStorage.setItem('sp_access_token', data.access_token);
-                    OS.log("SYS", "Uplink_Established");
                     window.history.replaceState({}, document.title, window.location.pathname);
                     Spotify.sync();
                 }
@@ -253,23 +259,17 @@
             sync: async () => {
                 const token = localStorage.getItem('sp_access_token');
                 if(!token) return Spotify.updateUI(false);
-
                 try {
-                    const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', { headers: { 'Authorization': `Bearer ${token}` } });
-                    if(res.status === 200) {
-                        const d = await res.json();
-                        Spotify.updateUI(true, d);
-                    } else if (res.status === 204) {
-                        Spotify.updateUI(true, null);
-                    } else if (res.status === 401) {
-                        Spotify.updateUI(false);
-                    }
-                } catch(e) { console.warn("Uplink Ghosted"); }
+                    const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', { 
+                        headers: { 'Authorization': `Bearer ${token}` } 
+                    });
+                    if(res.status === 200) Spotify.updateUI(true, await res.json());
+                    else if(res.status === 401) Spotify.updateUI(false);
+                } catch(e) { console.warn("Ghosted"); }
             },
 
             command: async (type) => {
                 const token = localStorage.getItem('sp_access_token');
-                if(!token) return;
                 const endpoint = type === 'play' ? 'play' : (type === 'pause' ? 'pause' : type);
                 await fetch(`https://api.spotify.com/v1/me/player/${endpoint}`, { 
                     method: (type === 'next' || type === 'previous') ? 'POST' : 'PUT', 
@@ -279,21 +279,31 @@
             }
         };
 
+        /* --- MOUSE PARALLAX ENGINE --- */
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.pageX) / 40;
+            const y = (window.innerHeight / 2 - e.pageY) / 40;
+            document.getElementById('reactive-clock').style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+        });
+
         const Canvas = {
             init: () => {
-                const c = document.getElementById('entropy-canvas');
-                const ctx = c.getContext('2d');
+                const c = document.getElementById('entropy-canvas'), ctx = c.getContext('2d');
                 c.width = window.innerWidth; c.height = window.innerHeight;
-                const drops = Array(Math.floor(c.width/10)).fill(1);
-                setInterval(() => {
-                    ctx.fillStyle = "rgba(0,0,0,0.15)"; ctx.fillRect(0,0,c.width,c.height);
-                    ctx.fillStyle = "#a855f7"; ctx.font = "12px monospace";
-                    drops.forEach((y, i) => {
-                        ctx.fillText(Math.random() > 0.5 ? "0" : "1", i*10, y*10);
-                        if(y*10 > c.height && Math.random() > 0.97) drops[i] = 0;
-                        drops[i]++;
+                const p = Array.from({length: 50}, () => ({
+                    x: Math.random()*c.width, y: Math.random()*c.height, 
+                    v: Math.random()*0.5, s: Math.random()*2
+                }));
+                const draw = () => {
+                    ctx.clearRect(0,0,c.width,c.height);
+                    ctx.fillStyle = "#a855f7";
+                    p.forEach(i => {
+                        i.y -= i.v; if(i.y < 0) i.y = c.height;
+                        ctx.beginPath(); ctx.arc(i.x, i.y, i.s, 0, Math.PI*2); ctx.fill();
                     });
-                }, 35);
+                    requestAnimationFrame(draw);
+                };
+                draw();
             }
         };
 
@@ -301,11 +311,8 @@
             Canvas.init();
             setInterval(Clock.tick, 1000);
             setInterval(Spotify.sync, 4000);
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            if(code) Spotify.getToken(code);
-            else Spotify.sync();
+            const code = new URLSearchParams(window.location.search).get('code');
+            if(code) Spotify.getToken(code); else Spotify.sync();
         };
     </script>
 </body>
