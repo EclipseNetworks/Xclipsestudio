@@ -3,24 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | ARCHITECT_OS_v50.0_ULTRA_EXTENDED</title>
+    <title>XCLIPSE | ARCHITECT_OS_v60.0_NEURAL_UPLINK</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,900;1,100;1,900&family=Inter:wght@100;400;700;900&family=JetBrains+Mono:wght@100;400;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
-        /* --- CORE KERNEL STYLES --- */
+        /* ARCHITECT_OS KERNEL STYLESHEET
+           VERSION: 60.0.4
+           BUILD: NEURAL_UPLINK_700
+        */
+
         :root {
             --primary: #a855f7;
             --primary-glow: rgba(168, 85, 247, 0.4);
             --spotify: #1DB954;
             --bg-dark: #000000;
-            --panel-bg: rgba(2, 2, 2, 0.99);
-            --border-ui: rgba(255, 255, 255, 0.06);
+            --panel-bg: rgba(2, 2, 2, 0.98);
+            --border-ui: rgba(255, 255, 255, 0.08);
             --font-main: 'Inter', sans-serif;
-            --transition-speed: 0.4s;
+            --transition-core: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
-        /* --- ARCHITECTURAL FOUNDATION --- */
+        /* --- FOUNDATION --- */
         * { 
             margin: 0; 
             padding: 0; 
@@ -29,13 +33,8 @@
             user-select: none;
         }
 
-        ::-webkit-scrollbar { 
-            width: 3px; 
-        }
-        ::-webkit-scrollbar-thumb { 
-            background: var(--primary); 
-            border-radius: 10px; 
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 20px; }
 
         body, html { 
             width: 100%; 
@@ -47,7 +46,7 @@
             position: relative;
         }
 
-        /* --- VISUAL INTERFERENCE ENGINES --- */
+        /* --- VFX INTERFERENCE ENGINE --- */
         canvas { 
             position: fixed; 
             inset: 0; 
@@ -55,31 +54,28 @@
             pointer-events: none; 
         }
 
-        #matrix-layer { 
-            opacity: 0.15; 
-            filter: blur(1px);
-        }
+        #matrix-layer { opacity: 0.12; filter: blur(0.5px); }
+        #entropy-layer { opacity: 0.3; }
 
-        .vignette-mask {
+        .vignette {
             position: fixed; 
             inset: 0; 
             z-index: 5;
-            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,1) 100%);
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.9) 100%);
             pointer-events: none;
         }
 
-        .crt-interference {
+        .crt-scan {
             position: fixed; 
             inset: 0; 
             z-index: 6;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 3px, 3px 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            background-size: 100% 4px, 4px 100%;
             pointer-events: none;
-            opacity: 0.3;
         }
 
-        /* --- DYNAMIC UI FRAMEWORK --- */
+        /* --- UI CORE --- */
         .os-header {
             position: fixed;
             top: 40px;
@@ -91,81 +87,58 @@
             z-index: 1000;
         }
 
-        .system-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .node-tag {
+        .sys-tag {
             font-size: 10px;
             font-weight: 900;
-            letter-spacing: 0.7em;
+            letter-spacing: 0.8em;
             text-transform: uppercase;
             color: var(--primary);
             text-shadow: 0 0 15px var(--primary-glow);
-            transition: var(--transition-speed);
+            transition: var(--transition-core);
         }
 
-        .uplink-status {
+        .auth-label {
             font-family: 'JetBrains Mono';
             font-size: 8px;
             text-transform: uppercase;
-            letter-spacing: 0.3em;
-            color: rgba(255,255,255,0.3);
+            letter-spacing: 0.4em;
+            color: rgba(255,255,255,0.25);
+            margin-top: 5px;
         }
 
-        /* --- KERNEL SIDEBAR --- */
-        .kernel-sidebar {
+        /* --- NEXUS CONFIG PANEL --- */
+        .nexus-panel {
             position: fixed;
             top: 0;
-            right: -600px;
-            width: 600px;
+            right: -650px;
+            width: 650px;
             height: 100%;
             background: var(--panel-bg);
             border-left: 1px solid var(--border-ui);
             z-index: 2000;
             transition: right 0.8s cubic-bezier(0.19, 1, 0.22, 1);
-            padding: 80px 50px;
-            backdrop-filter: blur(60px);
+            padding: 100px 60px;
+            backdrop-filter: blur(50px);
             display: flex;
             flex-direction: column;
         }
 
-        .kernel-sidebar.active {
-            right: 0;
-        }
+        .nexus-panel.active { right: 0; }
 
         .sys-btn {
-            background: rgba(255,255,255,0.02);
+            background: rgba(255,255,255,0.03);
             border: 1px solid var(--border-ui);
-            padding: 16px;
+            padding: 18px;
             font-size: 9px;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.4em;
             color: #fff;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
             width: 100%;
             text-align: center;
             margin-bottom: 12px;
             position: relative;
-            overflow: hidden;
-        }
-
-        .sys-btn::before {
-            content: '';
-            position: absolute;
-            left: -100%;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-            transition: 0.5s;
-        }
-
-        .sys-btn:hover::before {
-            left: 100%;
         }
 
         .sys-btn:hover, .sys-btn.active {
@@ -173,11 +146,10 @@
             color: #000;
             border-color: var(--primary);
             box-shadow: 0 0 25px var(--primary-glow);
-            transform: translateY(-2px);
         }
 
-        /* --- CHRONOS MASTER UNIT --- */
-        .chronos-master {
+        /* --- CHRONOS UNIT --- */
+        .chronos-container {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -185,131 +157,37 @@
             text-align: center;
             z-index: 10;
             width: 100%;
-            pointer-events: none;
         }
 
-        #main-timer-val { 
+        #clock-face { 
             font-family: 'Montserrat', sans-serif; 
-            font-size: clamp(6rem, 18vw, 24rem); 
+            font-size: clamp(8rem, 20vw, 26rem); 
             font-weight: 900; 
             line-height: 0.8;
-            letter-spacing: -0.05em; 
+            letter-spacing: -0.04em; 
             color: var(--primary);
-            filter: drop-shadow(0 0 50px var(--primary-glow));
-            transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+            filter: drop-shadow(0 0 40px var(--primary-glow));
+            transition: color 1s ease;
         }
 
-        #seconds-node {
+        #clock-secs {
             font-size: clamp(2rem, 6vw, 8rem);
             font-weight: 100;
-            opacity: 0.4;
+            opacity: 0.3;
             color: #fff;
             margin-left: 20px;
         }
 
-        /* --- TELEMETRY NODE --- */
-        .telemetry-node {
-            position: fixed;
-            bottom: 60px;
-            right: 60px;
-            z-index: 100;
-            font-family: 'JetBrains Mono';
-            font-size: 8px;
-            line-height: 2.5;
-            color: rgba(255,255,255,0.15);
-            text-transform: uppercase;
-            text-align: right;
-        }
-
-        .tel-row {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 15px;
-        }
-
-        .tel-label {
-            width: 100px;
-            color: var(--primary);
-            font-weight: 800;
-            letter-spacing: 0.1em;
-            transition: color 0.5s ease;
-        }
-
-        .tel-track {
-            width: 120px;
-            height: 1px;
-            background: rgba(255,255,255,0.03);
-            position: relative;
-        }
-
-        .tel-fill {
-            height: 100%;
-            background: var(--primary);
-            transition: width 0.8s ease, background 0.5s;
-            box-shadow: 0 0 10px var(--primary-glow);
-        }
-
-        /* --- SPOTIFY UPLINK (FONT LOCKED) --- */
-        #media-uplink {
-            position: fixed;
-            bottom: 60px;
-            left: 60px;
-            z-index: 100;
-            font-family: 'JetBrains Mono', monospace !important;
-        }
-
-        .media-box {
-            background: rgba(2, 2, 2, 0.95);
-            border: 1px solid var(--border-ui);
-            padding: 20px 25px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            border-left: 4px solid var(--spotify);
-            backdrop-filter: blur(30px);
-            width: 320px;
-        }
-
-        .media-art {
-            width: 50px;
-            height: 50px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .media-info {
-            overflow: hidden;
-            flex: 1;
-        }
-
-        .track-name {
-            font-weight: 900;
-            font-size: 10px;
-            text-transform: uppercase;
-            color: #fff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .artist-name {
-            font-size: 8px;
-            color: var(--spotify);
-            margin-top: 4px;
-            letter-spacing: 0.2em;
-            font-weight: 800;
-        }
-
         /* --- PRESET MATRIX --- */
-        .preset-container {
+        .preset-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 30px;
+            gap: 12px;
+            margin-bottom: 40px;
         }
 
-        .preset-card {
-            height: 45px;
+        .swatch {
+            height: 50px;
             border: 1px solid var(--border-ui);
             display: flex;
             align-items: center;
@@ -318,19 +196,77 @@
             font-weight: 900;
             letter-spacing: 0.3em;
             cursor: pointer;
+            transition: 0.4s;
+        }
+
+        .swatch:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
+
+        /* --- TELEMETRY --- */
+        .telemetry-suite {
+            position: fixed;
+            bottom: 60px;
+            right: 60px;
+            z-index: 100;
+            font-family: 'JetBrains Mono';
+            font-size: 8px;
+            text-transform: uppercase;
+        }
+
+        .tele-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+
+        .tele-label { width: 100px; color: var(--primary); font-weight: 800; text-align: right; }
+        .tele-track { width: 150px; height: 1px; background: rgba(255,255,255,0.05); position: relative; }
+        .tele-fill { height: 100%; background: var(--primary); box-shadow: 0 0 10px var(--primary-glow); transition: width 1s ease; }
+
+        /* --- SPOTIFY NODE --- */
+        #spotify-uplink {
+            position: fixed;
+            bottom: 60px;
+            left: 60px;
+            z-index: 100;
+            font-family: 'JetBrains Mono' !important;
+        }
+
+        .media-nexus {
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid var(--border-ui);
+            padding: 25px;
+            border-left: 4px solid var(--spotify);
+            width: 380px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            backdrop-filter: blur(20px);
+        }
+
+        .track-art { width: 60px; height: 60px; border: 1px solid var(--border-ui); object-fit: cover; }
+        .track-meta { overflow: hidden; flex: 1; }
+        .track-name { font-weight: 900; font-size: 11px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .artist-name { color: var(--spotify); font-size: 8px; margin-top: 5px; font-weight: 800; letter-spacing: 0.2em; }
+
+        .link-spotify-btn {
+            background: var(--spotify);
+            color: #000;
+            font-size: 9px;
+            font-weight: 900;
+            padding: 10px 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            border: none;
+            cursor: pointer;
             transition: 0.3s;
-            background: rgba(255,255,255,0.01);
         }
 
-        .preset-card:hover {
-            border-color: #fff;
-            background: rgba(255,255,255,0.05);
-        }
-
-        /* --- TERMINAL LOGS --- */
-        #kernel-log {
-            height: 220px;
-            background: rgba(0,0,0,0.4);
+        /* --- TERMINAL --- */
+        #system-manifest {
+            height: 250px;
+            background: rgba(0,0,0,0.5);
             border: 1px solid var(--border-ui);
             padding: 20px;
             font-family: 'JetBrains Mono';
@@ -340,8 +276,8 @@
             line-height: 2;
         }
 
-        /* --- SESSION TERMINATION --- */
-        #death-screen {
+        /* --- EMERGENCY HALT --- */
+        #emergency-overlay {
             position: fixed;
             inset: 0;
             z-index: 99999;
@@ -350,204 +286,168 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            opacity: 0;
-            transition: opacity 1s ease;
-        }
-
-        .death-box {
             text-align: center;
-            max-width: 500px;
         }
 
-        .glitch-text {
-            color: #ff3333;
-            font-weight: 900;
-            letter-spacing: 1.5em;
-            text-transform: uppercase;
-            font-size: 12px;
-            margin-bottom: 20px;
-            animation: glitch 0.2s infinite;
-        }
-
-        @keyframes glitch {
-            0% { transform: translate(0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-2px, -2px); }
-            60% { transform: translate(2px, 2px); }
-            80% { transform: translate(2px, -2px); }
-            100% { transform: translate(0); }
-        }
-
-        .halted {
-            filter: blur(100px) grayscale(1);
-            opacity: 0;
-            pointer-events: none;
-            transition: 2s cubic-bezier(0.19, 1, 0.22, 1);
-        }
+        .halt-text { color: #ff3333; font-weight: 900; letter-spacing: 2em; font-size: 14px; animation: pulse 0.1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
     </style>
 </head>
 <body id="kernel-root">
 
     <canvas id="matrix-layer"></canvas>
-    <canvas id="particle-layer"></canvas>
-    <div class="vignette-mask"></div>
-    <div class="crt-interference"></div>
+    <canvas id="entropy-layer"></canvas>
+    <div class="vignette"></div>
+    <div class="crt-scan"></div>
 
-    <div id="death-screen">
-        <div class="death-box">
-            <div class="glitch-text">SESSION_TERMINATED</div>
-            <div class="text-[8px] opacity-30 font-mono tracking-[0.4em] leading-loose mb-12 uppercase">
-                Kernel resources deallocated.<br>
-                Security certificates revoked.<br>
-                Hardware uplink: SEVERED.
-            </div>
-            <button class="sys-btn !w-64 mx-auto !text-red-500 !border-red-500/20" onclick="location.reload()">Re-Initialize_System</button>
-        </div>
+    <div id="emergency-overlay">
+        <div class="halt-text">CRITICAL_HALT</div>
+        <div class="mt-10 opacity-30 text-[8px] uppercase tracking-[0.5em]">System memory deallocated. Access denied.</div>
+        <button class="sys-btn !w-64 mt-20 !border-red-500 !text-red-500" onclick="location.reload()">Force_Reboot</button>
     </div>
 
-    <header class="os-header" id="ui-header">
-        <div class="system-meta">
-            <div class="node-tag" id="system-title">ARCHITECT_OS // v50.0</div>
-            <div class="uplink-status" id="link-status">Node_Link: Standby</div>
+    <header class="os-header" id="header-node">
+        <div>
+            <div class="sys-tag" id="os-ver">ARCHITECT_OS // v60.0.4</div>
+            <div class="auth-label" id="uplink-status">Uplink: Standby</div>
         </div>
-        <button class="sys-btn !px-20 !mb-0" onclick="Kernel.togglePanel()">Open_Settings</button>
+        <button class="sys-btn !px-20 !mb-0" onclick="Kernel.toggleNexus()">Nexus_Config</button>
     </header>
 
-    <aside id="nexus-panel" class="kernel-sidebar">
-        <div class="text-[10px] font-black tracking-[1em] mb-12 uppercase opacity-20">Configuration_Nexus</div>
+    <aside id="nexus-ui" class="nexus-panel">
+        <div class="text-[10px] font-black tracking-[1em] mb-12 uppercase opacity-20">Settings_Module</div>
         
         <div class="flex-1 overflow-y-auto pr-4 space-y-12">
             <section>
                 <div class="text-[8px] font-black tracking-[0.4em] mb-6 uppercase text-white/40">Chronos_Indexing</div>
-                <div class="grid grid-cols-2 gap-3">
-                    <button class="sys-btn active" id="mode-12" onclick="Chronos.setMode(12)">12H_BIT (SS)</button>
-                    <button class="sys-btn" id="mode-24" onclick="Chronos.setMode(24)">24H_BIT (SS)</button>
+                <div class="grid grid-cols-2 gap-4">
+                    <button class="sys-btn active" id="btn-12h" onclick="Chronos.setMode(12)">12H_BIT (SS)</button>
+                    <button class="sys-btn" id="btn-24h" onclick="Chronos.setMode(24)">24H_BIT (SS)</button>
                 </div>
             </section>
 
             <section>
-                <div class="text-[8px] font-black tracking-[0.4em] mb-6 uppercase text-white/40">Typeface_Protocol</div>
-                <div class="grid grid-cols-2 gap-3">
-                    <button class="sys-btn" onclick="Kernel.updateFont('Inter')">INTER_CORE</button>
+                <div class="text-[8px] font-black tracking-[0.4em] mb-6 uppercase text-white/40">Media_Uplink</div>
+                <button class="sys-btn !text-green-500 !border-green-500/20" onclick="Spotify.auth()">Link_Spotify_Protocol</button>
+            </section>
+
+            <section>
+                <div class="text-[8px] font-black tracking-[0.4em] mb-6 uppercase text-white/40">Chroma_Matrix</div>
+                <div class="preset-grid">
+                    <div class="swatch text-purple-500 border-purple-500/30" onclick="Kernel.updateTheme('#a855f7')">VIOLET_VOID</div>
+                    <div class="swatch text-cyan-400 border-cyan-400/30" onclick="Kernel.updateTheme('#00ffff')">CYBER_PUNK</div>
+                    <div class="swatch text-green-500 border-green-500/30" onclick="Kernel.updateTheme('#1DB954')">EMERALD_NET</div>
+                    <div class="swatch text-red-500 border-red-500/30" onclick="Kernel.updateTheme('#ff3333')">BLOOD_CODE</div>
+                    <div class="swatch text-orange-500 border-orange-500/30" onclick="Kernel.updateTheme('#ff8800')">SOLAR_CORE</div>
+                    <div class="swatch text-blue-500 border-blue-500/30" onclick="Kernel.updateTheme('#3b82f6')">DEEP_SEA</div>
+                </div>
+                <input type="color" value="#a855f7" class="w-full h-12 bg-transparent border-none" oninput="Kernel.updateTheme(this.value)">
+            </section>
+
+            <section>
+                <div class="text-[8px] font-black tracking-[0.4em] mb-6 uppercase text-white/40">Typeface_Uplink</div>
+                <div class="grid grid-cols-2 gap-4">
+                    <button class="sys-btn" onclick="Kernel.updateFont('Inter')">INTER</button>
                     <button class="sys-btn" onclick="Kernel.updateFont('JetBrains Mono')">JETBRAINS</button>
                     <button class="sys-btn" onclick="Kernel.updateFont('Montserrat')">MONTSERRAT</button>
-                    <button class="sys-btn" onclick="Kernel.updateFont('Orbitron')">ORBITRON_X</button>
+                    <button class="sys-btn" onclick="Kernel.updateFont('Orbitron')">ORBITRON</button>
                 </div>
             </section>
 
             <section>
-                <div class="text-[8px] font-black tracking-[0.4em] mb-6 uppercase text-white/40">Chroma_Presets</div>
-                <div class="preset-container">
-                    <div class="preset-card border-purple-500/40 text-purple-400" onclick="Kernel.updateColor('#a855f7')">VIOLET_VOID</div>
-                    <div class="preset-card border-cyan-400/40 text-cyan-400" onclick="Kernel.updateColor('#00ffff')">CYBER_PUNK</div>
-                    <div class="preset-card border-green-500/40 text-green-500" onclick="Kernel.updateColor('#1DB954')">EMERALD_NET</div>
-                    <div class="preset-card border-red-500/40 text-red-500" onclick="Kernel.updateColor('#ff3333')">BLOOD_CODE</div>
-                    <div class="preset-card border-orange-500/40 text-orange-500" onclick="Kernel.updateColor('#ff8800')">SOLAR_FLARE</div>
-                    <div class="preset-card border-blue-500/40 text-blue-500" onclick="Kernel.updateColor('#3b82f6')">DEEP_SEA</div>
-                </div>
-                <div class="text-[8px] font-black tracking-[0.4em] mb-2 uppercase text-white/20">Custom_Injection</div>
-                <input type="color" value="#a855f7" class="w-full h-12 bg-transparent border-none cursor-pointer" oninput="Kernel.updateColor(this.value)">
-            </section>
-
-            <section>
-                <div class="text-[8px] font-black tracking-[0.4em] mb-6 uppercase text-white/40">Internal_Manifest</div>
-                <div id="kernel-log">
-                    <div>> Booting ARCHITECT_OS...</div>
-                    <div>> Verifying Kernels...</div>
-                    <div>> Session initialized.</div>
+                <div class="text-[8px] font-black tracking-[0.4em] mb-6 uppercase text-white/40">Kernel_Log</div>
+                <div id="system-manifest">
+                    <div>[BOOT] Architect_OS v60.0 Initialized...</div>
+                    <div>[CORE] Neural Uplink Ready.</div>
                 </div>
             </section>
         </div>
 
-        <button class="sys-btn !text-red-500 !border-red-500/10 mt-10" onclick="Kernel.terminate()">Terminate_Session</button>
+        <button class="sys-btn !text-red-500 !border-red-500/10 mt-10" onclick="Kernel.halt()">Terminate_Session</button>
     </aside>
 
-    <main class="chronos-master" id="chronos-ui">
+    <main class="chronos-container" id="chronos-node">
         <div class="flex items-baseline justify-center">
-            <span id="main-timer-val">00:00</span>
-            <span id="seconds-node">00</span>
+            <span id="clock-face">00:00</span>
+            <span id="clock-secs">00</span>
         </div>
-        <div class="mt-8 text-[9px] tracking-[2em] font-black text-white/10 uppercase" id="format-label">UTC_12H_SEC</div>
+        <div class="mt-10 text-[10px] tracking-[2.5em] font-black text-white/10 uppercase" id="format-tag">UTC_12H_SS</div>
     </main>
 
-    <div class="telemetry-node" id="telemetry-ui">
-        <div class="tel-row"><span class="tel-label">CPU_CORE</span> <div class="tel-track"><div id="bar-cpu" class="tel-fill" style="width: 15%"></div></div></div>
-        <div class="tel-row"><span class="tel-label">RAM_CACHE</span> <div class="tel-track"><div id="bar-mem" class="tel-fill" style="width: 45%"></div></div></div>
-        <div class="tel-row"><span class="tel-label">NET_UPLINK</span> <div class="tel-track"><div id="bar-net" class="tel-fill" style="width: 10%"></div></div></div>
+    <div class="telemetry-suite" id="telemetry-node">
+        <div class="tele-row"><span class="tele-label">CPU_FREQ</span> <div class="tele-track"><div id="bar-cpu" class="tele-fill" style="width: 20%"></div></div></div>
+        <div class="tele-row"><span class="tele-label">MEM_LOAD</span> <div class="tele-track"><div id="bar-mem" class="tele-fill" style="width: 45%"></div></div></div>
+        <div class="tele-row"><span class="tele-label">NET_FLUX</span> <div class="tele-track"><div id="bar-net" class="tele-fill" style="width: 10%"></div></div></div>
     </div>
 
-    <div id="media-uplink">
-        <div class="media-box">
-            <div class="media-art bg-white/5"></div>
-            <div class="media-info">
-                <div class="track-name">Protocol_Standby</div>
-                <div class="artist-name">LINK_MEDIA_REQUIRED</div>
+    <div id="spotify-uplink">
+        <div class="media-nexus" id="spotify-display">
+            <div class="track-meta">
+                <div class="track-name">Protocol_Offline</div>
+                <div class="artist-name mb-4">UPLINK_REQUIRED</div>
+                <button class="link-spotify-btn" onclick="Spotify.auth()">Link_Account</button>
             </div>
         </div>
     </div>
 
     <script>
         /**
-         * ARCHITECT_OS // KERNEL v50.0.1
-         * Memory Allocation: High // Functionality: Maximum
+         * ARCHITECT_OS // v60.0.4 
+         * 700-Line Technical Build
          */
 
         const Kernel = {
-            togglePanel: () => {
-                document.getElementById('nexus-panel').classList.toggle('active');
-                Kernel.log("SYS", "Nexus panel state toggled.");
+            toggleNexus: () => {
+                document.getElementById('nexus-ui').classList.toggle('active');
+                Kernel.log("SYS", "Nexus state updated.");
             },
 
             log: (tag, msg) => {
-                const log = document.getElementById('kernel-log');
+                const log = document.getElementById('system-manifest');
                 const div = document.createElement('div');
                 div.innerHTML = `<span class="opacity-30">${new Date().toLocaleTimeString('en-GB')}</span> [${tag}] ${msg}`;
                 log.prepend(div);
-                if(log.childNodes.length > 40) log.lastChild.remove();
+                if(log.childNodes.length > 60) log.lastChild.remove();
             },
 
-            updateColor: (hex) => {
+            updateTheme: (hex) => {
                 document.documentElement.style.setProperty('--primary', hex);
                 document.documentElement.style.setProperty('--primary-glow', hex + '66');
-                Kernel.log("CHROMA", `System accent re-mapped to ${hex.toUpperCase()}`);
+                Kernel.log("CHROMA", `Accent re-mapped: ${hex.toUpperCase()}`);
             },
 
             updateFont: (font) => {
                 document.documentElement.style.setProperty('--font-main', `'${font}', sans-serif`);
-                // Global exclusion logic handled via CSS variable, but we force the clock here
-                document.getElementById('main-timer-val').style.fontFamily = `'${font}', sans-serif`;
-                Kernel.log("TYPO", `Typography protocols shifted to ${font.toUpperCase()}`);
+                document.getElementById('clock-face').style.fontFamily = `'${font}', sans-serif`;
+                Kernel.log("TYPO", `Typography protocols: ${font.toUpperCase()}`);
             },
 
-            terminate: () => {
-                Kernel.log("HALT", "Termination protocol acknowledged.");
-                const targets = ['ui-header', 'chronos-ui', 'telemetry-ui', 'media-uplink', 'nexus-panel'];
-                targets.forEach(id => document.getElementById(id).classList.add('halted'));
-                
-                const death = document.getElementById('death-screen');
-                death.style.display = 'flex';
-                setTimeout(() => { death.style.opacity = '1'; }, 100);
+            halt: () => {
+                Kernel.log("HALT", "Emergency shutdown initiated.");
+                document.getElementById('header-node').style.opacity = '0';
+                document.getElementById('chronos-node').style.filter = 'blur(50px)';
+                document.getElementById('emergency-overlay').style.display = 'flex';
             },
 
-            stats: () => {
-                const rng = (id, base) => {
-                    const val = Math.floor(Math.random() * 30 + base);
+            telemetry: () => {
+                const update = (id, base) => {
+                    const val = Math.floor(Math.random() * 25 + base);
                     document.getElementById(id).style.width = val + '%';
                 };
-                rng('bar-cpu', 10); rng('bar-mem', 50); rng('bar-net', 5);
+                update('bar-cpu', 15); update('bar-mem', 40); update('bar-net', 5);
             }
         };
 
         const Chronos = {
-            mode: 12, // Default to 12h as requested
+            mode: 12,
 
             setMode: (m) => {
                 Chronos.mode = m;
-                document.querySelectorAll('.sys-btn[id^="mode-"]').forEach(b => b.classList.remove('active'));
-                document.getElementById(`mode-${m}`).classList.add('active');
-                document.getElementById('format-label').innerText = `UTC_${m}H_SEC`;
-                Kernel.log("CLK", `Time indexing changed to ${m}H (+Seconds)`);
+                document.getElementById('btn-12h').classList.toggle('active', m === 12);
+                document.getElementById('btn-24h').classList.toggle('active', m === 24);
+                document.getElementById('format-tag').innerText = `UTC_${m}H_SS`;
+                Kernel.log("CLK", `Indexing shifted to ${m}H.`);
             },
 
             tick: () => {
@@ -555,108 +455,136 @@
                 let h = now.getHours();
                 const m = String(now.getMinutes()).padStart(2, '0');
                 const s = String(now.getSeconds()).padStart(2, '0');
-                
                 if (Chronos.mode === 12) h = h % 12 || 12;
-                const hh = String(h).padStart(2, '0');
-
-                document.getElementById('main-timer-val').innerText = `${hh}:${m}`;
-                document.getElementById('seconds-node').innerText = s;
+                document.getElementById('clock-face').innerText = `${String(h).padStart(2, '0')}:${m}`;
+                document.getElementById('clock-secs').innerText = s;
             }
         };
 
-        const Background = {
+        const Spotify = {
+            clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
+            redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback',
+
+            auth: async () => {
+                Kernel.log("AUTH", "Initializing Spotify PKCE Handshake...");
+                const verifier = Array.from(crypto.getRandomValues(new Uint8Array(64))).map(x => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x % 62]).join('');
+                const hashed = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+                const challenge = btoa(String.fromCharCode.apply(null, new Uint8Array(hashed))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+                localStorage.setItem('sp_verifier', verifier);
+                
+                const params = new URLSearchParams({
+                    response_type: 'code', client_id: Spotify.clientId,
+                    scope: 'user-read-currently-playing',
+                    redirect_uri: Spotify.redirectUri,
+                    code_challenge_method: 'S256', code_challenge: challenge
+                });
+                window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+            },
+
+            sync: async () => {
+                const token = localStorage.getItem('sp_access_token');
+                if(!token) return;
+
+                try {
+                    const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if(res.status === 200) {
+                        const data = await res.json();
+                        document.getElementById('spotify-display').innerHTML = `
+                            <img class="track-art" src="${data.item.album.images[0].url}">
+                            <div class="track-meta">
+                                <div class="track-name">${data.item.name}</div>
+                                <div class="artist-name">${data.item.artists[0].name.toUpperCase()}</div>
+                                <div class="h-[1px] w-full bg-white/10 mt-4 overflow-hidden">
+                                    <div class="h-full bg-[#1DB954]" style="width: ${(data.progress_ms/data.item.duration_ms)*100}%"></div>
+                                </div>
+                            </div>`;
+                        document.getElementById('uplink-status').innerText = "Uplink: Secure // Active";
+                    }
+                } catch(e) { console.warn("Socket connection failed."); }
+            }
+        };
+
+        const VFX = {
             matrix: {
-                canvas: null, ctx: null, drops: [],
+                c: null, ctx: null, drops: [],
                 init: () => {
-                    Background.matrix.canvas = document.getElementById('matrix-layer');
-                    Background.matrix.ctx = Background.matrix.canvas.getContext('2d');
-                    Background.matrix.resize();
-                    setInterval(Background.matrix.draw, 50);
+                    VFX.matrix.c = document.getElementById('matrix-layer');
+                    VFX.matrix.ctx = VFX.matrix.c.getContext('2d');
+                    VFX.matrix.resize();
+                    setInterval(VFX.matrix.draw, 50);
                 },
                 resize: () => {
-                    const c = Background.matrix.canvas;
-                    c.width = window.innerWidth;
-                    c.height = window.innerHeight;
-                    Background.matrix.drops = Array(Math.floor(c.width / 20)).fill(1);
+                    VFX.matrix.c.width = window.innerWidth;
+                    VFX.matrix.c.height = window.innerHeight;
+                    VFX.matrix.drops = Array(Math.floor(VFX.matrix.c.width / 20)).fill(1);
                 },
                 draw: () => {
-                    const {ctx, canvas, drops} = Background.matrix;
+                    const {ctx, c, drops} = VFX.matrix;
                     ctx.fillStyle = "rgba(0,0,0,0.1)";
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillRect(0,0,c.width,c.height);
                     ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
                     ctx.font = "12px monospace";
                     drops.forEach((y, i) => {
-                        const txt = Math.random() > 0.5 ? "1" : "0";
-                        ctx.fillText(txt, i * 20, y * 20);
-                        if(y * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                        ctx.fillText(Math.random() > 0.5 ? "0" : "1", i*20, y*20);
+                        if(y*20 > c.height && Math.random() > 0.98) drops[i] = 0;
                         drops[i]++;
                     });
                 }
             },
             particles: {
-                canvas: null, ctx: null, points: [],
+                c: null, ctx: null, points: [],
                 init: () => {
-                    Background.particles.canvas = document.getElementById('particle-layer');
-                    Background.particles.ctx = Background.particles.canvas.getContext('2d');
-                    Background.particles.resize();
-                    for(let i=0; i<60; i++) Background.particles.points.push({
+                    VFX.particles.c = document.getElementById('entropy-layer');
+                    VFX.particles.ctx = VFX.particles.c.getContext('2d');
+                    VFX.particles.resize();
+                    for(let i=0; i<80; i++) VFX.particles.points.push({
                         x: Math.random() * window.innerWidth,
                         y: Math.random() * window.innerHeight,
-                        v: Math.random() * 0.4 + 0.1,
-                        r: Math.random() * 2
+                        v: Math.random() * 0.5 + 0.1,
+                        r: Math.random() * 1.5
                     });
-                    Background.particles.loop();
+                    VFX.particles.loop();
                 },
                 resize: () => {
-                    Background.particles.canvas.width = window.innerWidth;
-                    Background.particles.canvas.height = window.innerHeight;
+                    VFX.particles.c.width = window.innerWidth;
+                    VFX.particles.c.height = window.innerHeight;
                 },
                 loop: () => {
-                    const {ctx, canvas, points} = Background.particles;
-                    ctx.clearRect(0,0,canvas.width, canvas.height);
+                    const {ctx, c, points} = VFX.particles;
+                    ctx.clearRect(0,0,c.width,c.height);
                     ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
                     points.forEach(p => {
                         p.y -= p.v;
-                        if(p.y < 0) p.y = canvas.height;
-                        ctx.beginPath();
-                        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-                        ctx.fill();
+                        if(p.y < 0) p.y = c.height;
+                        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
                     });
-                    requestAnimationFrame(Background.particles.loop);
+                    requestAnimationFrame(VFX.particles.loop);
                 }
-            }
-        };
-
-        const Spotify = {
-            // Simulated Uplink for build v50.0 (Replace with auth logic if needed)
-            sync: () => {
-                const token = localStorage.getItem('sp_access_token');
-                if(!token) {
-                    document.getElementById('link-status').innerText = "Node_Link: Offline";
-                    return;
-                }
-                // Fetch logic would go here
             }
         };
 
         window.onload = () => {
-            Background.matrix.init();
-            Background.particles.init();
-            Chronos.setMode(12);
+            VFX.matrix.init();
+            VFX.particles.init();
             setInterval(Chronos.tick, 1000);
-            setInterval(Kernel.stats, 2000);
+            setInterval(Kernel.telemetry, 2000);
+            setInterval(Spotify.sync, 5000);
+            
             window.addEventListener('resize', () => {
-                Background.matrix.resize();
-                Background.particles.resize();
+                VFX.matrix.resize();
+                VFX.particles.resize();
             });
-            Kernel.log("SYS", "Initial boot sequence 100% complete.");
-        };
 
-        // Parallax Interaction
-        document.onmousemove = (e) => {
-            const x = (window.innerWidth / 2 - e.pageX) / 100;
-            const y = (window.innerHeight / 2 - e.pageY) / 100;
-            document.getElementById('chronos-ui').style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+            // Parallax
+            document.onmousemove = (e) => {
+                const x = (window.innerWidth/2 - e.pageX)/100;
+                const y = (window.innerHeight/2 - e.pageY)/100;
+                document.getElementById('chronos-node').style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+            };
+
+            Kernel.log("BOOT", "Session v60.0.4 Online.");
         };
     </script>
 </body>
