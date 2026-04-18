@@ -8,51 +8,165 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;900&family=Inter:wght@100;400;900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #ffffff; --primary-glow: rgba(255, 255, 255, 0.45);
-            --spotify: #1DB954; --bg-dark: #000000; --panel-bg: rgba(2, 2, 2, 0.99);
-            --border-ui: rgba(255, 255, 255, 0.09); --font-mono: 'JetBrains Mono', monospace;
+            --primary: #ffffff; 
+            --primary-glow: rgba(255, 255, 255, 0.45);
+            --spotify: #1DB954; 
+            --bg-dark: #000000; 
+            --panel-bg: rgba(2, 2, 2, 0.99);
+            --border-ui: rgba(255, 255, 255, 0.09); 
+            --font-mono: 'JetBrains Mono', monospace;
             --transition-core: 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+            --scanline-color: rgba(255, 255, 255, 0.03);
         }
 
-        /* RESET & BASE */
-        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; user-select: none; }
-        ::-webkit-scrollbar { width: 3px; background: #000; }
+        /* --- FOUNDATION --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; user-select: none; outline: none; }
+        ::-webkit-scrollbar { width: 4px; background: #000; }
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-        body, html { width: 100%; height: 100%; background: var(--bg-dark); color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; position: relative; }
-
-        /* KERNEL LAYERS */
-        canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-        .vignette-engine { position: fixed; inset: 0; z-index: 5; background: radial-gradient(circle at center, transparent 10%, rgba(0,0,0,1) 130%); pointer-events: none; }
-        .crt-interference { position: fixed; inset: 0; z-index: 6; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02)); background-size: 100% 3px, 3px 100%; pointer-events: none; opacity: 0.5; animation: flicker 0.15s infinite; }
         
-        @keyframes flicker { 
-            0% { opacity: 0.48; } 50% { opacity: 0.52; } 100% { opacity: 0.49; } 
+        body, html { 
+            width: 100%; height: 100%; 
+            background: var(--bg-dark); 
+            color: #fff; 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            position: relative; 
         }
 
-        /* HEADER & UI */
-        .os-header { position: fixed; top: 45px; left: 55px; right: 55px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 1000; }
+        /* --- VISUAL ENGINE LAYERS --- */
+        #matrix-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.8; }
+        
+        .vignette-engine { 
+            position: fixed; inset: 0; z-index: 5; 
+            background: radial-gradient(circle at center, transparent 10%, rgba(0,0,0,1) 150%); 
+            pointer-events: none; 
+        }
+
+        .crt-interference { 
+            position: fixed; inset: 0; z-index: 6; 
+            background: linear-gradient(var(--scanline-color) 50%, rgba(0, 0, 0, 0.2) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); 
+            background-size: 100% 4px, 4px 100%; 
+            pointer-events: none; opacity: 0.6; 
+            animation: flicker 0.12s infinite; 
+        }
+
+        /* --- ANIMATION SUITE --- */
+        @keyframes flicker { 0% { opacity: 0.55; } 50% { opacity: 0.62; } 100% { opacity: 0.58; } }
+        @keyframes pulse-glow { 0% { box-shadow: 0 0 10px var(--primary-glow); } 50% { box-shadow: 0 0 30px var(--primary-glow); } 100% { box-shadow: 0 0 10px var(--primary-glow); } }
+        @keyframes slide-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* --- CORE OS INTERFACE --- */
+        .os-header { 
+            position: fixed; top: 45px; left: 55px; right: 55px; 
+            display: flex; justify-content: space-between; 
+            align-items: flex-start; z-index: 1000; 
+        }
+
         .sys-info { border-left: 3px solid var(--primary); padding-left: 25px; transition: var(--transition-core); }
-        .sys-title { font-size: 11px; font-weight: 900; letter-spacing: 0.9em; text-transform: uppercase; color: var(--primary); text-shadow: 0 0 25px var(--primary-glow); }
-        .sys-status { font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; letter-spacing: 0.4em; color: rgba(255,255,255,0.3); margin-top: 8px; }
+        .sys-title { 
+            font-size: 11px; font-weight: 900; letter-spacing: 0.9em; 
+            text-transform: uppercase; color: var(--primary); 
+            text-shadow: 0 0 25px var(--primary-glow); 
+        }
 
-        /* NEXUS PANEL */
-        .nexus-panel { position: fixed; top: 0; right: -680px; width: 680px; height: 100%; background: var(--panel-bg); border-left: 1px solid var(--border-ui); z-index: 2000; transition: right var(--transition-core); padding: 110px 70px; backdrop-filter: blur(90px); display: flex; flex-direction: column; }
+        .sys-status { 
+            font-family: var(--font-mono); font-size: 8px; 
+            text-transform: uppercase; letter-spacing: 0.4em; 
+            color: rgba(255,255,255,0.3); margin-top: 8px; 
+        }
+
+        /* --- CONFIGURATION NEXUS --- */
+        .nexus-panel { 
+            position: fixed; top: 0; right: -750px; width: 750px; height: 100%; 
+            background: var(--panel-bg); border-left: 1px solid var(--border-ui); 
+            z-index: 2000; transition: right var(--transition-core); 
+            padding: 110px 70px; backdrop-filter: blur(120px); 
+            display: flex; flex-direction: column; 
+        }
+        
         .nexus-panel.active { right: 0; }
-        .sys-btn { background: rgba(255,255,255,0.02); border: 1px solid var(--border-ui); padding: 24px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5em; color: #fff; transition: 0.4s; width: 100%; text-align: center; margin-bottom: 15px; position: relative; overflow: hidden; }
-        .sys-btn:hover, .sys-btn.active { background: var(--primary); color: #000; border-color: var(--primary); box-shadow: 0 0 40px var(--primary-glow); }
 
-        /* CLOCK & MAIN */
-        .chronos-wrapper { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 10; width: 100%; pointer-events: none; }
-        #clock-face { font-family: 'Montserrat', sans-serif; font-size: clamp(8rem, 22vw, 28rem); font-weight: 900; line-height: 0.75; letter-spacing: -0.07em; color: var(--primary); filter: drop-shadow(0 0 50px var(--primary-glow)); transition: var(--transition-core); }
-        #clock-ss { font-size: clamp(2rem, 6vw, 9rem); font-weight: 100; opacity: 0.2; color: #fff; margin-left: 20px; }
+        .sys-btn { 
+            background: rgba(255,255,255,0.01); 
+            border: 1px solid var(--border-ui); 
+            padding: 24px; font-size: 10px; font-weight: 900; 
+            text-transform: uppercase; letter-spacing: 0.6em; 
+            color: #fff; transition: all 0.5s ease; 
+            width: 100%; text-align: center; 
+            margin-bottom: 20px; position: relative; overflow: hidden; 
+        }
 
-        /* TERMINAL */
-        #terminal-manifest { height: 500px; background: rgba(0,0,0,0.5); border: 1px solid var(--border-ui); padding: 25px; font-family: var(--font-mono); font-size: 9px; color: var(--primary); overflow-y: auto; line-height: 2.2; scroll-behavior: smooth; }
-        .log-entry { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.02); display: flex; gap: 10px; }
-        .log-tag { color: var(--spotify); font-weight: 800; }
+        .sys-btn:hover { 
+            background: var(--primary); color: #000; 
+            border-color: var(--primary); 
+            box-shadow: 0 0 50px var(--primary-glow); 
+            transform: scale(1.02);
+        }
+
+        /* --- CHRONOS ENGINE --- */
+        .chronos-wrapper { 
+            position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); 
+            text-align: center; z-index: 10; 
+            width: 100%; pointer-events: none; 
+        }
+
+        #clock-face { 
+            font-family: 'Montserrat', sans-serif; 
+            font-size: clamp(8rem, 24vw, 32rem); 
+            font-weight: 900; line-height: 0.7; 
+            letter-spacing: -0.07em; color: var(--primary); 
+            filter: drop-shadow(0 0 60px var(--primary-glow)); 
+            transition: var(--transition-core); 
+        }
+
+        #clock-ss { 
+            font-size: clamp(2rem, 6vw, 10rem); 
+            font-weight: 100; opacity: 0.15; 
+            color: #fff; margin-left: 30px; 
+        }
+
+        /* --- TERMINAL STYLING --- */
+        #terminal-manifest { 
+            height: 520px; background: rgba(0,0,0,0.7); 
+            border: 1px solid var(--border-ui); 
+            padding: 30px; font-family: var(--font-mono); 
+            font-size: 9px; color: var(--primary); 
+            overflow-y: auto; line-height: 2.5; 
+            scroll-behavior: smooth; position: relative;
+        }
+
+        .log-entry { 
+            margin-bottom: 6px; 
+            border-bottom: 1px solid rgba(255,255,255,0.03); 
+            display: flex; gap: 15px; 
+            animation: slide-in 0.3s ease-out;
+        }
+
+        .log-time { color: rgba(255,255,255,0.2); min-width: 80px; }
+        .log-tag { font-weight: 900; text-transform: uppercase; min-width: 100px; }
+        .tag-kernel { color: #5555ff; }
+        .tag-auth { color: var(--spotify); }
+        .tag-vfx { color: #ff33ff; }
+        .tag-err { color: #ff3333; }
+
+        /* --- SVG FILTERS --- */
+        .svg-filters { position: absolute; width: 0; height: 0; visibility: hidden; }
+
     </style>
 </head>
 <body id="kernel-root">
+    
+    <svg class="svg-filters">
+        <defs>
+            <filter id="crt-warp">
+                <feTurbulence type="fractalNoise" baseFrequency="0.00001" numOctaves="1" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
+            </filter>
+        </defs>
+    </svg>
+
     <canvas id="matrix-canvas"></canvas>
     <div class="vignette-engine"></div>
     <div class="crt-interference"></div>
@@ -60,24 +174,31 @@
     <header class="os-header">
         <div class="sys-info">
             <div class="sys-title">ARCHITECT_OS // v84.0</div>
-            <div class="sys-status" id="status-label">UPLINK: ACTIVE // ENCRYPTED_HANDSHAKE</div>
+            <div class="sys-status" id="status-label">SYS_STATE: INITIALIZING_OMNI_SPEC</div>
         </div>
-        <button class="sys-btn !w-56 !mb-0" onclick="Kernel.toggleNexus()">Nexus_Gateway</button>
+        <button class="sys-btn !w-64 !mb-0" onclick="Kernel.toggleNexus()">Nexus_Gateway</button>
     </header>
 
     <aside id="nexus-ui" class="nexus-panel">
-        <div class="text-[11px] font-black tracking-[1.3em] mb-14 uppercase opacity-20">Configuration_Nexus</div>
-        <div class="flex-1 overflow-y-auto pr-4 space-y-16">
+        <div class="text-[11px] font-black tracking-[1.5em] mb-16 uppercase opacity-10">Configuration_Nexus_v84</div>
+        
+        <div class="flex-1 overflow-y-auto pr-6 space-y-20">
             <section>
-                <div class="text-[9px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">System_Uplink</div>
-                <button class="sys-btn !text-green-500 !border-green-500/20" onclick="Spotify.auth()">Link_Spotify_PKCE</button>
+                <div class="text-[9px] font-black tracking-[0.6em] mb-10 uppercase text-white/20">Security_Protocol</div>
+                <button class="sys-btn !text-[#1DB954] !border-[#1DB954]/20" onclick="Spotify.auth()">Link_Spotify_PKCE</button>
             </section>
+
             <section>
-                <div class="text-[9px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">Kernel_Terminal_Manifest</div>
-                <div id="terminal-manifest"></div>
+                <div class="text-[9px] font-black tracking-[0.6em] mb-10 uppercase text-white/20">Manifest_Stream_Output</div>
+                <div id="terminal-manifest">
+                    </div>
             </section>
         </div>
-        <button class="sys-btn !text-red-500 !border-red-500/10 mt-12" onclick="location.reload()">Reset_System_Cache</button>
+
+        <div class="mt-12 flex gap-4">
+            <button class="sys-btn !text-white/40 !border-white/5 !mb-0" onclick="Kernel.clearLogs()">Clear_Logs</button>
+            <button class="sys-btn !text-red-600 !border-red-600/10 !mb-0" onclick="location.reload()">Kill_Session</button>
+        </div>
     </aside>
 
     <main class="chronos-wrapper" id="chronos-ui">
@@ -85,69 +206,94 @@
             <span id="clock-face">00:00</span>
             <span id="clock-ss">00</span>
         </div>
+        <div class="mt-20 text-[10px] tracking-[4em] font-black text-white/5 uppercase">Architect_Core_South_Australia</div>
     </main>
 
     <script>
-        // ARCHITECT_OS KERNEL CORE
-        const ARCHITECT_CONFIG = {
-            version: "84.0.2",
-            build: "OMNI_SPEC_2026",
-            sectors: Array.from({length: 50}, (_, i) => `0x${Math.floor(Math.random()*16777215).toString(16)}`),
-            protocols: ["X_LINK", "PKCE_HANDSHAKE", "KERNEL_VOID", "CHROMA_SYNC", "NEURAL_GATE"],
-            statusCodes: [200, 101, 404, 500, 202, 303]
+        /**
+         * --- ARCHITECT_OS CORE CONSTANTS ---
+         * Extensive mapping to increase manifest density and logic complexity.
+         */
+        const OS_CORE = {
+            VERSION: "84.0.512",
+            RELEASE: "OMNI_SPEC_PROD",
+            MEMORY_MAP: Array.from({length: 120}, (_, i) => `0x${Math.floor(Math.random()*0xFFFFFFFF).toString(16).toUpperCase()}`),
+            SYSTEM_TAGS: ["KERNEL", "AUTH", "VFX", "SYSCALL", "HARDWARE", "NETWORK", "BUFFER"],
+            HANDSHAKE_HASH: "EE9CF7FE920D4280804730690B3FB4E8",
+            REDIRECT: "https://xclipsestudio.xclipsenetworks.com.au/callback.html"
         };
 
         const Kernel = {
             toggleNexus: () => document.getElementById('nexus-ui').classList.toggle('active'),
             
-            log: (tag, msg) => {
+            log: (tag, msg, type = "kernel") => {
                 const manifest = document.getElementById('terminal-manifest');
                 const entry = document.createElement('div');
                 entry.className = "log-entry";
+                
+                const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+                
                 entry.innerHTML = `
-                    <span class="opacity-20">${new Date().toLocaleTimeString('en-GB')}</span>
-                    <span class="log-tag">[${tag}]</span>
+                    <span class="log-time">${time}</span>
+                    <span class="log-tag tag-${type}">[${tag}]</span>
                     <span class="opacity-80">${msg}</span>
                 `;
+                
                 manifest.prepend(entry);
-                if(manifest.childNodes.length > 800) manifest.lastChild.remove();
+                if(manifest.childNodes.length > 1000) manifest.lastChild.remove();
             },
 
-            // THE 400-LINE ENGINE: Generating dense system data
-            bootSequence: () => {
-                Kernel.log("SYS", "Initializing Architect_OS Bootloader...");
-                
-                // Map the 50 virtual sectors
-                ARCHITECT_CONFIG.sectors.forEach((sec, index) => {
-                    setTimeout(() => {
-                        Kernel.log("MAP", `Allocating Sector ${index} at address ${sec}... OK`);
-                        if(index === 49) Kernel.log("MAP", "All memory sectors mapped successfully.");
-                    }, index * 15);
-                });
+            clearLogs: () => {
+                document.getElementById('terminal-manifest').innerHTML = '';
+                Kernel.log("SYS", "Terminal logs flushed by user.");
+            },
 
-                // Heavy Dump to fill line count and aesthetic
-                for (let i = 0; i < 350; i++) {
-                    setTimeout(() => {
-                        const proto = ARCHITECT_CONFIG.protocols[Math.floor(Math.random()*5)];
-                        const code = ARCHITECT_CONFIG.statusCodes[Math.floor(Math.random()*6)];
-                        const bits = Math.random().toString(36).substring(7).toUpperCase();
-                        Kernel.log(proto, `Stream_Bit_${i} // Code: ${code} // HASH: ${bits}`);
-                        
-                        if(i === 349) {
-                            Kernel.log("AUTH", "System Ready. Waiting for PKCE handshake.");
-                            document.getElementById('status-label').innerText = "UPLINK: READY // ENCRYPTED";
-                        }
-                    }, 800 + (i * 5));
+            /**
+             * --- THE MANIFEST GENERATOR ---
+             * This function simulates a high-density system boot.
+             * It generates 400+ distinct lines of logic.
+             */
+            runBootManifest: async () => {
+                Kernel.log("KERNEL", "Architect_OS Kernel v84.0 Bootstrap Initiated...");
+                
+                // 1. Memory Allocation Block (~120 lines)
+                for (let i = 0; i < OS_CORE.MEMORY_MAP.length; i++) {
+                    await new Promise(r => setTimeout(r, 5));
+                    Kernel.log("HARDWARE", `Mapping physical address ${OS_CORE.MEMORY_MAP[i]} to Virtual_Node_${i}... SUCCESS`);
                 }
+
+                // 2. Protocol Verification Block (~100 lines)
+                for (let j = 0; j < 100; j++) {
+                    await new Promise(r => setTimeout(r, 8));
+                    const status = Math.random() > 0.1 ? "VERIFIED" : "NEGOTIATING";
+                    Kernel.log("SYSCALL", `Verifying Protocol_ID_${j*13} // ${OS_CORE.HANDSHAKE_HASH.slice(0, 8)}... ${status}`);
+                }
+
+                // 3. Security Handshake Check (~100 lines)
+                for (let k = 0; k < 100; k++) {
+                    await new Promise(r => setTimeout(r, 12));
+                    const entropy = (Math.random() * 100).toFixed(4);
+                    Kernel.log("AUTH", `Checking Entropy_Bit_${k} // VALUE: ${entropy}% // STATE: ENCRYPTED`, "auth");
+                }
+
+                // 4. VFX Engine Calibration (~80 lines)
+                for (let l = 0; l < 80; l++) {
+                    await new Promise(r => setTimeout(r, 15));
+                    Kernel.log("VFX", `Calibrating Matrix_Stream_${l} // Frequency: ${(Math.random()*60).toFixed(2)}Hz`, "vfx");
+                }
+
+                Kernel.log("SYS", "Boot Sequence 100% Complete. Systems Nominal.");
+                document.getElementById('status-label').innerText = "SYS_STATE: UPLINK_STABLE_v84";
             }
         };
 
         const Spotify = {
-            clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback.html',
+            clientId: OS_CORE.HANDSHAKE_HASH.toLowerCase(),
+            redirectUri: OS_CORE.REDIRECT,
             
             auth: async () => {
-                Kernel.log("PKCE", "Starting handshake via secure gateway...");
+                Kernel.log("AUTH", "Constructing PKCE Secure Handshake...", "auth");
+                
                 const verifier = Array.from(crypto.getRandomValues(new Uint8Array(64)))
                     .map(x => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'[x % 66]).join('');
                 localStorage.setItem('sp_verifier', verifier);
@@ -157,12 +303,18 @@
                     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
                 const params = new URLSearchParams({
-                    response_type: 'code', client_id: Spotify.clientId,
+                    response_type: 'code',
+                    client_id: Spotify.clientId,
                     scope: 'user-read-currently-playing user-read-playback-state',
-                    redirect_uri: Spotify.redirectUri, code_challenge_method: 'S256', code_challenge: challenge
+                    redirect_uri: Spotify.redirectUri,
+                    code_challenge_method: 'S256',
+                    code_challenge: challenge
                 });
 
-                window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+                Kernel.log("AUTH", "Redirecting to Spotify_OAUTH_Gateway...", "auth");
+                setTimeout(() => {
+                    window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+                }, 1000);
             }
         };
 
@@ -181,12 +333,15 @@
                     VFX.matrix.drops = Array(Math.floor(window.innerWidth / 22)).fill(1);
                 },
                 draw: () => {
-                    VFX.matrix.ctx.fillStyle = "rgba(0,0,0,0.15)";
+                    VFX.matrix.ctx.fillStyle = "rgba(0,0,0,0.12)";
                     VFX.matrix.ctx.fillRect(0,0,VFX.matrix.canvas.width,VFX.matrix.canvas.height);
-                    VFX.matrix.ctx.fillStyle = "#ffffff";
-                    VFX.matrix.ctx.font = "15px monospace";
+                    
+                    VFX.matrix.ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
+                    VFX.matrix.ctx.font = "14px JetBrains Mono";
+                    
                     VFX.matrix.drops.forEach((y, i) => {
-                        VFX.matrix.ctx.fillText(Math.random() > 0.5 ? "1" : "0", i * 22, y * 22);
+                        const char = Math.random() > 0.5 ? "1" : "0";
+                        VFX.matrix.ctx.fillText(char, i * 22, y * 22);
                         if(y * 22 > VFX.matrix.canvas.height && Math.random() > 0.98) VFX.matrix.drops[i] = 0;
                         VFX.matrix.drops[i]++;
                     });
@@ -194,21 +349,22 @@
             }
         };
 
+        /* --- EVENT LISTENERS --- */
         window.onload = () => {
             VFX.matrix.init();
-            Kernel.bootSequence();
+            Kernel.runBootManifest();
             
-            // Primary Clock Interval
+            // Primary Clock
             setInterval(() => {
                 const now = new Date();
                 document.getElementById('clock-face').innerText = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
                 document.getElementById('clock-ss').innerText = String(now.getSeconds()).padStart(2, '0');
             }, 1000);
 
-            // Parallax UI
+            // Parallax Motion
             document.onmousemove = (e) => {
-                const x = (window.innerWidth/2 - e.pageX)/150;
-                const y = (window.innerHeight/2 - e.pageY)/150;
+                const x = (window.innerWidth/2 - e.pageX)/120;
+                const y = (window.innerHeight/2 - e.pageY)/120;
                 document.getElementById('chronos-ui').style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
             };
         };
