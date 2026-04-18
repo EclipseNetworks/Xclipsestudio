@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #ffffff; /* Matched your OS theme */
+            --primary: #ffffff; 
             --spotify: #1DB954;
             --bg: #010101;
         }
@@ -61,7 +61,6 @@
     <script>
         const CONFIG = {
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            // Dynamically set to this current file's URL
             redirectUri: window.location.origin + window.location.pathname
         };
 
@@ -71,14 +70,15 @@
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
             
-            // This 'state' tells us which page to go back to (e.g., index.html)
-            const state = urlParams.get('state') || 'index.html'; 
+            // DYNAMIC RETURN LOGIC
+            // Checks localStorage for where we came from, defaults to spotify.html if lost
+            const originPage = localStorage.getItem('os_origin_page') || 'spotify.html'; 
 
             if (!code) {
                 if (localStorage.getItem('sp_access_token')) {
                     status.innerText = "RESTORED";
                     sub.innerText = "Session active. Returning to OS...";
-                    setTimeout(() => window.location.href = state, 1000);
+                    setTimeout(() => window.location.href = originPage, 1000);
                 } else {
                     fail("MISSING_CODE", "No uplink signal detected.");
                 }
@@ -88,7 +88,6 @@
             status.innerText = "NEGOTIATING";
             sub.innerText = "Validating PKCE verifier...";
 
-            // Retrieve the verifier saved by the main OS page
             const verifier = localStorage.getItem('sp_verifier');
                         
             if (!verifier) {
@@ -100,9 +99,7 @@
                 // Spotify Token Exchange
                 const res = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams({
                         grant_type: 'authorization_code',
                         code: code,
@@ -123,11 +120,14 @@
                     status.innerText = "SUCCESS";
                     sub.innerText = "Handshake verified. Entering OS...";
                     
-                    // Cleanup
+                    // Cleanup security keys but KEEP the originPage variable for the redirect
                     localStorage.removeItem('sp_verifier');
+                    localStorage.removeItem('os_origin_page'); 
                     
-                    // Bounce back to original page
-                    setTimeout(() => window.location.href = state, 1500);
+                    // Bounce back to original page (shh.html or spotify.html)
+                    setTimeout(() => {
+                        window.location.href = originPage;
+                    }, 1500);
                 } else { 
                      throw new Error(data.error_description || data.error || "Handshake Rejected"); 
                 }
