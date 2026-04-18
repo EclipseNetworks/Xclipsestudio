@@ -2,206 +2,85 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | ARCHITECT_SYNC_PROTOCOL_v84</title>
+    <title>XCLIPSE | ARCHITECT_SYNC_v84</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;900&family=Inter:wght@100;400;900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400;800&family=Inter:wght@900&display=swap" rel="stylesheet">
     <style>
-        /* --- UNIFIED SYSTEM THEME (UAF_v84) --- */
-        :root {
-            --primary: #ffffff;
-            --primary-glow: rgba(255, 255, 255, 0.45);
-            --spotify: #1DB954;
-            --bg-black: #000000;
-            --panel-bg: rgba(3, 3, 3, 0.98);
-            --ui-border: rgba(255, 255, 255, 0.08);
-            --font-mono: 'JetBrains Mono', monospace;
-            --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
-        ::-webkit-scrollbar { width: 2px; background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--primary); }
-
-        body, html {
-            width: 100%; height: 100%;
-            background: var(--bg-black);
-            color: var(--primary);
-            font-family: 'Inter', sans-serif;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* --- REACTIVE BACKGROUND ENGINE --- */
-        #sync-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.6; }
-        
-        .vignette {
-            position: fixed; inset: 0; z-index: 5;
-            background: radial-gradient(circle at center, transparent 10%, rgba(0,0,0,1) 160%);
-            pointer-events: none;
-        }
-
-        .crt-interference {
-            position: fixed; inset: 0; z-index: 6;
-            background: linear-gradient(rgba(255,255,255,0.02) 50%, rgba(0,0,0,0.2) 50%);
-            background-size: 100% 4px;
-            pointer-events: none; animation: flicker 0.15s infinite;
-        }
-
-        /* --- ANIMATION SUITE --- */
-        @keyframes flicker { 0% { opacity: 0.9; } 50% { opacity: 0.95; } 100% { opacity: 0.92; } }
-        @keyframes pulse-status { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        @keyframes slide-up { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        /* --- INTERFACE ARCHITECTURE --- */
-        .sync-layout {
-            position: relative; z-index: 100;
-            height: 100vh; width: 100vw;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 60px;
-        }
-
-        .auth-card {
-            width: 100%; max-width: 800px;
-            border-left: 1px solid var(--ui-border);
-            padding: 40px; background: rgba(255,255,255,0.01);
-            backdrop-filter: blur(20px);
-            animation: slide-up 1s var(--ease-out-expo);
-        }
-
-        .brand-header {
-            font-size: 10px; font-weight: 900; letter-spacing: 1.5em;
-            text-transform: uppercase; color: var(--primary);
-            margin-bottom: 30px; display: flex; align-items: center; gap: 20px;
-        }
-
-        .brand-header::after { content: ""; flex: 1; height: 1px; background: var(--ui-border); }
-
-        /* --- TERMINAL OUTPUT --- */
-        #auth-terminal {
-            height: 350px; background: rgba(0,0,0,0.6);
-            border: 1px solid var(--ui-border);
-            padding: 25px; font-family: var(--font-mono);
-            font-size: 9px; color: var(--primary);
-            overflow-y: auto; line-height: 2.5;
-            scroll-behavior: smooth; margin-top: 40px;
-        }
-
-        .log-line { display: flex; gap: 20px; margin-bottom: 5px; opacity: 0.8; }
-        .ts { opacity: 0.2; min-width: 80px; }
-        .tag { font-weight: 800; min-width: 100px; }
-        .tag-sys { color: #5555ff; }
-        .tag-auth { color: var(--spotify); }
+        :root { --primary: #ffffff; --bg: #000; --border: rgba(255,255,255,0.1); }
+        body { background: var(--bg); color: var(--primary); font-family: 'JetBrains Mono', monospace; overflow: hidden; }
+        .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px); background-size: 50px 50px; opacity: 0.2; z-index: 0; }
+        .main-ui { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; }
+        .status-header { font-family: 'Inter', sans-serif; font-size: 10px; letter-spacing: 2em; text-transform: uppercase; margin-bottom: 50px; opacity: 0.5; animation: pulse 2s infinite; }
+        #terminal { width: 100%; max-width: 900px; height: 400px; background: rgba(5,5,5,0.9); border: 1px solid var(--border); padding: 30px; font-size: 9px; line-height: 2.2; overflow-y: auto; scroll-behavior: smooth; }
+        .log-row { display: flex; gap: 20px; border-bottom: 1px solid rgba(255,255,255,0.03); animation: slideIn 0.3s ease-out; }
+        .ts { opacity: 0.2; }
+        .tag { font-weight: 800; min-width: 80px; }
+        .tag-sys { color: #5b5bff; }
+        .tag-auth { color: #1DB954; }
         .tag-err { color: #ff3333; }
-
-        .status-blob {
-            display: flex; align-items: center; gap: 15px;
-            font-family: var(--font-mono); font-size: 10px;
-            text-transform: uppercase; letter-spacing: 0.4em;
-        }
-
-        .pulse-indicator {
-            width: 8px; height: 8px; background: var(--primary);
-            border-radius: 50%; box-shadow: 0 0 15px var(--primary-glow);
-            animation: pulse-status 1.5s infinite;
-        }
+        @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; } }
+        @keyframes slideIn { from { transform: translateX(10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
 <body>
-
-    <canvas id="sync-canvas"></canvas>
-    <div class="vignette"></div>
-    <div class="crt-interference"></div>
-
-    <main class="sync-layout">
-        <div class="auth-card">
-            <header class="brand-header">Architect_Sync_v84</header>
-            
-            <div class="status-blob">
-                <div class="pulse-indicator" id="p-color"></div>
-                <span id="p-status">Initiating_Handshake</span>
-            </div>
-
-            <div id="auth-terminal">
-                </div>
-        </div>
-
-        <div class="mt-12 text-[9px] tracking-[4em] font-black text-white/5 uppercase">Xclipse_Networks_Global</div>
+    <div class="grid-bg"></div>
+    <main class="main-ui">
+        <div class="status-header">Protocol_Synchronizing</div>
+        <div id="terminal"></div>
+        <div class="mt-20 text-[8px] tracking-[3em] opacity-10 font-black">ARCHITECT_OS_CORE_v84</div>
     </main>
 
     <script>
         /**
-         * --- GLOBAL SYSTEM REGISTRY (FOR DATA DENSITY) ---
-         * 400+ lines of simulated memory management and hardware validation.
+         * --- MASTER SYNC CLASS ---
+         * Provides unified authentication for all future Xclipse Modules.
          */
-        const SYS_REGISTRY = Array.from({length: 450}, (_, i) => ({
-            id: `REG_0x${i.toString(16).toUpperCase()}`,
-            sector: `SEC_${Math.floor(i/16)}`,
-            status: "VOLATILE"
-        }));
-
-        /**
-         * --- CORE MODULE: TERMINAL ENGINE ---
-         */
-        const Terminal = {
-            el: document.getElementById('auth-terminal'),
-            log(tag, msg, type = "sys") {
-                const line = document.createElement('div');
-                line.className = "log-line";
-                const ts = new Date().toLocaleTimeString('en-GB', { hour12: false });
-                line.innerHTML = `
-                    <span class="ts">${ts}</span>
-                    <span class="tag tag-${type}">[${tag.toUpperCase()}]</span>
-                    <span class="msg">${msg}</span>
-                `;
-                this.el.prepend(line);
-                if(this.el.childNodes.length > 500) this.el.lastChild.remove();
-            }
-        };
-
-        /**
-         * --- CORE MODULE: AUTH PROTOCOL (PKCE FIX) ---
-         */
-        class AuthProtocol {
+        class SyncProtocol {
             constructor() {
-                this.clientId = 'ee9cf7fe920d4280804730690b3fb4e8';
-                this.redirectUri = 'https://xclipsestudio.xclipsenetworks.com.au/callback.html';
-                this.endpoint = 'https://accounts.spotify.com/api/token';
+                this.config = {
+                    clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
+                    redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback.html'
+                };
+                this.term = document.getElementById('terminal');
+            }
+
+            log(tag, msg, type = "sys") {
+                const row = document.createElement('div');
+                row.className = "log-row";
+                const now = new Date().toLocaleTimeString('en-GB', { hour12: false });
+                row.innerHTML = `<span class="ts">${now}</span><span class="tag tag-${type}">[${tag}]</span><span>${msg}</span>`;
+                this.term.prepend(row);
             }
 
             async execute() {
-                Terminal.log("sys", "Initializing Handshake Sequence...");
+                this.log("SYS", "Initializing Xclipse_Exchange_Protocol...");
                 
-                // Simulate Registry Validation for AESTHETIC LENGTH
-                for(let i=0; i < 150; i++) {
-                    if(i % 10 === 0) {
-                        await new Promise(r => setTimeout(r, 5));
-                        Terminal.log("hw", `Validating Registry_Block: ${SYS_REGISTRY[i].id}... OK`);
-                    }
+                // Aesthetic Memory Sweep
+                for(let i=0; i<300; i+=20) {
+                    await new Promise(r => setTimeout(r, 10));
+                    this.log("HW", `Validating Registry Sector 0x${i.toString(16).toUpperCase()}... OK`);
                 }
 
-                const params = new URLSearchParams(window.location.search);
-                const code = params.get('code');
+                const urlParams = new URLSearchParams(window.location.search);
+                const code = urlParams.get('code');
                 const verifier = localStorage.getItem('sp_verifier');
 
                 if (!code || !verifier) {
-                    this.fail("CRITICAL_FAULT: PKCE_CHAIN_BROKEN");
+                    this.log("ERR", "FAULT: PKCE_CHAIN_BROKEN or TIMEOUT.", "err");
                     return;
                 }
 
-                Terminal.log("auth", "Code verified. Verifier matched. Exchanging...");
-                
+                this.log("AUTH", "Chain Verified. Attempting Token Exchange...");
+
                 try {
-                    const response = await fetch(this.endpoint, {
+                    const response = await fetch('https://accounts.spotify.com/api/token', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                         body: new URLSearchParams({
-                            client_id: this.clientId,
+                            client_id: this.config.clientId,
                             grant_type: 'authorization_code',
                             code: code,
-                            redirect_uri: this.redirectUri,
+                            redirect_uri: this.config.redirectUri,
                             code_verifier: verifier
                         })
                     });
@@ -209,72 +88,23 @@
                     const data = await response.json();
 
                     if (data.access_token) {
-                        this.success(data.access_token);
+                        this.log("AUTH", "SUCCESS: Token_Acquired // Global_State_Active", "auth");
+                        localStorage.setItem('sp_token', data.access_token);
+                        localStorage.setItem('sp_refresh', data.refresh_token);
+                        localStorage.removeItem('sp_verifier'); // Cleanup
+
+                        setTimeout(() => { window.location.href = 'shh.html'; }, 1500);
                     } else {
-                        this.fail(`TOKEN_DENIED: ${data.error_description || "Unknown"}`);
+                        this.log("ERR", `DENIED: ${data.error_description || data.error}`, "err");
                     }
-                } catch (err) {
-                    this.fail("NET_FAULT: CONNECTION_REFUSED");
+                } catch (e) {
+                    this.log("ERR", "NETWORK_FAULT: Protocol Connection Refused.", "err");
                 }
             }
-
-            success(token) {
-                Terminal.log("auth", "Token Acquired. Global State Synchronized.", "auth");
-                localStorage.setItem('sp_token', token);
-                localStorage.removeItem('sp_verifier'); // Cleanup
-                document.getElementById('p-status').innerText = "Access_Granted";
-                document.getElementById('p-color').style.background = "#1DB954";
-                
-                setTimeout(() => {
-                    window.location.href = 'shh.html';
-                }, 1500);
-            }
-
-            fail(reason) {
-                Terminal.log("err", reason, "err");
-                document.getElementById('p-status').innerText = "Auth_Fault";
-                document.getElementById('p-color').style.background = "#ff3333";
-            }
         }
 
-        /**
-         * --- CORE MODULE: MATRIX VFX ---
-         */
-        class MatrixVFX {
-            constructor() {
-                this.c = document.getElementById('sync-canvas');
-                this.ctx = this.c.getContext('2d');
-                this.drops = [];
-            }
-            init() {
-                this.resize();
-                window.onresize = () => this.resize();
-                setInterval(() => this.draw(), 45);
-            }
-            resize() {
-                this.c.width = window.innerWidth;
-                this.c.height = window.innerHeight;
-                this.drops = Array(Math.floor(this.c.width / 20)).fill(1);
-            }
-            draw() {
-                this.ctx.fillStyle = "rgba(0,0,0,0.12)";
-                this.ctx.fillRect(0,0,this.c.width,this.c.height);
-                this.ctx.fillStyle = "#ffffff";
-                this.ctx.font = "14px monospace";
-                this.drops.forEach((y, i) => {
-                    const char = Math.random() > 0.5 ? "1" : "0";
-                    this.ctx.fillText(char, i * 20, y * 20);
-                    if(y * 20 > this.c.height && Math.random() > 0.98) this.drops[i] = 0;
-                    this.drops[i]++;
-                });
-            }
-        }
-
-        // STARTUP
-        window.onload = () => {
-            new MatrixVFX().init();
-            new AuthProtocol().execute();
-        };
+        // AUTO-INITIATE
+        window.onload = () => { new SyncProtocol().execute(); };
     </script>
 </body>
 </html>
