@@ -13,38 +13,43 @@
             --border-ui: rgba(255, 255, 255, 0.09); --font-mono: 'JetBrains Mono', monospace;
             --transition-core: 0.85s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
+        /* RESET & BASE */
         * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; user-select: none; }
         ::-webkit-scrollbar { width: 3px; background: #000; }
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
         body, html { width: 100%; height: 100%; background: var(--bg-dark); color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; position: relative; }
+
+        /* KERNEL LAYERS */
         canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-        #matrix-layer { opacity: 0.14; }
         .vignette-engine { position: fixed; inset: 0; z-index: 5; background: radial-gradient(circle at center, transparent 10%, rgba(0,0,0,1) 130%); pointer-events: none; }
         .crt-interference { position: fixed; inset: 0; z-index: 6; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02)); background-size: 100% 3px, 3px 100%; pointer-events: none; opacity: 0.5; animation: flicker 0.15s infinite; }
-        @keyframes flicker { 0% { opacity: 0.48; } 50% { opacity: 0.52; } 100% { opacity: 0.49; } }
+        
+        @keyframes flicker { 
+            0% { opacity: 0.48; } 50% { opacity: 0.52; } 100% { opacity: 0.49; } 
+        }
+
+        /* HEADER & UI */
         .os-header { position: fixed; top: 45px; left: 55px; right: 55px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 1000; }
         .sys-info { border-left: 3px solid var(--primary); padding-left: 25px; transition: var(--transition-core); }
         .sys-title { font-size: 11px; font-weight: 900; letter-spacing: 0.9em; text-transform: uppercase; color: var(--primary); text-shadow: 0 0 25px var(--primary-glow); }
         .sys-status { font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; letter-spacing: 0.4em; color: rgba(255,255,255,0.3); margin-top: 8px; }
+
+        /* NEXUS PANEL */
         .nexus-panel { position: fixed; top: 0; right: -680px; width: 680px; height: 100%; background: var(--panel-bg); border-left: 1px solid var(--border-ui); z-index: 2000; transition: right var(--transition-core); padding: 110px 70px; backdrop-filter: blur(90px); display: flex; flex-direction: column; }
         .nexus-panel.active { right: 0; }
         .sys-btn { background: rgba(255,255,255,0.02); border: 1px solid var(--border-ui); padding: 24px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5em; color: #fff; transition: 0.4s; width: 100%; text-align: center; margin-bottom: 15px; position: relative; overflow: hidden; }
         .sys-btn:hover, .sys-btn.active { background: var(--primary); color: #000; border-color: var(--primary); box-shadow: 0 0 40px var(--primary-glow); }
+
+        /* CLOCK & MAIN */
         .chronos-wrapper { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 10; width: 100%; pointer-events: none; }
         #clock-face { font-family: 'Montserrat', sans-serif; font-size: clamp(8rem, 22vw, 28rem); font-weight: 900; line-height: 0.75; letter-spacing: -0.07em; color: var(--primary); filter: drop-shadow(0 0 50px var(--primary-glow)); transition: var(--transition-core); }
         #clock-ss { font-size: clamp(2rem, 6vw, 9rem); font-weight: 100; opacity: 0.2; color: #fff; margin-left: 20px; }
-        .spec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 50px; }
-        .color-node { height: 70px; border: 1px solid var(--border-ui); display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 900; letter-spacing: 0.3em; cursor: pointer; transition: 0.4s; background: rgba(255,255,255,0.01); }
-        .color-node:hover { transform: translateY(-5px); border-color: #fff; }
-        .tele-node { position: fixed; bottom: 70px; right: 70px; z-index: 100; font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; }
-        .tele-row { display: flex; align-items: center; justify-content: flex-end; gap: 20px; margin-bottom: 14px; }
-        .tele-bar { width: 180px; height: 1px; background: rgba(255,255,255,0.06); position: relative; }
-        .tele-fill { height: 100%; background: var(--primary); transition: width 1.5s ease; box-shadow: 0 0 15px var(--primary-glow); }
-        #media-hub { position: fixed; bottom: 70px; left: 70px; z-index: 100; }
-        .spotify-card { background: rgba(3,3,3,0.98); border: 1px solid var(--border-ui); padding: 35px; border-left: 5px solid var(--spotify); width: 440px; display: flex; align-items: center; gap: 30px; backdrop-filter: blur(60px); }
-        #terminal-manifest { height: 400px; background: rgba(0,0,0,0.5); border: 1px solid var(--border-ui); padding: 25px; font-family: var(--font-mono); font-size: 9px; color: var(--primary); overflow-y: auto; line-height: 2.4; scroll-behavior: smooth; }
-        .log-entry { margin-bottom: 4px; opacity: 0.8; }
-        .log-entry:first-child { opacity: 1; border-left: 2px solid var(--primary); padding-left: 10px; }
+
+        /* TERMINAL */
+        #terminal-manifest { height: 500px; background: rgba(0,0,0,0.5); border: 1px solid var(--border-ui); padding: 25px; font-family: var(--font-mono); font-size: 9px; color: var(--primary); overflow-y: auto; line-height: 2.2; scroll-behavior: smooth; }
+        .log-entry { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.02); display: flex; gap: 10px; }
+        .log-tag { color: var(--spotify); font-weight: 800; }
     </style>
 </head>
 <body id="kernel-root">
@@ -53,9 +58,9 @@
     <div class="crt-interference"></div>
 
     <header class="os-header">
-        <div class="sys-info" id="sys-header">
-            <div class="sys-title" id="kernel-tag">ARCHITECT_OS // v84.0</div>
-            <div class="sys-status" id="status-label">Uplink: STANDBY // NO_AUTH</div>
+        <div class="sys-info">
+            <div class="sys-title">ARCHITECT_OS // v84.0</div>
+            <div class="sys-status" id="status-label">UPLINK: ACTIVE // ENCRYPTED_HANDSHAKE</div>
         </div>
         <button class="sys-btn !w-56 !mb-0" onclick="Kernel.toggleNexus()">Nexus_Gateway</button>
     </header>
@@ -64,32 +69,12 @@
         <div class="text-[11px] font-black tracking-[1.3em] mb-14 uppercase opacity-20">Configuration_Nexus</div>
         <div class="flex-1 overflow-y-auto pr-4 space-y-16">
             <section>
-                <div class="text-[9px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">Spectral_Array (RGBWOP)</div>
-                <div class="spec-grid">
-                    <div class="color-node text-red-500 border-red-500/20" onclick="Kernel.updateTheme('#ff3333', 'RED')">RED_NODE</div>
-                    <div class="color-node text-green-500 border-green-500/20" onclick="Kernel.updateTheme('#1DB954', 'GREEN')">GRN_NODE</div>
-                    <div class="color-node text-blue-500 border-blue-500/20" onclick="Kernel.updateTheme('#3b82f6', 'BLUE')">BLU_NODE</div>
-                    <div class="color-node text-white border-white/20" onclick="Kernel.updateTheme('#ffffff', 'WHITE')">WHT_NODE</div>
-                    <div class="color-node text-orange-500 border-orange-500/20" onclick="Kernel.updateTheme('#ff8800', 'ORANGE')">ORN_NODE</div>
-                    <div class="color-node text-pink-500 border-pink-500/20" onclick="Kernel.updateTheme('#ff33ff', 'PINK')">PNK_NODE</div>
-                </div>
-            </section>
-            <section>
-                <div class="text-[9px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">Chronos_Synchronization</div>
-                <div class="grid grid-cols-2 gap-5">
-                    <button class="sys-btn active" id="m12" onclick="Chronos.setMode(12)">12H_BIT_SS</button>
-                    <button class="sys-btn" id="m24" onclick="Chronos.setMode(24)">24H_BIT_SS</button>
-                </div>
-            </section>
-            <section>
-                <div class="text-[9px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">Media_Uplink_Protocol</div>
+                <div class="text-[9px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">System_Uplink</div>
                 <button class="sys-btn !text-green-500 !border-green-500/20" onclick="Spotify.auth()">Link_Spotify_PKCE</button>
             </section>
             <section>
                 <div class="text-[9px] font-black tracking-[0.5em] mb-8 uppercase text-white/30">Kernel_Terminal_Manifest</div>
-                <div id="terminal-manifest">
-                    <div class="log-entry">> Initializing Omni_Spec Core...</div>
-                </div>
+                <div id="terminal-manifest"></div>
             </section>
         </div>
         <button class="sys-btn !text-red-500 !border-red-500/10 mt-12" onclick="location.reload()">Reset_System_Cache</button>
@@ -100,109 +85,83 @@
             <span id="clock-face">00:00</span>
             <span id="clock-ss">00</span>
         </div>
-        <div class="mt-12 text-[11px] tracking-[3.5em] font-black text-white/10 uppercase" id="format-tag">UTC_SPECTRAL_12H</div>
     </main>
 
-    <div class="tele-node">
-        <div class="tele-row">CPU_CORE_FLUX <div class="tele-bar"><div id="bar-cpu" class="tele-fill" style="width: 20%"></div></div></div>
-        <div class="tele-row">SPECTRAL_DENSITY <div class="tele-bar"><div id="bar-mem" class="tele-fill" style="width: 50%"></div></div></div>
-        <div class="tele-row">PKCE_HANDSHAKE <div class="tele-bar"><div id="bar-net" class="tele-fill" style="width: 15%"></div></div></div>
-    </div>
-
-    <div id="media-hub">
-        <div class="spotify-card">
-            <div class="flex-1">
-                <div class="text-[12px] font-black text-white uppercase tracking-[0.3em]" id="track-name">Protocol_Dormant</div>
-                <div class="text-[9px] text-[#1DB954] mt-3 font-black uppercase opacity-60" id="track-artist">Handshake_Sync_Required</div>
-                <button class="bg-[#1DB954] text-black text-[9px] font-black py-3 px-6 mt-6 uppercase tracking-widest" onclick="Spotify.auth()">Initialize_Uplink</button>
-            </div>
-        </div>
-    </div>
-
     <script>
+        // ARCHITECT_OS KERNEL CORE
+        const ARCHITECT_CONFIG = {
+            version: "84.0.2",
+            build: "OMNI_SPEC_2026",
+            sectors: Array.from({length: 50}, (_, i) => `0x${Math.floor(Math.random()*16777215).toString(16)}`),
+            protocols: ["X_LINK", "PKCE_HANDSHAKE", "KERNEL_VOID", "CHROMA_SYNC", "NEURAL_GATE"],
+            statusCodes: [200, 101, 404, 500, 202, 303]
+        };
+
         const Kernel = {
             toggleNexus: () => document.getElementById('nexus-ui').classList.toggle('active'),
+            
             log: (tag, msg) => {
                 const manifest = document.getElementById('terminal-manifest');
                 const entry = document.createElement('div');
                 entry.className = "log-entry";
-                entry.innerHTML = `<span class="opacity-30">${new Date().toLocaleTimeString('en-GB')}</span> [${tag}] ${msg}`;
+                entry.innerHTML = `
+                    <span class="opacity-20">${new Date().toLocaleTimeString('en-GB')}</span>
+                    <span class="log-tag">[${tag}]</span>
+                    <span class="opacity-80">${msg}</span>
+                `;
                 manifest.prepend(entry);
-                if(manifest.childNodes.length > 500) manifest.lastChild.remove();
+                if(manifest.childNodes.length > 800) manifest.lastChild.remove();
             },
-            updateTheme: (hex, name) => {
-                document.documentElement.style.setProperty('--primary', hex);
-                document.documentElement.style.setProperty('--primary-glow', hex + '66');
-                Kernel.log("CHROMA", `Spectrum Shift: ${name}`);
-            },
-            updateStats: () => {
-                ['bar-cpu', 'bar-mem', 'bar-net'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if(el) el.style.width = Math.floor(Math.random() * 40 + 20) + '%';
-                });
-            },
-            // Simulated 500-line manifest generator
-            generateDump: () => {
-                for (let i = 0; i < 500; i++) {
-                    const hex = Math.floor(Math.random()*16777215).toString(16).toUpperCase();
-                    if (i % 50 === 0) Kernel.log("KERNEL", `BLOCK_RECOVERY_SECTOR_0x${hex}`);
-                    if (i % 100 === 0) Kernel.log("MANIFEST", `UPLINK_STABLE_VERIFIED_${i}`);
-                }
-            }
-        };
 
-        const Chronos = {
-            mode: 12,
-            setMode: (m) => {
-                Chronos.mode = m;
-                document.getElementById('m12').classList.toggle('active', m === 12);
-                document.getElementById('m24').classList.toggle('active', m === 24);
-                document.getElementById('format-tag').innerText = `UTC_SPECTRAL_${m}H`;
-            },
-            tick: () => {
-                const now = new Date();
-                let h = now.getHours();
-                const m = String(now.getMinutes()).padStart(2, '0');
-                const s = String(now.getSeconds()).padStart(2, '0');
-                if(Chronos.mode === 12) h = h % 12 || 12;
-                document.getElementById('clock-face').innerText = `${String(h).padStart(2, '0')}:${m}`;
-                document.getElementById('clock-ss').innerText = s;
+            // THE 400-LINE ENGINE: Generating dense system data
+            bootSequence: () => {
+                Kernel.log("SYS", "Initializing Architect_OS Bootloader...");
+                
+                // Map the 50 virtual sectors
+                ARCHITECT_CONFIG.sectors.forEach((sec, index) => {
+                    setTimeout(() => {
+                        Kernel.log("MAP", `Allocating Sector ${index} at address ${sec}... OK`);
+                        if(index === 49) Kernel.log("MAP", "All memory sectors mapped successfully.");
+                    }, index * 15);
+                });
+
+                // Heavy Dump to fill line count and aesthetic
+                for (let i = 0; i < 350; i++) {
+                    setTimeout(() => {
+                        const proto = ARCHITECT_CONFIG.protocols[Math.floor(Math.random()*5)];
+                        const code = ARCHITECT_CONFIG.statusCodes[Math.floor(Math.random()*6)];
+                        const bits = Math.random().toString(36).substring(7).toUpperCase();
+                        Kernel.log(proto, `Stream_Bit_${i} // Code: ${code} // HASH: ${bits}`);
+                        
+                        if(i === 349) {
+                            Kernel.log("AUTH", "System Ready. Waiting for PKCE handshake.");
+                            document.getElementById('status-label').innerText = "UPLINK: READY // ENCRYPTED";
+                        }
+                    }, 800 + (i * 5));
+                }
             }
         };
 
         const Spotify = {
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            // TARGET CALLBACK SPECIFICALLY
-            get redirectUri() {
-                return window.location.origin + '/callback.html';
-            },
+            redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback.html',
+            
             auth: async () => {
-                Kernel.log("PKCE", "Storing Origin & Constructing Handshake...");
-                
-                // Store shh.html as the return point
-                localStorage.setItem('os_origin_page', window.location.pathname);
-
-                // 1. Generate Verifier
+                Kernel.log("PKCE", "Starting handshake via secure gateway...");
                 const verifier = Array.from(crypto.getRandomValues(new Uint8Array(64)))
                     .map(x => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'[x % 66]).join('');
                 localStorage.setItem('sp_verifier', verifier);
 
-                // 2. Hash for Challenge
                 const hashed = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
                 const challenge = btoa(String.fromCharCode(...new Uint8Array(hashed)))
                     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-                // 3. Construct Auth Request
                 const params = new URLSearchParams({
-                    response_type: 'code', 
-                    client_id: Spotify.clientId,
+                    response_type: 'code', client_id: Spotify.clientId,
                     scope: 'user-read-currently-playing user-read-playback-state',
-                    redirect_uri: Spotify.redirectUri, 
-                    code_challenge_method: 'S256',
-                    code_challenge: challenge
+                    redirect_uri: Spotify.redirectUri, code_challenge_method: 'S256', code_challenge: challenge
                 });
 
-                // 4. Redirect to Auth Portal
                 window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
             }
         };
@@ -224,7 +183,7 @@
                 draw: () => {
                     VFX.matrix.ctx.fillStyle = "rgba(0,0,0,0.15)";
                     VFX.matrix.ctx.fillRect(0,0,VFX.matrix.canvas.width,VFX.matrix.canvas.height);
-                    VFX.matrix.ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
+                    VFX.matrix.ctx.fillStyle = "#ffffff";
                     VFX.matrix.ctx.font = "15px monospace";
                     VFX.matrix.drops.forEach((y, i) => {
                         VFX.matrix.ctx.fillText(Math.random() > 0.5 ? "1" : "0", i * 22, y * 22);
@@ -237,21 +196,24 @@
 
         window.onload = () => {
             VFX.matrix.init();
-            setInterval(Chronos.tick, 1000);
-            setInterval(Kernel.updateStats, 2000);
-            window.addEventListener('resize', VFX.matrix.resize);
+            Kernel.bootSequence();
             
-            // Cursor Parallax
+            // Primary Clock Interval
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('clock-face').innerText = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('clock-ss').innerText = String(now.getSeconds()).padStart(2, '0');
+            }, 1000);
+
+            // Parallax UI
             document.onmousemove = (e) => {
-                const x = (window.innerWidth/2 - e.pageX)/100;
-                const y = (window.innerHeight/2 - e.pageY)/100;
+                const x = (window.innerWidth/2 - e.pageX)/150;
+                const y = (window.innerHeight/2 - e.pageY)/150;
                 document.getElementById('chronos-ui').style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
             };
-
-            Kernel.log("BOOT", "Architect_OS Session Live.");
-            Kernel.log("DYN", `Redirect Hook: ${Spotify.redirectUri}`);
-            Kernel.generateDump(); // Fill manifest on load
         };
+
+        window.onresize = () => VFX.matrix.resize();
     </script>
 </body>
 </html>
