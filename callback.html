@@ -59,10 +59,18 @@
     </div>
 
     <script>
-        const CONFIG = {
-            clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            redirectUri: window.location.origin + window.location.pathname
-        };
+const Spotify = {
+    clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
+    
+    // FIX: Match this exactly to your Spotify Dashboard entry
+    get redirectUri() {
+        return 'https://xclipsestudio.xclipsenetworks.com.au/callback'; 
+    },
+
+    auth: async () => {
+        Kernel.log("PKCE", "Synchronizing Handshake URI...");
+        
+        // ... rest of the auth logic
 
         async function start() {
             const status = document.getElementById('main-status');
