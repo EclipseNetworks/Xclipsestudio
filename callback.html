@@ -2,157 +2,56 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | NEURAL_HANDSHAKE</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
+    <title>XCLIPSE | SYNC_AUTH</title>
     <style>
-        :root {
-            --primary: #ffffff; 
-            --spotify: #1DB954;
-            --bg: #010101;
-        }
-        body {
-            background: var(--bg); color: var(--primary);
-            font-family: 'JetBrains Mono', monospace;
-            display: flex; align-items: center; justify-content: center;
-            height: 100vh; margin: 0; overflow: hidden;
-        }
-        body::before {
-            content: ""; position: fixed; inset: 0;
-            background: url('https://grainy-gradients.vercel.app/noise.svg');
-            opacity: 0.05; pointer-events: none; z-index: 99;
-        }
-        .handshake-container {
-            position: relative; padding: 60px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(10px);
-            clip-path: polygon(0 0, 100% 0, 100% 80%, 80% 100%, 0 100%);
-            text-align: center; z-index: 10;
-        }
-        .glitch-header {
-            font-family: 'Montserrat', sans-serif;
-            font-style: italic; font-weight: 900; font-size: 2.5rem;
-            letter-spacing: -0.05em; color: #fff;
-            text-shadow: 2px 0 #ff3333, -2px 0 var(--spotify);
-        }
-        .data-stream {
-            width: 300px; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
-            margin: 25px auto; position: relative; overflow: hidden;
-        }
-        .stream-particle {
-            position: absolute; height: 100%; width: 50px;
-            background: #fff; box-shadow: 0 0 10px #fff;
-            animation: stream 1.5s infinite linear;
-        }
-        @keyframes stream { 0% { left: -50px; } 100% { left: 350px; } }
+        body { background: #000; color: #fff; font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 10px; letter-spacing: 2px; }
+        .loader { border-left: 2px solid #fff; padding-left: 20px; }
     </style>
 </head>
 <body>
-    <div class="handshake-container">
-        <div class="text-[8px] opacity-40 tracking-[0.5em] mb-2">ACCESS_GATEWAY_v84.0</div>
-        <div id="main-status" class="glitch-header">INITIALIZING</div>
-        <div class="data-stream"><div class="stream-particle"></div></div>
-        <div id="sub-status" class="text-[9px] tracking-[0.3em] uppercase opacity-60">Awaiting secure signal...</div>
-        <div id="error-log" class="hidden mt-6 p-4 border border-red-500/30 text-red-500 text-[8px] text-left max-w-xs break-words"></div>
-    </div>
+    <div class="loader" id="status">INITIATING_EXCHANGE_PROTOCOL...</div>
 
     <script>
-const Spotify = {
-    clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-    
-    // FIX: Match this exactly to your Spotify Dashboard entry
-    get redirectUri() {
-        return 'https://xclipsestudio.xclipsenetworks.com.au/callback'; 
-    },
+        const clientId = 'ee9cf7fe920d4280804730690b3fb4e8';
+        const redirectUri = 'https://xclipsestudio.xclipsenetworks.com.au/callback.html';
 
-    auth: async () => {
-        Kernel.log("PKCE", "Synchronizing Handshake URI...");
-        
-        // ... rest of the auth logic
-
-        async function start() {
-            const status = document.getElementById('main-status');
-            const sub = document.getElementById('sub-status');
+        async function initExchange() {
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
-            
-            // DYNAMIC RETURN LOGIC
-            // Checks localStorage for where we came from, defaults to spotify.html if lost
-            const originPage = localStorage.getItem('os_origin_page') || 'spotify.html'; 
+            const verifier = localStorage.getItem('sp_verifier');
 
             if (!code) {
-                if (localStorage.getItem('sp_access_token')) {
-                    status.innerText = "RESTORED";
-                    sub.innerText = "Session active. Returning to OS...";
-                    setTimeout(() => window.location.href = originPage, 1000);
-                } else {
-                    fail("MISSING_CODE", "No uplink signal detected.");
-                }
-                return;
-            }
-
-            status.innerText = "NEGOTIATING";
-            sub.innerText = "Validating PKCE verifier...";
-
-            const verifier = localStorage.getItem('sp_verifier');
-                        
-            if (!verifier) {
-                fail("VERIFIER_LOST", "Security handshake failed: Verifier missing from local manifest.");
+                document.getElementById('status').innerText = "FAULT: AUTH_CODE_NOT_FOUND";
                 return;
             }
 
             try {
-                // Spotify Token Exchange
-                const res = await fetch('https://accounts.spotify.com/api/token', {
+                const response = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams({
+                        client_id: clientId,
                         grant_type: 'authorization_code',
                         code: code,
-                        redirect_uri: CONFIG.redirectUri,
-                        client_id: CONFIG.clientId,
+                        redirect_uri: redirectUri,
                         code_verifier: verifier
                     })
                 });
 
-                const data = await res.json();                                
-                
+                const data = await response.json();
                 if (data.access_token) {
-                    // Save credentials
-                    localStorage.setItem('sp_access_token', data.access_token);
-                    localStorage.setItem('sp_refresh_token', data.refresh_token);
-                    localStorage.setItem('sp_expiry', Date.now() + (data.expires_in * 1000));
-                    
-                    status.innerText = "SUCCESS";
-                    sub.innerText = "Handshake verified. Entering OS...";
-                    
-                    // Cleanup security keys but KEEP the originPage variable for the redirect
-                    localStorage.removeItem('sp_verifier');
-                    localStorage.removeItem('os_origin_page'); 
-                    
-                    // Bounce back to original page (shh.html or spotify.html)
-                    setTimeout(() => {
-                        window.location.href = originPage;
-                    }, 1500);
-                } else { 
-                     throw new Error(data.error_description || data.error || "Handshake Rejected"); 
+                    localStorage.setItem('sp_token', data.access_token);
+                    document.getElementById('status').innerText = "SUCCESS // TOKEN_ACQUIRED // REDIRECTING...";
+                    setTimeout(() => window.location.href = 'shh.html', 1000);
+                } else {
+                    document.getElementById('status').innerText = "FAULT: TOKEN_DENIED";
                 }
-            } catch (e) { 
-                 fail("PROTOCOL_ERR", e.message); 
+            } catch (err) {
+                document.getElementById('status').innerText = "SYSTEM_ERROR: CONNECTION_REFUSED";
             }
         }
 
-        function fail(type, msg) {
-            document.getElementById('main-status').innerText = type;
-            document.getElementById('main-status').style.color = "#ff4444";
-            const err = document.getElementById('error-log');
-            err.innerText = `[LOG]: ${msg.toUpperCase()}`;
-            err.classList.remove('hidden');
-        }
-
-        window.onload = start;
+        initExchange();
     </script>
 </body>
 </html>
