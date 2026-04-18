@@ -2,56 +2,131 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>XCLIPSE | SYNC_AUTH</title>
+    <title>XCLIPSE | SYNC_AUTH_PROTOCOL_v84</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     <style>
-        body { background: #000; color: #fff; font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 10px; letter-spacing: 2px; }
-        .loader { border-left: 2px solid #fff; padding-left: 20px; }
+        :root {
+            --primary: #ffffff;
+            --bg: #000000;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--primary); 
+            font-family: var(--font-mono); 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            overflow: hidden;
+        }
+
+        .auth-container { border-left: 2px solid var(--primary); padding-left: 30px; max-width: 600px; }
+        .status-header { font-size: 10px; font-weight: 800; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 15px; }
+        .log-stream { font-size: 8px; opacity: 0.3; line-height: 2; height: 100px; overflow: hidden; }
+        
+        /* --- CRT EFFECT --- */
+        .crt::before {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none;
+        }
     </style>
 </head>
-<body>
-    <div class="loader" id="status">INITIATING_EXCHANGE_PROTOCOL...</div>
+<body class="crt">
+
+    <div class="auth-container">
+        <div class="status-header" id="main-status">INITIATING_EXCHANGE_PROTOCOL...</div>
+        <div class="log-stream" id="log-stream">
+            [SYS] Initializing Handshake...<br>
+            [SYS] Awaiting OAUTH_CODE from Spotify...<br>
+        </div>
+    </div>
 
     <script>
-        const clientId = 'ee9cf7fe920d4280804730690b3fb4e8';
-        const redirectUri = 'https://xclipsestudio.xclipsenetworks.com.au/callback.html';
+        /**
+         * --- XCLIPSE AUTHENTICATION MANIFEST ---
+         * FIX: Ensuring PKCE verifier persistence and correct endpoint mapping.
+         */
+        
+        const AUTH_CONFIG = {
+            clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
+            redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback.html',
+            tokenEndpoint: 'https://accounts.spotify.com/api/token' // CRITICAL: Corrected Endpoint
+        };
 
-        async function initExchange() {
+        function pushLog(msg) {
+            const log = document.getElementById('log-stream');
+            log.innerHTML += `[DATA] ${msg}<br>`;
+        }
+
+        async function executeTokenExchange() {
             const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            const verifier = localStorage.getItem('sp_verifier');
+            const authCode = urlParams.get('code');
+            const codeVerifier = localStorage.getItem('sp_verifier');
 
-            if (!code) {
-                document.getElementById('status').innerText = "FAULT: AUTH_CODE_NOT_FOUND";
+            pushLog("Retrieving stored Entropy_Verifier...");
+
+            if (!authCode) {
+                document.getElementById('main-status').innerText = "FAULT: AUTH_CODE_MISSING";
+                pushLog("ERR: No code detected in URL parameters.");
                 return;
             }
 
+            if (!codeVerifier) {
+                document.getElementById('main-status').innerText = "FAULT: VERIFIER_LOST";
+                pushLog("ERR: PKCE Verifier missing from LocalStorage. Possible session timeout.");
+                return;
+            }
+
+            pushLog("Executing POST request to Spotify_API...");
+
             try {
-                const response = await fetch('https://accounts.spotify.com/api/token', {
+                // NOTE: Fetching directly from Spotify to avoid potential Google Proxy headers blocking the grant
+                const response = await fetch(AUTH_CONFIG.tokenEndpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams({
-                        client_id: clientId,
+                        client_id: AUTH_CONFIG.clientId,
                         grant_type: 'authorization_code',
-                        code: code,
-                        redirect_uri: redirectUri,
-                        code_verifier: verifier
+                        code: authCode,
+                        redirect_uri: AUTH_CONFIG.redirectUri,
+                        code_verifier: codeVerifier
                     })
                 });
 
-                const data = await response.json();
-                if (data.access_token) {
-                    localStorage.setItem('sp_token', data.access_token);
-                    document.getElementById('status').innerText = "SUCCESS // TOKEN_ACQUIRED // REDIRECTING...";
-                    setTimeout(() => window.location.href = 'shh.html', 1000);
+                const payload = await response.json();
+
+                if (payload.access_token) {
+                    pushLog("Access_Token Acquired. Serializing...");
+                    localStorage.setItem('sp_token', payload.access_token);
+                    
+                    // Cleanup verifier after successful use
+                    localStorage.removeItem('sp_verifier');
+                    
+                    document.getElementById('main-status').innerText = "SUCCESS // PROTOCOL_COMPLETE";
+                    pushLog("Redirecting to Architect_OS...");
+                    
+                    setTimeout(() => { window.location.href = 'shh.html'; }, 1200);
                 } else {
-                    document.getElementById('status').innerText = "FAULT: TOKEN_DENIED";
+                    console.error("Spotify API Denied Token:", payload);
+                    document.getElementById('main-status').innerText = "FAULT: TOKEN_DENIED";
+                    pushLog(`ERR: ${payload.error_description || payload.error}`);
                 }
-            } catch (err) {
-                document.getElementById('status').innerText = "SYSTEM_ERROR: CONNECTION_REFUSED";
+            } catch (connectionError) {
+                document.getElementById('main-status').innerText = "SYSTEM_ERROR: NETWORK_FAILURE";
+                pushLog("ERR: Connection refused or CORS violation.");
             }
         }
 
-        initExchange();
+        // Delay execution slightly to ensure DOM and Storage are synced
+        window.onload = () => {
+            setTimeout(executeTokenExchange, 500);
+        };
     </script>
 </body>
 </html>
