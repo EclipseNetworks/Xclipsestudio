@@ -3,296 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | ARCHITECT_OS_v84.0_OMNI_SPEC</title>
+    <title>XCLIPSE | ARCHITECT_OS_v84.0_ULTRA_MANIFEST</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;900&family=Inter:wght@100;400;900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
+    
     <style>
+        /* --- KERNEL CSS DESIGN SYSTEM --- */
         :root {
-            --primary: #ffffff; 
-            --primary-glow: rgba(255, 255, 255, 0.45);
-            --spotify: #1DB954; 
-            --bg-dark: #000000; 
-            --panel-bg: rgba(2, 2, 2, 0.99);
-            --border-ui: rgba(255, 255, 255, 0.09); 
+            --primary: #ffffff;
+            --primary-glow: rgba(255, 255, 255, 0.5);
+            --spotify: #1DB954;
+            --bg-black: #000000;
+            --panel-bg: rgba(4, 4, 4, 0.98);
+            --border-ui: rgba(255, 255, 255, 0.07);
             --font-mono: 'JetBrains Mono', monospace;
-            --transition-core: 0.85s cubic-bezier(0.16, 1, 0.3, 1);
-            --scanline-color: rgba(255, 255, 255, 0.03);
+            --font-sans: 'Inter', sans-serif;
+            --transition-speed: 0.9s;
+            --ease-logic: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* --- FOUNDATION --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; user-select: none; outline: none; }
-        ::-webkit-scrollbar { width: 4px; background: #000; }
-        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; user-select: none; }
+        ::-webkit-scrollbar { width: 1px; background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); }
+
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-black);
+            color: var(--primary);
+            font-family: var(--font-sans);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- VISUAL INTERFERENCE ENGINE --- */
+        #render-surface { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.7; }
         
-        body, html { 
-            width: 100%; height: 100%; 
-            background: var(--bg-dark); 
-            color: #fff; 
-            font-family: 'Inter', sans-serif; 
-            overflow: hidden; 
-            position: relative; 
+        .vignette-layer {
+            position: fixed; inset: 0; z-index: 5;
+            background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,1) 140%);
+            pointer-events: none;
         }
 
-        /* --- VISUAL ENGINE LAYERS --- */
-        #matrix-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.8; }
-        
-        .vignette-engine { 
-            position: fixed; inset: 0; z-index: 5; 
-            background: radial-gradient(circle at center, transparent 10%, rgba(0,0,0,1) 150%); 
-            pointer-events: none; 
+        .crt-grain {
+            position: fixed; inset: 0; z-index: 6;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.04; pointer-events: none;
         }
 
-        .crt-interference { 
-            position: fixed; inset: 0; z-index: 6; 
-            background: linear-gradient(var(--scanline-color) 50%, rgba(0, 0, 0, 0.2) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); 
-            background-size: 100% 4px, 4px 100%; 
-            pointer-events: none; opacity: 0.6; 
-            animation: flicker 0.12s infinite; 
+        .scanline-stream {
+            position: fixed; inset: 0; z-index: 7;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
+            background-size: 100% 4px; pointer-events: none;
+            animation: scan-scroll 8s linear infinite;
         }
 
-        /* --- ANIMATION SUITE --- */
-        @keyframes flicker { 0% { opacity: 0.55; } 50% { opacity: 0.62; } 100% { opacity: 0.58; } }
-        @keyframes pulse-glow { 0% { box-shadow: 0 0 10px var(--primary-glow); } 50% { box-shadow: 0 0 30px var(--primary-glow); } 100% { box-shadow: 0 0 10px var(--primary-glow); } }
-        @keyframes slide-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes scan-scroll { from { background-position: 0 0; } to { background-position: 0 100%; } }
+        @keyframes boot-slide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- CORE OS INTERFACE --- */
-        .os-header { 
-            position: fixed; top: 45px; left: 55px; right: 55px; 
-            display: flex; justify-content: space-between; 
-            align-items: flex-start; z-index: 1000; 
+        /* --- INTERFACE ARCHITECTURE --- */
+        .os-container { position: relative; z-index: 100; height: 100%; display: flex; flex-direction: column; }
+
+        .os-header {
+            padding: 50px 70px; display: flex; justify-content: space-between; align-items: flex-start;
         }
 
-        .sys-info { border-left: 3px solid var(--primary); padding-left: 25px; transition: var(--transition-core); }
-        .sys-title { 
-            font-size: 11px; font-weight: 900; letter-spacing: 0.9em; 
-            text-transform: uppercase; color: var(--primary); 
-            text-shadow: 0 0 25px var(--primary-glow); 
+        .sys-identity { border-left: 2px solid var(--primary); padding-left: 30px; }
+        .sys-identity h1 { font-size: 11px; font-weight: 900; letter-spacing: 1.1em; text-transform: uppercase; }
+        .sys-identity p { font-size: 8px; font-family: var(--font-mono); opacity: 0.3; margin-top: 10px; letter-spacing: 0.3em; }
+
+        /* --- NEXUS GATE --- */
+        .nexus-panel {
+            position: fixed; top: 0; right: -850px; width: 850px; height: 100%;
+            background: var(--panel-bg); border-left: 1px solid var(--border-ui);
+            z-index: 2000; transition: right var(--transition-speed) var(--ease-logic);
+            padding: 120px 80px; backdrop-filter: blur(140px);
         }
 
-        .sys-status { 
-            font-family: var(--font-mono); font-size: 8px; 
-            text-transform: uppercase; letter-spacing: 0.4em; 
-            color: rgba(255,255,255,0.3); margin-top: 8px; 
-        }
-
-        /* --- CONFIGURATION NEXUS --- */
-        .nexus-panel { 
-            position: fixed; top: 0; right: -750px; width: 750px; height: 100%; 
-            background: var(--panel-bg); border-left: 1px solid var(--border-ui); 
-            z-index: 2000; transition: right var(--transition-core); 
-            padding: 110px 70px; backdrop-filter: blur(120px); 
-            display: flex; flex-direction: column; 
-        }
-        
         .nexus-panel.active { right: 0; }
 
-        .sys-btn { 
-            background: rgba(255,255,255,0.01); 
-            border: 1px solid var(--border-ui); 
-            padding: 24px; font-size: 10px; font-weight: 900; 
-            text-transform: uppercase; letter-spacing: 0.6em; 
-            color: #fff; transition: all 0.5s ease; 
-            width: 100%; text-align: center; 
-            margin-bottom: 20px; position: relative; overflow: hidden; 
+        .nexus-btn {
+            background: rgba(255,255,255,0.01);
+            border: 1px solid var(--border-ui);
+            padding: 26px; font-size: 10px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 0.7em;
+            color: #fff; width: 100%; margin-bottom: 20px;
+            transition: 0.4s var(--ease-logic);
         }
 
-        .sys-btn:hover { 
-            background: var(--primary); color: #000; 
-            border-color: var(--primary); 
-            box-shadow: 0 0 50px var(--primary-glow); 
-            transform: scale(1.02);
+        .nexus-btn:hover {
+            background: var(--primary); color: #000;
+            box-shadow: 0 0 50px var(--primary-glow);
+            transform: scale(1.01);
         }
 
-        /* --- CHRONOS ENGINE --- */
-        .chronos-wrapper { 
-            position: absolute; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); 
-            text-align: center; z-index: 10; 
-            width: 100%; pointer-events: none; 
+        /* --- DATA TERMINAL --- */
+        #kernel-terminal {
+            height: 580px; background: rgba(0,0,0,0.85);
+            border: 1px solid var(--border-ui);
+            padding: 30px; font-family: var(--font-mono);
+            font-size: 8px; color: var(--primary);
+            overflow-y: auto; line-height: 2.4;
+            scroll-behavior: smooth;
         }
 
-        #clock-face { 
-            font-family: 'Montserrat', sans-serif; 
-            font-size: clamp(8rem, 24vw, 32rem); 
-            font-weight: 900; line-height: 0.7; 
-            letter-spacing: -0.07em; color: var(--primary); 
-            filter: drop-shadow(0 0 60px var(--primary-glow)); 
-            transition: var(--transition-core); 
+        .log-entry { display: flex; gap: 18px; margin-bottom: 3px; animation: boot-slide 0.2s ease-out; }
+        .log-tag-kernel { color: #5050ff; font-weight: 800; }
+        .log-tag-auth { color: var(--spotify); font-weight: 800; }
+        .log-tag-net { color: #ffae00; font-weight: 800; }
+        .log-tag-vfx { color: #ff00ff; font-weight: 800; }
+
+        /* --- CHRONOS 12H --- */
+        .chronos-viewport {
+            flex: 1; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            pointer-events: none;
         }
 
-        #clock-ss { 
-            font-size: clamp(2rem, 6vw, 10rem); 
-            font-weight: 100; opacity: 0.15; 
-            color: #fff; margin-left: 30px; 
+        #clock-face {
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(6rem, 24vw, 28rem);
+            font-weight: 900; line-height: 0.65;
+            letter-spacing: -0.09em; filter: drop-shadow(0 0 70px var(--primary-glow));
         }
 
-        /* --- TERMINAL STYLING --- */
-        #terminal-manifest { 
-            height: 520px; background: rgba(0,0,0,0.7); 
-            border: 1px solid var(--border-ui); 
-            padding: 30px; font-family: var(--font-mono); 
-            font-size: 9px; color: var(--primary); 
-            overflow-y: auto; line-height: 2.5; 
-            scroll-behavior: smooth; position: relative;
-        }
-
-        .log-entry { 
-            margin-bottom: 6px; 
-            border-bottom: 1px solid rgba(255,255,255,0.03); 
-            display: flex; gap: 15px; 
-            animation: slide-in 0.3s ease-out;
-        }
-
-        .log-time { color: rgba(255,255,255,0.2); min-width: 80px; }
-        .log-tag { font-weight: 900; text-transform: uppercase; min-width: 100px; }
-        .tag-kernel { color: #5555ff; }
-        .tag-auth { color: var(--spotify); }
-        .tag-vfx { color: #ff33ff; }
-        .tag-err { color: #ff3333; }
-
-        /* --- SVG FILTERS --- */
-        .svg-filters { position: absolute; width: 0; height: 0; visibility: hidden; }
+        .clock-meta { display: flex; align-items: baseline; justify-content: center; margin-top: 10px; }
+        #clock-ss { font-size: clamp(1rem, 5vw, 6rem); font-weight: 100; opacity: 0.15; }
+        #clock-meridiem { font-size: clamp(1rem, 4vw, 5rem); font-weight: 900; opacity: 0.06; margin-left: 25px; }
 
     </style>
 </head>
-<body id="kernel-root">
-    
-    <svg class="svg-filters">
-        <defs>
-            <filter id="crt-warp">
-                <feTurbulence type="fractalNoise" baseFrequency="0.00001" numOctaves="1" result="noise" />
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
-            </filter>
-        </defs>
-    </svg>
+<body>
 
-    <canvas id="matrix-canvas"></canvas>
-    <div class="vignette-engine"></div>
-    <div class="crt-interference"></div>
+    <canvas id="render-surface"></canvas>
+    <div class="vignette-layer"></div>
+    <div class="crt-grain"></div>
+    <div class="scanline-stream"></div>
 
-    <header class="os-header">
-        <div class="sys-info">
-            <div class="sys-title">ARCHITECT_OS // v84.0</div>
-            <div class="sys-status" id="status-label">SYS_STATE: INITIALIZING_OMNI_SPEC</div>
-        </div>
-        <button class="sys-btn !w-64 !mb-0" onclick="Kernel.toggleNexus()">Nexus_Gateway</button>
-    </header>
+    <div class="os-container">
+        <header class="os-header">
+            <div class="sys-identity">
+                <h1>ARCHITECT_OS // v84.0_ULTRA</h1>
+                <p id="kernel-status">STATUS: INITIALIZING_BOOT_SEQUENCE</p>
+            </div>
+            <button class="nexus-btn !w-72 !mb-0" onclick="Architect.toggleNexus()">Nexus_Gateway</button>
+        </header>
 
-    <aside id="nexus-ui" class="nexus-panel">
-        <div class="text-[11px] font-black tracking-[1.5em] mb-16 uppercase opacity-10">Configuration_Nexus_v84</div>
-        
-        <div class="flex-1 overflow-y-auto pr-6 space-y-20">
-            <section>
-                <div class="text-[9px] font-black tracking-[0.6em] mb-10 uppercase text-white/20">Security_Protocol</div>
-                <button class="sys-btn !text-[#1DB954] !border-[#1DB954]/20" onclick="Spotify.auth()">Link_Spotify_PKCE</button>
-            </section>
+        <aside id="nexus-ui" class="nexus-panel">
+            <div class="text-[10px] font-black tracking-[2em] mb-16 uppercase opacity-10">Configuration_Nexus</div>
+            
+            <div class="space-y-14 overflow-y-auto pr-6 h-[70vh]">
+                <section>
+                    <div class="text-[8px] font-bold tracking-[0.5em] mb-8 uppercase text-white/20">Authentication_Layer</div>
+                    <button class="nexus-btn !text-[#1DB954] !border-[#1DB954]/20" onclick="SpotifyProvider.authenticate()">Link_Spotify_PKCE</button>
+                </section>
 
-            <section>
-                <div class="text-[9px] font-black tracking-[0.6em] mb-10 uppercase text-white/20">Manifest_Stream_Output</div>
-                <div id="terminal-manifest">
-                    </div>
-            </section>
-        </div>
+                <section>
+                    <div class="text-[8px] font-bold tracking-[0.5em] mb-8 uppercase text-white/20">Kernel_Log_Stream</div>
+                    <div id="kernel-terminal"></div>
+                </section>
+            </div>
 
-        <div class="mt-12 flex gap-4">
-            <button class="sys-btn !text-white/40 !border-white/5 !mb-0" onclick="Kernel.clearLogs()">Clear_Logs</button>
-            <button class="sys-btn !text-red-600 !border-red-600/10 !mb-0" onclick="location.reload()">Kill_Session</button>
-        </div>
-    </aside>
+            <div class="mt-12 flex gap-6">
+                <button class="nexus-btn !text-white/20 !border-white/5 !mb-0" onclick="Terminal.flush()">Flush_Logs</button>
+                <button class="nexus-btn !text-red-700 !border-red-700/10 !mb-0" onclick="location.reload()">Terminate</button>
+            </div>
+        </aside>
 
-    <main class="chronos-wrapper" id="chronos-ui">
-        <div class="flex items-baseline justify-center">
-            <span id="clock-face">00:00</span>
-            <span id="clock-ss">00</span>
-        </div>
-        <div class="mt-20 text-[10px] tracking-[4em] font-black text-white/5 uppercase">Architect_Core_South_Australia</div>
-    </main>
+        <main class="chronos-viewport" id="parallax-engine">
+            <div id="clock-face">00:00</div>
+            <div class="clock-meta">
+                <span id="clock-ss">00</span>
+                <span id="clock-meridiem">AM</span>
+            </div>
+            <div class="mt-28 text-[9px] tracking-[5em] font-black text-white/5 uppercase">Bordertown_Regional_Node</div>
+        </main>
+    </div>
 
     <script>
         /**
-         * --- ARCHITECT_OS CORE CONSTANTS ---
-         * Extensive mapping to increase manifest density and logic complexity.
+         * --- DATA REPOSITORY: HARDWARE ADDRESS SPACE ---
+         * Extensive mapping for high-density code simulation (300+ entries)
          */
-        const OS_CORE = {
-            VERSION: "84.0.512",
-            RELEASE: "OMNI_SPEC_PROD",
-            MEMORY_MAP: Array.from({length: 120}, (_, i) => `0x${Math.floor(Math.random()*0xFFFFFFFF).toString(16).toUpperCase()}`),
-            SYSTEM_TAGS: ["KERNEL", "AUTH", "VFX", "SYSCALL", "HARDWARE", "NETWORK", "BUFFER"],
-            HANDSHAKE_HASH: "EE9CF7FE920D4280804730690B3FB4E8",
-            REDIRECT: "https://xclipsestudio.xclipsenetworks.com.au/callback.html"
-        };
+        const HARDWARE_ADDR = Array.from({length: 320}, (_, i) => ({
+            id: i,
+            hex: `0x${Math.floor(Math.random()*0xFFFFFFFF).toString(16).toUpperCase()}`,
+            sector: `SEC_0${Math.floor(i/10)}`,
+            priority: Math.random() > 0.8 ? "HIGH" : "LOW"
+        }));
 
-        const Kernel = {
-            toggleNexus: () => document.getElementById('nexus-ui').classList.toggle('active'),
-            
-            log: (tag, msg, type = "kernel") => {
-                const manifest = document.getElementById('terminal-manifest');
-                const entry = document.createElement('div');
-                entry.className = "log-entry";
-                
-                const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
-                
-                entry.innerHTML = `
-                    <span class="log-time">${time}</span>
-                    <span class="log-tag tag-${type}">[${tag}]</span>
-                    <span class="opacity-80">${msg}</span>
+        /**
+         * --- MODULE: TERMINAL ENGINE ---
+         */
+        const Terminal = {
+            output: null,
+            init() { this.output = document.getElementById('kernel-terminal'); },
+            log(tag, message, type = "kernel") {
+                const row = document.createElement('div');
+                row.className = "log-entry";
+                const ts = new Date().toLocaleTimeString('en-GB', { hour12: false });
+                row.innerHTML = `
+                    <span class="opacity-10">${ts}</span>
+                    <span class="log-tag-${type}">[${tag}]</span>
+                    <span class="opacity-70">${message}</span>
                 `;
-                
-                manifest.prepend(entry);
-                if(manifest.childNodes.length > 1000) manifest.lastChild.remove();
+                this.output.prepend(row);
+                if(this.output.childNodes.length > 1000) this.output.lastChild.remove();
             },
-
-            clearLogs: () => {
-                document.getElementById('terminal-manifest').innerHTML = '';
-                Kernel.log("SYS", "Terminal logs flushed by user.");
-            },
-
-            /**
-             * --- THE MANIFEST GENERATOR ---
-             * This function simulates a high-density system boot.
-             * It generates 400+ distinct lines of logic.
-             */
-            runBootManifest: async () => {
-                Kernel.log("KERNEL", "Architect_OS Kernel v84.0 Bootstrap Initiated...");
-                
-                // 1. Memory Allocation Block (~120 lines)
-                for (let i = 0; i < OS_CORE.MEMORY_MAP.length; i++) {
-                    await new Promise(r => setTimeout(r, 5));
-                    Kernel.log("HARDWARE", `Mapping physical address ${OS_CORE.MEMORY_MAP[i]} to Virtual_Node_${i}... SUCCESS`);
-                }
-
-                // 2. Protocol Verification Block (~100 lines)
-                for (let j = 0; j < 100; j++) {
-                    await new Promise(r => setTimeout(r, 8));
-                    const status = Math.random() > 0.1 ? "VERIFIED" : "NEGOTIATING";
-                    Kernel.log("SYSCALL", `Verifying Protocol_ID_${j*13} // ${OS_CORE.HANDSHAKE_HASH.slice(0, 8)}... ${status}`);
-                }
-
-                // 3. Security Handshake Check (~100 lines)
-                for (let k = 0; k < 100; k++) {
-                    await new Promise(r => setTimeout(r, 12));
-                    const entropy = (Math.random() * 100).toFixed(4);
-                    Kernel.log("AUTH", `Checking Entropy_Bit_${k} // VALUE: ${entropy}% // STATE: ENCRYPTED`, "auth");
-                }
-
-                // 4. VFX Engine Calibration (~80 lines)
-                for (let l = 0; l < 80; l++) {
-                    await new Promise(r => setTimeout(r, 15));
-                    Kernel.log("VFX", `Calibrating Matrix_Stream_${l} // Frequency: ${(Math.random()*60).toFixed(2)}Hz`, "vfx");
-                }
-
-                Kernel.log("SYS", "Boot Sequence 100% Complete. Systems Nominal.");
-                document.getElementById('status-label').innerText = "SYS_STATE: UPLINK_STABLE_v84";
+            flush() {
+                this.output.innerHTML = '';
+                this.log("SYS", "Terminal heap flushed by administrator.");
             }
         };
 
-        const Spotify = {
-            clientId: OS_CORE.HANDSHAKE_HASH.toLowerCase(),
-            redirectUri: OS_CORE.REDIRECT,
+        /**
+         * --- MODULE: ARCHITECT KERNEL ---
+         */
+        const Architect = {
+            toggleNexus: () => document.getElementById('nexus-ui').classList.toggle('active'),
             
-            auth: async () => {
-                Kernel.log("AUTH", "Constructing PKCE Secure Handshake...", "auth");
+            async bootSequence() {
+                Terminal.init();
+                Terminal.log("KERNEL", "Architect_OS Ultra Kernel [Version 84.0.012] Loading...");
+                
+                // Address Mapping Sequence (~320 cycles)
+                for (const addr of HARDWARE_ADDR) {
+                    await new Promise(r => setTimeout(r, 3));
+                    Terminal.log("HARDWARE", `Mounting Address ${addr.hex} at ${addr.sector}... OK`);
+                }
+
+                Terminal.log("NET", "Uplink verified: BorderTown_Primary_Uplink");
+                Terminal.log("VFX", "Shaders compiled. CRT Surface engaged.", "vfx");
+                document.getElementById('kernel-status').innerText = "STATUS: KERNEL_ACTIVE_STABLE";
+            }
+        };
+
+        /**
+         * --- MODULE: SPOTIFY PROVIDER (PKCE) ---
+         */
+        const SpotifyProvider = {
+            config: {
+                id: 'ee9cf7fe920d4280804730690b3fb4e8',
+                uri: 'https://xclipsestudio.xclipsenetworks.com.au/callback.html',
+                scopes: 'user-read-currently-playing user-read-playback-state'
+            },
+            async authenticate() {
+                Terminal.log("AUTH", "Generating cryptographic entropy stream...", "auth");
                 
                 const verifier = Array.from(crypto.getRandomValues(new Uint8Array(64)))
                     .map(x => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'[x % 66]).join('');
@@ -303,73 +258,79 @@
                     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
                 const params = new URLSearchParams({
-                    response_type: 'code',
-                    client_id: Spotify.clientId,
-                    scope: 'user-read-currently-playing user-read-playback-state',
-                    redirect_uri: Spotify.redirectUri,
-                    code_challenge_method: 'S256',
-                    code_challenge: challenge
+                    response_type: 'code', client_id: this.config.id,
+                    scope: this.config.scopes, redirect_uri: this.config.uri,
+                    code_challenge_method: 'S256', code_challenge: challenge
                 });
 
-                Kernel.log("AUTH", "Redirecting to Spotify_OAUTH_Gateway...", "auth");
+                Terminal.log("AUTH", "Transferring control to OAUTH_Gateway...", "auth");
                 setTimeout(() => {
                     window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
                 }, 1000);
             }
         };
 
-        const VFX = {
-            matrix: {
-                canvas: null, ctx: null, drops: [],
-                init: () => {
-                    VFX.matrix.canvas = document.getElementById('matrix-canvas');
-                    VFX.matrix.ctx = VFX.matrix.canvas.getContext('2d');
-                    VFX.matrix.resize();
-                    setInterval(VFX.matrix.draw, 45);
-                },
-                resize: () => {
-                    VFX.matrix.canvas.width = window.innerWidth;
-                    VFX.matrix.canvas.height = window.innerHeight;
-                    VFX.matrix.drops = Array(Math.floor(window.innerWidth / 22)).fill(1);
-                },
-                draw: () => {
-                    VFX.matrix.ctx.fillStyle = "rgba(0,0,0,0.12)";
-                    VFX.matrix.ctx.fillRect(0,0,VFX.matrix.canvas.width,VFX.matrix.canvas.height);
-                    
-                    VFX.matrix.ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
-                    VFX.matrix.ctx.font = "14px JetBrains Mono";
-                    
-                    VFX.matrix.drops.forEach((y, i) => {
-                        const char = Math.random() > 0.5 ? "1" : "0";
-                        VFX.matrix.ctx.fillText(char, i * 22, y * 22);
-                        if(y * 22 > VFX.matrix.canvas.height && Math.random() > 0.98) VFX.matrix.drops[i] = 0;
-                        VFX.matrix.drops[i]++;
-                    });
-                }
+        /**
+         * --- MODULE: MATRIX ENGINE ---
+         */
+        class MatrixEngine {
+            constructor() {
+                this.canvas = document.getElementById('render-surface');
+                this.ctx = this.canvas.getContext('2d');
+                this.drops = [];
+                this.fontSize = 15;
             }
-        };
+            init() {
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                setInterval(() => this.draw(), 45);
+            }
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.drops = Array(Math.floor(this.canvas.width / this.fontSize)).fill(1);
+            }
+            draw() {
+                this.ctx.fillStyle = "rgba(0,0,0,0.18)";
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.fillStyle = "#ffffff";
+                this.ctx.font = `${this.fontSize}px monospace`;
+                this.drops.forEach((y, i) => {
+                    const text = Math.random() > 0.5 ? "1" : "0";
+                    this.ctx.fillText(text, i * this.fontSize, y * this.fontSize);
+                    if(y * this.fontSize > this.canvas.height && Math.random() > 0.98) this.drops[i] = 0;
+                    this.drops[i]++;
+                });
+            }
+        }
 
-        /* --- EVENT LISTENERS --- */
+        /**
+         * --- INITIALIZATION ---
+         */
         window.onload = () => {
-            VFX.matrix.init();
-            Kernel.runBootManifest();
-            
-            // Primary Clock
+            new MatrixEngine().init();
+            Architect.bootSequence();
+
+            // 12H CLOCK ENGINE
             setInterval(() => {
                 const now = new Date();
-                document.getElementById('clock-face').innerText = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-                document.getElementById('clock-ss').innerText = String(now.getSeconds()).padStart(2, '0');
+                let h = now.getHours();
+                const m = String(now.getMinutes()).padStart(2, '0');
+                const s = String(now.getSeconds()).padStart(2, '0');
+                const p = h >= 12 ? 'PM' : 'AM';
+                h = h % 12 || 12;
+                document.getElementById('clock-face').innerText = `${h}:${m}`;
+                document.getElementById('clock-ss').innerText = s;
+                document.getElementById('clock-meridiem').innerText = p;
             }, 1000);
 
-            // Parallax Motion
+            // PARALLAX
             document.onmousemove = (e) => {
-                const x = (window.innerWidth/2 - e.pageX)/120;
-                const y = (window.innerHeight/2 - e.pageY)/120;
-                document.getElementById('chronos-ui').style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+                const x = (window.innerWidth / 2 - e.pageX) / 100;
+                const y = (window.innerHeight / 2 - e.pageY) / 100;
+                document.getElementById('parallax-engine').style.transform = `translate(${x}px, ${y}px)`;
             };
         };
-
-        window.onresize = () => VFX.matrix.resize();
     </script>
 </body>
 </html>
