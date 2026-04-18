@@ -8,15 +8,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=JetBrains+Mono:wght@100;400;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #a855f7;
+            --primary: #ffffff; /* Matched your OS theme */
             --spotify: #1DB954;
             --bg: #010101;
         }
-        body { 
-             background: var(--bg); color: var(--primary); 
-             font-family: 'JetBrains Mono', monospace; 
-             display: flex; align-items: center; justify-content: center; 
-             height: 100vh; margin: 0; overflow: hidden;
+        body {
+            background: var(--bg); color: var(--primary);
+            font-family: 'JetBrains Mono', monospace;
+            display: flex; align-items: center; justify-content: center;
+            height: 100vh; margin: 0; overflow: hidden;
         }
         body::before {
             content: ""; position: fixed; inset: 0;
@@ -25,7 +25,7 @@
         }
         .handshake-container {
             position: relative; padding: 60px;
-            border: 1px solid rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(10px);
             clip-path: polygon(0 0, 100% 0, 100% 80%, 80% 100%, 0 100%);
             text-align: center; z-index: 10;
@@ -34,7 +34,7 @@
             font-family: 'Montserrat', sans-serif;
             font-style: italic; font-weight: 900; font-size: 2.5rem;
             letter-spacing: -0.05em; color: #fff;
-            text-shadow: 2px 0 var(--primary), -2px 0 var(--spotify);
+            text-shadow: 2px 0 #ff3333, -2px 0 var(--spotify);
         }
         .data-stream {
             width: 300px; height: 1px;
@@ -51,7 +51,7 @@
 </head>
 <body>
     <div class="handshake-container">
-        <div class="text-[8px] opacity-40 tracking-[0.5em] mb-2">ACCESS_GATEWAY_v22.8</div>
+        <div class="text-[8px] opacity-40 tracking-[0.5em] mb-2">ACCESS_GATEWAY_v84.0</div>
         <div id="main-status" class="glitch-header">INITIALIZING</div>
         <div class="data-stream"><div class="stream-particle"></div></div>
         <div id="sub-status" class="text-[9px] tracking-[0.3em] uppercase opacity-60">Awaiting secure signal...</div>
@@ -61,7 +61,8 @@
     <script>
         const CONFIG = {
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback'
+            // Dynamically set to this current file's URL
+            redirectUri: window.location.origin + window.location.pathname
         };
 
         async function start() {
@@ -69,6 +70,8 @@
             const sub = document.getElementById('sub-status');
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
+            
+            // This 'state' tells us which page to go back to (e.g., index.html)
             const state = urlParams.get('state') || 'index.html'; 
 
             if (!code) {
@@ -85,16 +88,16 @@
             status.innerText = "NEGOTIATING";
             sub.innerText = "Validating PKCE verifier...";
 
-            // FIX: Match the key name used in your index.html ('sp_verifier')
+            // Retrieve the verifier saved by the main OS page
             const verifier = localStorage.getItem('sp_verifier');
-            
+                        
             if (!verifier) {
-                fail("VERIFIER_LOST", "The code_verifier was not found in local memory.");
+                fail("VERIFIER_LOST", "Security handshake failed: Verifier missing from local manifest.");
                 return;
             }
 
             try {
-                // Spotify Token Endpoint
+                // Spotify Token Exchange
                 const res = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST',
                     headers: {
@@ -109,9 +112,10 @@
                     })
                 });
 
-                const data = await res.json();
+                const data = await res.json();                                
                 
                 if (data.access_token) {
+                    // Save credentials
                     localStorage.setItem('sp_access_token', data.access_token);
                     localStorage.setItem('sp_refresh_token', data.refresh_token);
                     localStorage.setItem('sp_expiry', Date.now() + (data.expires_in * 1000));
@@ -119,15 +123,16 @@
                     status.innerText = "SUCCESS";
                     sub.innerText = "Handshake verified. Entering OS...";
                     
-                    // Cleanup verifier after successful use
+                    // Cleanup
                     localStorage.removeItem('sp_verifier');
                     
+                    // Bounce back to original page
                     setTimeout(() => window.location.href = state, 1500);
                 } else { 
-                    throw new Error(data.error_description || data.error || "Handshake Rejected"); 
+                     throw new Error(data.error_description || data.error || "Handshake Rejected"); 
                 }
             } catch (e) { 
-                fail("PROTOCOL_ERR", e.message); 
+                 fail("PROTOCOL_ERR", e.message); 
             }
         }
 
