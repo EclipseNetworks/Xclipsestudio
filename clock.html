@@ -27,11 +27,27 @@
     </script>
     <style>
       :root { --glitch-opacity: 0; }
-      body { background: #050811; color: white; margin: 0; min-height: 100vh; overflow: hidden; font-family: 'JetBrains Mono', monospace; transition: background 0.8s ease; }
+      body { background: #050811; color: white; margin: 0; min-height: 100vh; overflow: hidden; font-family: 'JetBrains Mono', monospace; transition: background 0.8s ease; cursor: none; }
+      
+      /* CUSTOM CURSOR STYLES */
+      #custom-cursor {
+        position: fixed; width: 8px; height: 8px; background: #ec4899; border-radius: 50%;
+        pointer-events: none; z-index: 9999; transform: translate(-50%, -50%);
+        transition: width 0.2s, height 0.2s, background 0.2s;
+      }
+      #cursor-follower {
+        position: fixed; width: 30px; height: 30px; border: 1px solid rgba(236, 72, 153, 0.5); border-radius: 50%;
+        pointer-events: none; z-index: 9998; transform: translate(-50%, -50%);
+        transition: transform 0.1s ease-out, width 0.3s, height 0.3s, border-color 0.3s;
+      }
+      .cursor-hover #custom-cursor { width: 12px; height: 12px; background: #4ade80; }
+      .cursor-hover #cursor-follower { width: 45px; height: 45px; border-color: #4ade80; border-width: 2px; }
+
       .layer-bg { position: fixed; inset: 0; z-index: -10; }
       .layer-grid { position: fixed; inset: 0; z-index: -5; background-image: radial-gradient(circle, rgba(236, 72, 153, 0.05) 1px, transparent 1px); background-size: 30px 30px; mask-image: radial-gradient(ellipse at center, black, transparent 80%); }
       .chromatic-wrap { position: relative; transition: filter 0.3s ease; }
       .critical-state { filter: drop-shadow(2px 0px 0px #ff003c) drop-shadow(-2px 0px 0px #0ea5e9); animation: vibration 0.1s infinite; }
+      
       @keyframes vibration {
           0% { transform: translate(0); }
           25% { transform: translate(1px, 1px); }
@@ -39,6 +55,7 @@
           75% { transform: translate(1px, -1px); }
           100% { transform: translate(0); }
       }
+
       .glass-kernel {
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
         backdrop-filter: blur(60px);
@@ -46,17 +63,20 @@
         box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255,255,255,0.05);
         transform-style: preserve-3d;
       }
+
       #lockdown-shield {
         position: fixed; inset: 0; background: rgba(26, 0, 5, 0.95); z-index: 1000;
         display: none; flex-direction: column; align-items: center; justify-content: center;
         border: 20px solid #ff003c;
       }
-      /* NEW: Boot Overlay Styles */
+
       #boot-overlay {
         position: fixed; inset: 0; background: #050811; z-index: 3000;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: none;
       }
+
       .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 8px; }
       .no-select { user-select: none; }
       .shield-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; }
@@ -68,14 +88,17 @@
 </head>
 <body class="no-select">
 
+    <!-- CUSTOM CURSOR ELEMENTS -->
+    <div id="custom-cursor"></div>
+    <div id="cursor-follower"></div>
+
     <div id="boot-overlay">
-        <div class="text-center">
-            <div class="mb-6 opacity-20 font-mono text-[10px] tracking-[1em] uppercase">Terminal Standby</div>
-            <button id="launch-btn" class="group relative px-12 py-4 border border-primary/30 hover:border-primary transition-all duration-500 overflow-hidden">
-                <div class="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-                <span class="relative font-display text-primary text-xs tracking-[0.5em]">INITIALIZE_UPLINK</span>
-            </button>
-            <p class="mt-6 font-mono text-[8px] text-white/20 uppercase tracking-widest">Click to establish secure connection & fullscreen</p>
+        <div class="text-center pointer-events-none">
+            <div class="mb-6 opacity-20 font-mono text-[10px] tracking-[1em] uppercase animate-pulse">System Standby</div>
+            <div class="px-12 py-4 border border-primary/30 group-hover:border-primary transition-all duration-500">
+                <span class="font-display text-primary text-xs md:text-sm tracking-[0.5em]">CLICK_ANYWHERE_TO_INITIALIZE</span>
+            </div>
+            <p class="mt-6 font-mono text-[8px] text-white/20 uppercase tracking-widest">Establishing secure uplink & fullscreen protocol</p>
         </div>
     </div>
 
@@ -107,7 +130,7 @@
                 </div>
             </div>
 
-            <div class="cursor-pointer group">
+            <div class="cursor-pointer group hover-target">
                 <div class="flex items-center text-[8px] text-white/30 tracking-widest mb-1">
                     <span class="status-dot bg-alert"></span> SECURITY_FIREBASE
                 </div>
@@ -231,7 +254,8 @@
                 this.resize();
                 this.createParticles();
                 this.animate();
-                this.setupFullscreen(); // NEW: Handle fullscreen trigger
+                this.setupFullscreen(); 
+                this.setupCursor(); // NEW: Custom cursor logic
                 
                 window.addEventListener('resize', () => this.resize());
                 setInterval(() => this.updateTemporalCycle(), 100);
@@ -240,26 +264,39 @@
                 }, 3000);
             },
 
-            // NEW: Fullscreen Request Logic
-            setupFullscreen() {
-                const launchBtn = document.getElementById('launch-btn');
-                const bootOverlay = document.getElementById('boot-overlay');
+            setupCursor() {
+                const cursor = document.getElementById('custom-cursor');
+                const follower = document.getElementById('cursor-follower');
+                
+                window.addEventListener('mousemove', (e) => {
+                    cursor.style.left = e.clientX + 'px';
+                    cursor.style.top = e.clientY + 'px';
+                    
+                    // Simple delay for the follower
+                    setTimeout(() => {
+                        follower.style.left = e.clientX + 'px';
+                        follower.style.top = e.clientY + 'px';
+                    }, 50);
+                });
 
+                // Interaction effects
+                document.querySelectorAll('button, .cursor-pointer, .hover-target').forEach(el => {
+                    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+                    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+                });
+            },
+
+            setupFullscreen() {
+                const bootOverlay = document.getElementById('boot-overlay');
                 const goFullscreen = () => {
                     const elem = document.documentElement;
-                    if (elem.requestFullscreen) {
-                        elem.requestFullscreen();
-                    } else if (elem.webkitRequestFullscreen) { /* Safari */
-                        elem.webkitRequestFullscreen();
-                    } else if (elem.msRequestFullscreen) { /* IE11 */
-                        elem.msRequestFullscreen();
-                    }
-                    
+                    if (elem.requestFullscreen) { elem.requestFullscreen(); }
+                    else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+                    else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
                     bootOverlay.style.opacity = '0';
                     setTimeout(() => { bootOverlay.style.display = 'none'; }, 800);
                 };
-
-                launchBtn.addEventListener('click', goFullscreen);
+                bootOverlay.addEventListener('click', goFullscreen);
             },
 
             resize() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; },
@@ -301,7 +338,6 @@
                 const sec = now.getSeconds();
                 const ms = now.getMilliseconds();
 
-                // Display Clock
                 const timeStr = now.toLocaleTimeString('en-AU', { 
                     hour: '2-digit', minute: '2-digit', second: '2-digit', 
                     hour12: true, timeZone: 'Australia/Adelaide' 
@@ -310,12 +346,9 @@
                 document.getElementById('bt-time').innerText = parts[0];
                 document.getElementById('bt-ampm').innerText = parts[1].toUpperCase();
 
-                // Calculate countdown to 3:00:00 AM
                 let target = new Date(now);
                 target.setHours(3, 0, 0, 0);
-                if (now >= target) {
-                    target.setDate(target.getDate() + 1);
-                }
+                if (now >= target) { target.setDate(target.getDate() + 1); }
                 const diff = target - now;
                 const hRem = Math.floor(diff / 3600000);
                 const mRem = Math.floor((diff % 3600000) / 60000);
@@ -324,10 +357,8 @@
                 document.getElementById('sync-timer-badge').querySelector('span').innerText = 
                     `${hRem.toString().padStart(2, '0')}:${mRem.toString().padStart(2, '0')}:${sRem.toString().padStart(2, '0')}`;
                 
-                // Progress bar shows completion of the current 24h cycle (relative to 3am)
                 document.getElementById('kernel-progress').style.width = `${(diff / 86400000) * 100}%`;
 
-                // Critical Warning: 10 seconds before 3 AM
                 const container = document.getElementById('clock-container');
                 if (hrs === 2 && min === 59 && sec >= 50) {
                     container.classList.add('critical-state');
@@ -335,14 +366,12 @@
                     container.classList.remove('critical-state');
                 }
 
-                // REFRESH TRIGGER: Exactly 03:00:00
                 if (hrs === 3 && min === 0 && sec === 0 && !this.refreshTriggered) {
                     this.refreshTriggered = true;
                     document.body.style.opacity = "0";
                     setTimeout(() => window.location.reload(), 500);
                 }
 
-                // Random System Logs
                 if (ms < 100 && sec % 15 === 0) {
                     const logs = [
                         "[SYS] Daily kernel cleanup scheduled",
