@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-CLIPSE | ARCHITECT_OS</title>
+    <title>X-CLIPSE // SOUNDCLOUD</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -11,133 +11,221 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400&family=Space+Grotesk:wght@300;800&display=swap');
-        :root { --bg: #020202; --accent: #ffffff; }
-        body { background: var(--bg); color: white; font-family: 'Space Grotesk', sans-serif; overflow: hidden; height: 100vh; }
+        
+        :root {
+            --bg: #020202;
+            --accent: #ffffff;
+            --panel: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
         .terminal { font-family: 'JetBrains Mono', monospace; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        #bg-canvas { position: fixed; inset: 0; z-index: -1; opacity: 0.2; }
+
+        /* Scanning Line Animation */
+        .scanline {
+            position: fixed; top: 0; left: 0; width: 100%; height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 100; pointer-events: none;
+            animation: scan 4s linear infinite;
+        }
+
+        @keyframes scan { 0% { top: -10%; } 100% { top: 110%; } }
+
+        .glass-panel {
+            background: var(--panel);
+            backdrop-filter: blur(40px);
+            border: 1px solid var(--border);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-panel:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        #bg-canvas {
+            position: fixed; inset: 0; z-index: -1;
+            opacity: 0.2;
+        }
     </style>
 </head>
-<body onload="initSystem()">
+<body class="flex items-center justify-center">
 
+    <div class="scanline"></div>
     <canvas id="bg-canvas"></canvas>
 
-    <!-- UI LAYER: LOGIN (Visible if no code) -->
-    <div id="view-login" class="flex flex-col items-center justify-center h-screen space-y-12 transition-all duration-1000">
-        <div class="text-center">
-            <p class="terminal text-[10px] tracking-[1em] opacity-20 mb-2">SYSTEM_ENTRY_REQUIRED</p>
-            <h1 class="text-8xl font-black italic uppercase tracking-tighter">XCLIPSE</h1>
+    <!-- HEADER NAVIGATION -->
+    <nav class="fixed top-0 w-full p-8 flex justify-between items-center z-50">
+        <div class="terminal text-[10px] tracking-[0.8em] opacity-30">ARCHITECT_V3.0</div>
+        <div id="connection-status" class="flex items-center gap-3 glass-panel px-4 py-2 rounded-full">
+            <div class="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_10px_red]" id="status-led"></div>
+            <span class="terminal text-[9px] tracking-widest opacity-60 uppercase" id="status-text">Disconnected</span>
         </div>
-        <button onclick="triggerSpotifyAuth()" class="px-16 py-8 rounded-full glass border border-white/10 hover:bg-white hover:text-black transition-all flex items-center gap-4 group">
-            <i data-lucide="power" class="w-5 h-5 group-hover:rotate-90 transition-transform"></i>
-            <span class="terminal text-xs font-bold">INITIALIZE_KERNEL</span>
-        </button>
-    </div>
+    </nav>
 
-    <!-- UI LAYER: PLAYER (Visible if code exists) -->
-    <div id="view-player" class="hidden flex-col items-center justify-center h-screen space-y-6">
-        <div class="glass p-12 rounded-[60px] text-center space-y-4">
-            <div id="status-dot" class="w-2 h-2 rounded-full bg-green-500 mx-auto animate-pulse"></div>
-            <h2 class="terminal text-xs tracking-widest">UPLINK_ESTABLISHED</h2>
-            <p class="text-4xl font-light opacity-50 italic">System Ready.</p>
+    <!-- MAIN VIEW: INITIALIZE -->
+    <main id="auth-view" class="relative z-10 text-center space-y-8">
+        <div class="space-y-1">
+            <h1 class="text-[12rem] font-black italic uppercase tracking-tighter glow-text leading-none">XCLIPSE</h1>
+            <p class="terminal text-[10px] tracking-[1.5em] opacity-20 translate-x-3">NEURAL_AUDIO_INTERFACE</p>
         </div>
-        <div class="terminal text-[9px] opacity-20">AUTH_CODE_CAPTURED // REDIRECT_SUCCESS</div>
-        
-        <!-- FORCE REFRESH BUTTON (From your request) -->
-        <button id="gh-sync-btn" onclick="forceSystemRefresh()" class="mt-8 group p-4 rounded-2xl glass hover:bg-white/10 transition-all border border-white/5">
-            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+
+        <button onclick="beginAuth()" class="group relative px-12 py-6 glass-panel rounded-full overflow-hidden">
+            <div class="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+            <div class="relative flex items-center gap-4 text-white group-hover:text-black transition-colors">
+                <i data-lucide="zap" class="w-4 h-4"></i>
+                <span class="terminal text-xs font-bold tracking-[0.3em] uppercase">Initialize_Uplink</span>
+            </div>
         </button>
-    </div>
+    </main>
+
+    <!-- PLAYER VIEW: HIDDEN UNTIL AUTH -->
+    <section id="player-view" class="hidden fixed inset-0 flex items-center justify-center p-12">
+        <div class="grid grid-cols-12 gap-6 w-full max-w-7xl h-[600px]">
+            <!-- Sidebar -->
+            <div class="col-span-3 glass-panel rounded-[40px] p-8 flex flex-col justify-between">
+                <div class="space-y-8">
+                    <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center">
+                        <i data-lucide="activity" class="text-black w-6 h-6"></i>
+                    </div>
+                    <nav class="space-y-4">
+                        <div class="terminal text-[10px] opacity-30 px-2 uppercase">Core_System</div>
+                        <a href="#" class="flex items-center gap-4 opacity-100 hover:opacity-60 transition-opacity"><i data-lucide="music" class="w-4 h-4"></i><span class="text-sm">Library</span></a>
+                        <a href="#" class="flex items-center gap-4 opacity-40 hover:opacity-100 transition-opacity"><i data-lucide="radio" class="w-4 h-4"></i><span class="text-sm">Live_Feed</span></a>
+                    </nav>
+                </div>
+                <div class="terminal text-[9px] opacity-20">SYSTEM_ID: X-992-B</div>
+            </div>
+
+            <!-- Main Deck -->
+            <div class="col-span-9 glass-panel rounded-[40px] p-12 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-8">
+                    <button onclick="window.location.reload()" class="p-4 rounded-full border border-white/5 hover:bg-white/5 transition-all">
+                        <i data-lucide="refresh-cw" class="w-4 h-4 opacity-30"></i>
+                    </button>
+                </div>
+                
+                <div class="h-full flex flex-col justify-center space-y-12">
+                    <div class="space-y-4">
+                        <span class="terminal text-[10px] bg-white/10 px-3 py-1 rounded-full text-white/60">NOW_STREAMING</span>
+                        <h2 class="text-7xl font-bold italic tracking-tighter" id="track-title">AWAITING_SIGNAL</h2>
+                        <p class="text-xl opacity-40" id="artist-name">Connect to Spotify to sync audio...</p>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="space-y-4">
+                        <div class="h-[2px] w-full bg-white/5 relative">
+                            <div class="absolute h-full bg-white w-1/3 shadow-[0_0_15px_white]"></div>
+                        </div>
+                        <div class="flex justify-between terminal text-[9px] opacity-40">
+                            <span>01:42</span>
+                            <span>04:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <script>
-        const CONFIG = {
+        const SPOTIFY_CONFIG = {
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            // Since this file IS the index, the redirect is itself
-            redirect: 'https://xclipsestudio.xclipsenetworks.com.au/soundcloud.html',
-            scope: 'user-modify-playback-state user-read-playback-state user-read-currently-playing',
-            github: { user: 'EclipseNetworks', repo: 'Xclipsestudio', branch: 'main' }
+            redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/soundcloud.html',
+            scopes: 'user-read-currently-playing user-read-playback-state'
         };
 
-        // --- 1. SYSTEM INITIALIZATION ---
-        async function initSystem() {
+        function beginAuth() {
+            const params = new URLSearchParams({
+                client_id: SPOTIFY_CONFIG.clientId,
+                response_type: 'code',
+                redirect_uri: SPOTIFY_CONFIG.redirectUri,
+                scope: SPOTIFY_CONFIG.scopes,
+                show_dialog: 'true'
+            });
+
+            gsap.to("#auth-view", { 
+                opacity: 0, 
+                y: -50, 
+                duration: 0.8, 
+                ease: "expo.in",
+                onComplete: () => {
+                    window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+                }
+            });
+        }
+
+        window.onload = () => {
             lucide.createIcons();
-            initBackground();
+            initMesh();
 
             const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            const error = urlParams.get('error');
-
-            if (code) {
-                // We have returned from Spotify!
-                showPlayerView();
-                localStorage.setItem('sp_auth_code', code);
-                // Clean the URL so the code doesn't stay in the bar
+            if (urlParams.has('code')) {
+                const code = urlParams.get('code');
+                localStorage.setItem('x_auth_token', code);
+                activateSystem();
                 window.history.replaceState({}, document.title, "/soundcloud.html");
-            } else if (error) {
-                console.error("Spotify Auth Error:", error);
-                alert("Auth Error: " + error);
             }
+        };
 
-            // Start GitHub Watcher
-            setInterval(checkGitHubUpdate, 30000);
+        function activateSystem() {
+            document.getElementById('auth-view').classList.add('hidden');
+            document.getElementById('player-view').classList.remove('hidden');
+            document.getElementById('status-led').classList.replace('bg-red-500', 'bg-green-500');
+            document.getElementById('status-led').classList.add('shadow-[0_0_10px_#22c55e]');
+            document.getElementById('status-text').innerText = "System_Synced";
+
+            gsap.from("#player-view", { opacity: 0, scale: 0.95, duration: 1.5, ease: "expo.out" });
         }
 
-        // --- 2. VIEW SWITCHING ---
-        function showPlayerView() {
-            document.getElementById('view-login').classList.add('hidden');
-            document.getElementById('view-player').classList.remove('hidden');
-            gsap.from("#view-player", { opacity: 0, y: 20, duration: 1 });
-        }
-
-        // --- 3. SPOTIFY HANDSHAKE ---
-        function triggerSpotifyAuth() {
-            const authUrl = new URL("https://accounts.spotify.com/authorize");
-            authUrl.searchParams.append('client_id', CONFIG.clientId);
-            authUrl.searchParams.append('response_type', 'code');
-            authUrl.searchParams.append('redirect_uri', CONFIG.redirect);
-            authUrl.searchParams.append('scope', CONFIG.scope);
-            authUrl.searchParams.append('show_dialog', 'true');
-
-            gsap.to("body", { opacity: 0, duration: 0.5, onComplete: () => {
-                window.location.href = authUrl.toString();
-            }});
-        }
-
-        // --- 4. GITHUB REFRESH LOGIC ---
-        let lastSha = null;
-        async function checkGitHubUpdate() {
-            try {
-                const res = await fetch(`https://api.github.com/repos/${CONFIG.github.user}/${CONFIG.github.repo}/commits/${CONFIG.github.branch}`);
-                const data = await res.json();
-                if (lastSha && data.sha !== lastSha) {
-                    window.location.reload();
-                }
-                lastSha = data.sha;
-            } catch (e) { console.log("GH_Check_Failed"); }
-        }
-
-        function forceSystemRefresh() {
-            const btn = document.getElementById('gh-sync-btn');
-            gsap.to(btn, { rotation: "+=360", duration: 1 });
-            checkGitHubUpdate();
-        }
-
-        // --- 5. VISUALS ---
-        function initBackground() {
+        function initMesh() {
             const canvas = document.getElementById('bg-canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            let p = [];
-            for(let i=0; i<50; i++) p.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, vx:(Math.random()-0.5)*0.5, vy:(Math.random()-0.5)*0.5});
-            function draw() {
-                ctx.clearRect(0,0,canvas.width,canvas.height);
-                ctx.strokeStyle="rgba(255,255,255,0.05)"; ctx.beginPath();
-                p.forEach(d => {
-                    d.x+=d.vx; d.y+=d.vy;
-                    if(d.x<0||d.x>canvas.width) d.vx*=-1; if(d.y<0||d.y>canvas.height) d.vy*=-1;
-                    p.forEach(d2 => { if(Math.hypot(d.x-d2.x, d.y-d2.y)<150) { ctx.moveTo(d.x, d.y); ctx.lineTo(d2.x, d2.y); }});
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            let particles = [];
+            for(let i=0; i<70; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4
                 });
-                ctx.stroke(); requestAnimationFrame(draw);
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                particles.forEach((p, i) => {
+                    p.x += p.vx; p.y += p.vy;
+                    if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                    if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                    
+                    particles.forEach((p2, j) => {
+                        if(i === j) return;
+                        const d = Math.hypot(p.x - p2.x, p.y - p2.y);
+                        if(d < 150) {
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                        }
+                    });
+                });
+                ctx.stroke();
+                requestAnimationFrame(draw);
             }
             draw();
         }
