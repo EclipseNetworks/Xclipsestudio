@@ -4,203 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>X-CLIPSE | SYSTEM_ENTRY</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400&family=Space+Grotesk:wght@300;800&display=swap');
-        
-        :root {
-            --bg: #020202;
-            --accent: #ffffff;
-            --low-white: rgba(255, 255, 255, 0.03);
-        }
-
-        body {
-            background-color: var(--bg);
-            color: white;
-            font-family: 'Space Grotesk', sans-serif;
-            overflow: hidden;
-            height: 100vh;
-        }
-
+        body { background: #020202; color: white; font-family: 'Space Grotesk', sans-serif; overflow: hidden; height: 100vh; }
         .terminal { font-family: 'JetBrains Mono', monospace; }
-
-        .scan-overlay {
-            position: fixed; inset: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none; z-index: 100;
-        }
-
-        .glass-panel {
-            background: var(--low-white);
-            backdrop-filter: blur(40px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 50px 100px rgba(0,0,0,0.8);
-        }
-
-        .hero-text {
-            font-size: clamp(3rem, 15vw, 12rem);
-            line-height: 0.8;
-            letter-spacing: -0.05em;
-        }
-
-        .power-btn {
-            position: relative;
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .power-btn:hover {
-            transform: scale(1.05);
-            background: white;
-            color: black;
-            box-shadow: 0 0 50px rgba(255, 255, 255, 0.2);
-        }
-
-        #bg-canvas {
-            position: fixed; inset: 0; z-index: -1;
-            opacity: 0.3;
-        }
+        .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .hero-text { font-size: clamp(3rem, 15vw, 10rem); line-height: 0.8; letter-spacing: -0.05em; }
     </style>
 </head>
 <body class="flex items-center justify-center">
 
-    <div class="scan-overlay"></div>
-    <canvas id="bg-canvas"></canvas>
-
-    <!-- TOP HUD -->
-    <header class="fixed top-0 w-full p-10 flex justify-between items-start z-[200]">
-        <div class="terminal text-[9px] tracking-[0.5em] opacity-30">
-            [ ARCHITECT_LEVEL_01 ]<br>SYSTEM_ID: X_STU_99
-        </div>
-        <div class="terminal text-[9px] tracking-[0.5em] opacity-30 text-right">
-            STATUS: AWAITING_AUTH<br>DOMAIN: xclipsenetworks.com.au
-        </div>
-    </header>
-
-    <!-- MAIN INTERFACE -->
     <div class="relative z-10 text-center space-y-12">
-        <div class="space-y-2">
-            <p class="terminal text-[10px] tracking-[1em] opacity-20 ml-4">GENESIS_INIT</p>
-            <h1 class="hero-text font-black italic uppercase">XCLIPSE</h1>
-            <p class="terminal text-[10px] tracking-[0.8em] opacity-40">Architect Audio Environment</p>
-        </div>
-
-        <div class="flex flex-col items-center gap-8">
-            <button onclick="initiateSystem()" class="power-btn glass-panel px-16 py-8 rounded-full border border-white/10 flex items-center gap-6 group">
-                <div class="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center">
-                    <i data-lucide="fingerprint" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
-                </div>
-                <span class="terminal text-xs tracking-widest font-bold uppercase">Initialize_Handshake</span>
-            </button>
-
-            <div id="loader-status" class="terminal text-[8px] opacity-0 transition-opacity duration-500">
-                Verifying_System_Integrity...
-            </div>
-        </div>
+        <h1 class="hero-text font-black italic uppercase">XCLIPSE</h1>
+        <button onclick="initiateSystem()" class="px-16 py-8 rounded-full glass-panel border border-white/10 hover:bg-white hover:text-black transition-all group">
+            <span class="terminal text-xs tracking-widest font-bold">INITIALIZE_HANDSHAKE</span>
+        </button>
+        <div id="status" class="terminal text-[8px] opacity-0 transition-opacity">REDIRECTING_TO_AUTH...</div>
     </div>
-
-    <!-- FOOTER INFO -->
-    <footer class="fixed bottom-10 w-full px-10 flex justify-between items-end z-[200]">
-        <div class="glass-panel p-4 px-6 rounded-2xl flex items-center gap-4">
-            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <span class="terminal text-[9px] opacity-60">KERNEL_STABLE</span>
-        </div>
-        <div class="terminal text-[8px] opacity-20">
-            &copy; 2026 ECLIPSE_NETWORKS // ALL_RIGHTS_RESERVED
-        </div>
-    </footer>
 
     <script>
         const CONFIG = {
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            // Explicitly set the redirect to your soundcloud endpoint
+            // MUST match your dashboard exactly
             redirect: 'https://xclipsestudio.xclipsenetworks.com.au/soundcloud',
             scope: 'user-modify-playback-state user-read-playback-state user-read-currently-playing'
         };
 
-        function boot() {
-            lucide.createIcons();
-            initMesh();
-            gsap.from(".hero-text", { y: 100, opacity: 0, duration: 2, ease: "expo.out" });
-            gsap.from(".power-btn", { scale: 0.8, opacity: 0, duration: 1.5, delay: 0.5, ease: "back.out" });
-        }
-
         function initiateSystem() {
-            const status = document.getElementById('loader-status');
-            status.classList.remove('opacity-0');
+            document.getElementById('status').classList.remove('opacity-0');
             
-            const logs = ["Verifying_Kernel...", "Mapping_Neural_Mesh...", "Opening_Spotify_Portal..."];
-            let i = 0;
-            
-            const interval = setInterval(() => {
-                status.innerText = logs[i];
-                i++;
-                if (i >= logs.length) {
-                    clearInterval(interval);
-                    triggerRedirect();
-                }
-            }, 600);
+            const authUrl = new URL("https://accounts.spotify.com/authorize");
+            authUrl.searchParams.append('client_id', CONFIG.clientId);
+            authUrl.searchParams.append('response_type', 'code');
+            authUrl.searchParams.append('redirect_uri', CONFIG.redirect);
+            authUrl.searchParams.append('scope', CONFIG.scope);
+            authUrl.searchParams.append('show_dialog', 'true');
+
+            gsap.to("body", { opacity: 0, duration: 0.8, onComplete: () => {
+                window.location.href = authUrl.toString();
+            }});
         }
-
-        function triggerRedirect() {
-            // FIXED URL STRUCTURE: response_type is now 'code'
-            const url = `https://accounts.spotify.com/authorize?client_id=${CONFIG.clientId}&response_type=code&redirect_uri=${encodeURIComponent(CONFIG.redirect)}&scope=${encodeURIComponent(CONFIG.scope)}`;
-            
-            gsap.to("body", { 
-                opacity: 0, 
-                filter: "blur(20px)", 
-                scale: 1.2, 
-                duration: 1, 
-                onComplete: () => window.location.href = url 
-            });
-        }
-
-        function initMesh() {
-            const canvas = document.getElementById('bg-canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            
-            let particles = [];
-            for(let i=0; i<80; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    vx: (Math.random() - 0.5) * 0.5,
-                    vy: (Math.random() - 0.5) * 0.5
-                });
-            }
-
-            function draw() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.strokeStyle = "rgba(255,255,255,0.05)";
-                ctx.beginPath();
-                particles.forEach((p, i) => {
-                    p.x += p.vx; p.y += p.vy;
-                    if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
-                    if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
-                    
-                    particles.forEach((p2, j) => {
-                        if(i === j) return;
-                        const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                        if(dist < 150) {
-                            ctx.moveTo(p.x, p.y);
-                            ctx.lineTo(p2.x, p2.y);
-                        }
-                    });
-                });
-                ctx.stroke();
-                requestAnimationFrame(draw);
-            }
-            draw();
-        }
-
-        window.onload = boot;
     </script>
 </body>
 </html>
