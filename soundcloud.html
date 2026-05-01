@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-CLIPSE // SOUNDCLOUD</title>
+    <title>X-CLIPSE // ARCHITECT_OS</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -14,7 +14,6 @@
         
         :root {
             --bg: #020202;
-            --accent: #ffffff;
             --panel: rgba(255, 255, 255, 0.03);
             --border: rgba(255, 255, 255, 0.08);
         }
@@ -29,109 +28,93 @@
 
         .terminal { font-family: 'JetBrains Mono', monospace; }
 
-        /* Scanning Line Animation */
+        .glass-panel {
+            background: var(--panel);
+            backdrop-filter: blur(40px);
+            border: 1px solid var(--border);
+        }
+
         .scanline {
             position: fixed; top: 0; left: 0; width: 100%; height: 2px;
             background: rgba(255, 255, 255, 0.1);
             z-index: 100; pointer-events: none;
             animation: scan 4s linear infinite;
         }
-
         @keyframes scan { 0% { top: -10%; } 100% { top: 110%; } }
 
-        .glass-panel {
-            background: var(--panel);
-            backdrop-filter: blur(40px);
-            border: 1px solid var(--border);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .glass-panel:hover {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .glow-text {
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-        }
-
-        #bg-canvas {
-            position: fixed; inset: 0; z-index: -1;
-            opacity: 0.2;
-        }
+        #bg-canvas { position: fixed; inset: 0; z-index: -1; opacity: 0.2; }
+        
+        .glow-active { box-shadow: 0 0 30px rgba(255, 255, 255, 0.2); }
     </style>
 </head>
-<body class="flex items-center justify-center">
+<body onload="bootSystem()">
 
     <div class="scanline"></div>
     <canvas id="bg-canvas"></canvas>
 
-    <!-- HEADER NAVIGATION -->
-    <nav class="fixed top-0 w-full p-8 flex justify-between items-center z-50">
-        <div class="terminal text-[10px] tracking-[0.8em] opacity-30">ARCHITECT_V3.0</div>
-        <div id="connection-status" class="flex items-center gap-3 glass-panel px-4 py-2 rounded-full">
-            <div class="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_10px_red]" id="status-led"></div>
-            <span class="terminal text-[9px] tracking-widest opacity-60 uppercase" id="status-text">Disconnected</span>
+    <!-- INITIALIZE VIEW -->
+    <main id="view-auth" class="flex flex-col items-center justify-center h-screen space-y-8 transition-all duration-1000">
+        <div class="text-center">
+            <h1 class="text-[10rem] font-black italic uppercase tracking-tighter leading-none">XCLIPSE</h1>
+            <p class="terminal text-[10px] tracking-[1.5em] opacity-20">SYSTEM_REQUIREMENTS: SPOTIFY_PREMIUM</p>
         </div>
-    </nav>
-
-    <!-- MAIN VIEW: INITIALIZE -->
-    <main id="auth-view" class="relative z-10 text-center space-y-8">
-        <div class="space-y-1">
-            <h1 class="text-[12rem] font-black italic uppercase tracking-tighter glow-text leading-none">XCLIPSE</h1>
-            <p class="terminal text-[10px] tracking-[1.5em] opacity-20 translate-x-3">NEURAL_AUDIO_INTERFACE</p>
-        </div>
-
-        <button onclick="beginAuth()" class="group relative px-12 py-6 glass-panel rounded-full overflow-hidden">
-            <div class="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-            <div class="relative flex items-center gap-4 text-white group-hover:text-black transition-colors">
-                <i data-lucide="zap" class="w-4 h-4"></i>
-                <span class="terminal text-xs font-bold tracking-[0.3em] uppercase">Initialize_Uplink</span>
-            </div>
+        <button onclick="triggerAuth()" class="group px-12 py-6 glass-panel rounded-full hover:bg-white hover:text-black transition-all flex items-center gap-4">
+            <i data-lucide="zap" class="w-4 h-4"></i>
+            <span class="terminal text-xs font-bold uppercase tracking-widest">Initialize_Handshake</span>
         </button>
     </main>
 
-    <!-- PLAYER VIEW: HIDDEN UNTIL AUTH -->
-    <section id="player-view" class="hidden fixed inset-0 flex items-center justify-center p-12">
-        <div class="grid grid-cols-12 gap-6 w-full max-w-7xl h-[600px]">
+    <!-- PLAYER VIEW -->
+    <section id="view-player" class="hidden fixed inset-0 flex items-center justify-center p-12">
+        <div class="grid grid-cols-12 gap-6 w-full max-w-7xl">
             <!-- Sidebar -->
-            <div class="col-span-3 glass-panel rounded-[40px] p-8 flex flex-col justify-between">
-                <div class="space-y-8">
-                    <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center">
-                        <i data-lucide="activity" class="text-black w-6 h-6"></i>
-                    </div>
-                    <nav class="space-y-4">
-                        <div class="terminal text-[10px] opacity-30 px-2 uppercase">Core_System</div>
-                        <a href="#" class="flex items-center gap-4 opacity-100 hover:opacity-60 transition-opacity"><i data-lucide="music" class="w-4 h-4"></i><span class="text-sm">Library</span></a>
-                        <a href="#" class="flex items-center gap-4 opacity-40 hover:opacity-100 transition-opacity"><i data-lucide="radio" class="w-4 h-4"></i><span class="text-sm">Live_Feed</span></a>
-                    </nav>
+            <div class="col-span-3 glass-panel rounded-[40px] p-8 space-y-8">
+                <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center">
+                    <i data-lucide="activity" class="text-black w-6 h-6"></i>
                 </div>
-                <div class="terminal text-[9px] opacity-20">SYSTEM_ID: X-992-B</div>
+                <div class="space-y-4">
+                    <div class="terminal text-[9px] opacity-30 uppercase">Uplink_Status</div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                        <span class="terminal text-[10px] tracking-widest">CONNECTED</span>
+                    </div>
+                </div>
             </div>
 
-            <!-- Main Deck -->
+            <!-- Main Control Deck -->
             <div class="col-span-9 glass-panel rounded-[40px] p-12 relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-8">
-                    <button onclick="window.location.reload()" class="p-4 rounded-full border border-white/5 hover:bg-white/5 transition-all">
-                        <i data-lucide="refresh-cw" class="w-4 h-4 opacity-30"></i>
-                    </button>
-                </div>
-                
-                <div class="h-full flex flex-col justify-center space-y-12">
-                    <div class="space-y-4">
-                        <span class="terminal text-[10px] bg-white/10 px-3 py-1 rounded-full text-white/60">NOW_STREAMING</span>
-                        <h2 class="text-7xl font-bold italic tracking-tighter" id="track-title">AWAITING_SIGNAL</h2>
-                        <p class="text-xl opacity-40" id="artist-name">Connect to Spotify to sync audio...</p>
+                <div class="h-full flex flex-col justify-between">
+                    <!-- Top Info -->
+                    <div class="flex items-center gap-8">
+                        <div id="album-art" class="w-40 h-40 rounded-3xl bg-white/5 border border-white/10 overflow-hidden">
+                            <img id="art-img" src="" class="w-full h-full object-cover hidden">
+                        </div>
+                        <div class="space-y-2">
+                            <span class="terminal text-[10px] bg-white/10 px-3 py-1 rounded-full text-white/60">CURRENT_SIGNAL</span>
+                            <h2 id="track-title" class="text-7xl font-bold italic tracking-tighter">SIGNAL_LOST</h2>
+                            <p id="artist-name" class="text-xl opacity-40 uppercase tracking-[0.2em]">Awaiting Data...</p>
+                        </div>
                     </div>
 
-                    <!-- Progress Bar -->
-                    <div class="space-y-4">
-                        <div class="h-[2px] w-full bg-white/5 relative">
-                            <div class="absolute h-full bg-white w-1/3 shadow-[0_0_15px_white]"></div>
+                    <!-- Playback Controls -->
+                    <div class="space-y-8">
+                        <div class="flex items-center gap-10">
+                            <button onclick="control('previous')" class="opacity-40 hover:opacity-100 transition-opacity"><i data-lucide="skip-back"></i></button>
+                            <button onclick="togglePlay()" class="w-20 h-20 rounded-full bg-white text-black flex items-center justify-center glow-active hover:scale-105 transition-all">
+                                <i id="play-icon" data-lucide="play" class="fill-current w-8 h-8"></i>
+                            </button>
+                            <button onclick="control('next')" class="opacity-40 hover:opacity-100 transition-opacity"><i data-lucide="skip-forward"></i></button>
                         </div>
-                        <div class="flex justify-between terminal text-[9px] opacity-40">
-                            <span>01:42</span>
-                            <span>04:00</span>
+
+                        <!-- Progress Bar -->
+                        <div class="space-y-3">
+                            <div class="h-[2px] w-full bg-white/5 relative">
+                                <div id="progress-bar" class="absolute h-full bg-white w-0 shadow-[0_0_15px_white] transition-all duration-1000"></div>
+                            </div>
+                            <div class="flex justify-between terminal text-[9px] opacity-30">
+                                <span id="time-curr">00:00</span>
+                                <span id="time-total">00:00</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -140,92 +123,76 @@
     </section>
 
     <script>
-        const SPOTIFY_CONFIG = {
+        const CONFIG = {
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/soundcloud.html',
-            scopes: 'user-read-currently-playing user-read-playback-state'
+            redirect: 'https://xclipsestudio.xclipsenetworks.com.au/soundcloud.html',
+            scope: 'user-modify-playback-state user-read-playback-state user-read-currently-playing'
         };
 
-        function beginAuth() {
-            const params = new URLSearchParams({
-                client_id: SPOTIFY_CONFIG.clientId,
-                response_type: 'code',
-                redirect_uri: SPOTIFY_CONFIG.redirectUri,
-                scope: SPOTIFY_CONFIG.scopes,
-                show_dialog: 'true'
-            });
-
-            gsap.to("#auth-view", { 
-                opacity: 0, 
-                y: -50, 
-                duration: 0.8, 
-                ease: "expo.in",
-                onComplete: () => {
-                    window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
-                }
-            });
-        }
-
-        window.onload = () => {
+        function bootSystem() {
             lucide.createIcons();
             initMesh();
-
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('code')) {
-                const code = urlParams.get('code');
-                localStorage.setItem('x_auth_token', code);
-                activateSystem();
+            
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('code')) {
+                localStorage.setItem('sp_code', params.get('code'));
                 window.history.replaceState({}, document.title, "/soundcloud.html");
+                activateInterface();
             }
-        };
+        }
 
-        function activateSystem() {
-            document.getElementById('auth-view').classList.add('hidden');
-            document.getElementById('player-view').classList.remove('hidden');
-            document.getElementById('status-led').classList.replace('bg-red-500', 'bg-green-500');
-            document.getElementById('status-led').classList.add('shadow-[0_0_10px_#22c55e]');
-            document.getElementById('status-text').innerText = "System_Synced";
+        function triggerAuth() {
+            const authUrl = `https://accounts.spotify.com/authorize?client_id=${CONFIG.clientId}&response_type=code&redirect_uri=${encodeURIComponent(CONFIG.redirect)}&scope=${encodeURIComponent(CONFIG.scope)}&show_dialog=true`;
+            
+            gsap.to("body", { opacity: 0, duration: 0.8, onComplete: () => {
+                window.location.href = authUrl;
+            }});
+        }
 
-            gsap.from("#player-view", { opacity: 0, scale: 0.95, duration: 1.5, ease: "expo.out" });
+        function activateInterface() {
+            document.getElementById('view-auth').classList.add('hidden');
+            document.getElementById('view-player').classList.remove('hidden');
+            gsap.from("#view-player", { opacity: 0, scale: 0.9, duration: 1.5, ease: "expo.out" });
+            
+            // NOTE: In a real "Pro" app, you'd now exchange the code for an Access Token
+            // For now, we simulate the UI connection
+            startPolling();
+        }
+
+        // Simulated Controls for UI responsiveness
+        function togglePlay() {
+            const icon = document.getElementById('play-icon');
+            const isPlaying = icon.getAttribute('data-lucide') === 'pause';
+            icon.setAttribute('data-lucide', isPlaying ? 'play' : 'pause');
+            lucide.createIcons();
+        }
+
+        function startPolling() {
+            // This is where you'd call your Backend / Spotify API
+            // to fetch real data using the access token.
+            console.log("System Polling Active...");
         }
 
         function initMesh() {
             const canvas = document.getElementById('bg-canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            
-            let particles = [];
-            for(let i=0; i<70; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    vx: (Math.random() - 0.5) * 0.4,
-                    vy: (Math.random() - 0.5) * 0.4
-                });
-            }
-
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            let p = [];
+            for(let i=0; i<60; i++) p.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, vx:(Math.random()-0.5)*0.5, vy:(Math.random()-0.5)*0.5});
             function draw() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-                ctx.lineWidth = 0.5;
-                ctx.beginPath();
-                particles.forEach((p, i) => {
-                    p.x += p.vx; p.y += p.vy;
-                    if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
-                    if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
-                    
-                    particles.forEach((p2, j) => {
-                        if(i === j) return;
-                        const d = Math.hypot(p.x - p2.x, p.y - p2.y);
-                        if(d < 150) {
-                            ctx.moveTo(p.x, p.y);
-                            ctx.lineTo(p2.x, p2.y);
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                ctx.strokeStyle="rgba(255,255,255,0.05)"; ctx.beginPath();
+                p.forEach(dot => {
+                    dot.x += dot.vx; dot.y += dot.vy;
+                    if(dot.x<0||dot.x>canvas.width) dot.vx*=-1;
+                    if(dot.y<0||dot.y>canvas.height) dot.vy*=-1;
+                    p.forEach(dot2 => {
+                        if(Math.hypot(dot.x-dot2.x, dot.y-dot2.y) < 150) {
+                            ctx.moveTo(dot.x, dot.y); ctx.lineTo(dot2.x, dot2.y);
                         }
                     });
                 });
-                ctx.stroke();
-                requestAnimationFrame(draw);
+                ctx.stroke(); requestAnimationFrame(draw);
             }
             draw();
         }
