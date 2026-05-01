@@ -28,7 +28,6 @@
 
         .terminal { font-family: 'JetBrains Mono', monospace; }
 
-        /* --- STYLIZED UI --- */
         .scan-overlay {
             position: fixed; inset: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
@@ -79,7 +78,7 @@
             [ ARCHITECT_LEVEL_01 ]<br>SYSTEM_ID: X_STU_99
         </div>
         <div class="terminal text-[9px] tracking-[0.5em] opacity-30 text-right">
-            STATUS: AWAITING_AUTH<br>LOCATION: 127.0.0.1
+            STATUS: AWAITING_AUTH<br>DOMAIN: xclipsenetworks.com.au
         </div>
     </header>
 
@@ -92,12 +91,11 @@
         </div>
 
         <div class="flex flex-col items-center gap-8">
-            <!-- BIOMETRIC START -->
             <button onclick="initiateSystem()" class="power-btn glass-panel px-16 py-8 rounded-full border border-white/10 flex items-center gap-6 group">
                 <div class="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center">
                     <i data-lucide="fingerprint" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
                 </div>
-                <span class="terminal text-xs tracking-widest font-bold">INITIALIZE_HANDSHAKE</span>
+                <span class="terminal text-xs tracking-widest font-bold uppercase">Initialize_Handshake</span>
             </button>
 
             <div id="loader-status" class="terminal text-[8px] opacity-0 transition-opacity duration-500">
@@ -120,15 +118,14 @@
     <script>
         const CONFIG = {
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            redirect: window.location.origin + window.location.pathname.replace('index.html', 'callback.html'),
+            // Explicitly set the redirect to your soundcloud endpoint
+            redirect: 'https://xclipsestudio.xclipsenetworks.com.au/soundcloud',
             scope: 'user-modify-playback-state user-read-playback-state user-read-currently-playing'
         };
 
         function boot() {
             lucide.createIcons();
             initMesh();
-            
-            // Entry Animation
             gsap.from(".hero-text", { y: 100, opacity: 0, duration: 2, ease: "expo.out" });
             gsap.from(".power-btn", { scale: 0.8, opacity: 0, duration: 1.5, delay: 0.5, ease: "back.out" });
         }
@@ -137,7 +134,6 @@
             const status = document.getElementById('loader-status');
             status.classList.remove('opacity-0');
             
-            // Artificial Loading Sequence for "Pro" feel
             const logs = ["Verifying_Kernel...", "Mapping_Neural_Mesh...", "Opening_Spotify_Portal..."];
             let i = 0;
             
@@ -152,7 +148,8 @@
         }
 
         function triggerRedirect() {
-            const url = `https://accounts.spotify.com/authorize?ee9cf7fe920d4280804730690b3fb4e8=${CONFIG.clientId}&response_type=token&redirect_uri=${encodeURIComponent(CONFIG.redirect)}&scope=${encodeURIComponent(CONFIG.scope)}`;
+            // FIXED URL STRUCTURE: response_type is now 'code'
+            const url = `https://accounts.spotify.com/authorize?client_id=${CONFIG.clientId}&response_type=code&redirect_uri=${encodeURIComponent(CONFIG.redirect)}&scope=${encodeURIComponent(CONFIG.scope)}`;
             
             gsap.to("body", { 
                 opacity: 0, 
