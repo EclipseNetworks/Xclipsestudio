@@ -3,87 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-CLIPSE STUDIO | DUAL_SYNC_v86</title>
+    <title>X-CLIPSE | ARCHITECT_v87</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://connect.soundcloud.com/sdk/sdk-3.3.2.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;700&family=Space+Grotesk:wght@700&display=swap');
-        :root { --sc: #ff5500; --sp: #1DB954; --bg: #050505; }
-        body { background: var(--bg); color: white; font-family: 'JetBrains Mono', monospace; overflow-x: hidden; }
-        .glass { background: rgba(255,255,255,0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
-        .sc-btn { background: var(--sc); transition: all 0.3s; }
-        .sp-btn { background: var(--sp); transition: all 0.3s; }
-        .btn-hover:hover { transform: scale(1.05); filter: brightness(1.2); box-shadow: 0 0 20px rgba(255,255,255,0.1); }
-        #bg-canvas { position: fixed; inset: 0; z-index: -1; opacity: 0.2; }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;800&family=Space+Grotesk:wght@300;700&display=swap');
+        :root { --sc: #ff5500; --sp: #1DB954; --accent: #ffffff; }
+        body { background: #000; color: white; font-family: 'Space Grotesk', sans-serif; overflow: hidden; height: 100vh; }
+        .cyber-grid { position: fixed; inset: 0; background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; z-index: -1; }
+        .glass { background: rgba(255,255,255,0.02); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.08); }
+        .scanline { position: fixed; top: 0; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.03); z-index: 100; pointer-events: none; }
+        .btn-core { transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); position: relative; overflow: hidden; }
+        .btn-core:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
+        .btn-core::before { content: ''; position: absolute; inset: 0; background: white; opacity: 0; transition: 0.3s; }
+        .btn-core:active::before { opacity: 0.1; }
+        .terminal-text { font-family: 'JetBrains Mono', monospace; font-size: 10px; line-height: 1.8; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .float-anim { animation: float 6s ease-in-out infinite; }
     </style>
 </head>
 <body>
-    <canvas id="bg-canvas"></canvas>
+    <div class="cyber-grid"></div>
+    <div class="scanline" id="scan"></div>
 
-    <header class="p-6 flex justify-between items-center border-b border-white/5">
-        <div class="flex items-center gap-2">
-            <div class="w-6 h-6 bg-white rounded flex items-center justify-center">
-                <i data-lucide="shield" class="text-black w-4 h-4"></i>
+    <main class="h-screen flex flex-col items-center justify-center px-6 relative">
+        <!-- Brand Header -->
+        <div class="absolute top-10 left-10 flex items-center gap-4 opacity-40 hover:opacity-100 transition-opacity">
+            <div class="h-[1px] w-12 bg-white"></div>
+            <span class="text-[10px] tracking-[1em] uppercase font-bold">X-Clipse Studio // v87</span>
+        </div>
+
+        <!-- Main UI -->
+        <section id="interface" class="w-full max-w-4xl">
+            <div class="text-center mb-16">
+                <h1 class="text-7xl md:text-9xl font-light tracking-tighter mb-4 mix-blend-difference">ARCHITECT</h1>
+                <p class="terminal-text uppercase tracking-[1.5em] text-white/30">Neural Gateway Synchronization</p>
             </div>
-            <span class="font-bold text-xs tracking-[0.5em] uppercase">X-Clipse Studio</span>
-        </div>
-    </header>
 
-    <main class="max-w-4xl mx-auto pt-32 px-6 text-center">
-        <h1 class="text-5xl md:text-7xl font-bold mb-8 tracking-tighter" style="font-family: 'Space Grotesk';">PROTOCOL_SYNC</h1>
-        <p class="text-gray-500 mb-12 text-xs tracking-widest uppercase">Multi-Vendor Authorization Gateway</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <!-- SoundCloud Modular -->
+                <div class="glass p-8 rounded-3xl group cursor-pointer btn-core" id="sc-trigger">
+                    <div class="flex justify-between items-start mb-12">
+                        <i data-lucide="music-4" class="text-[#ff5500] w-8 h-8"></i>
+                        <span class="text-[9px] border border-white/20 px-2 py-1 rounded">01_SC_PROTOCOL</span>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-2">SOUNDCLOUD</h2>
+                    <p class="terminal-text text-white/40">Authorize stream-data integration.</p>
+                </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-20">
-            <!-- SoundCloud Connect -->
-            <button id="sc-connect" class="sc-btn btn-hover p-8 rounded-2xl flex flex-col items-center gap-4 text-black">
-                <i data-lucide="music" class="w-8 h-8"></i>
-                <span class="font-bold uppercase tracking-widest">Connect SoundCloud</span>
-            </button>
+                <!-- Spotify Modular -->
+                <div class="glass p-8 rounded-3xl group cursor-pointer btn-core" id="sp-trigger">
+                    <div class="flex justify-between items-start mb-12">
+                        <i data-lucide="layers" class="text-[#1DB954] w-8 h-8"></i>
+                        <span class="text-[9px] border border-white/20 px-2 py-1 rounded">02_SP_PROTOCOL</span>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-2">SPOTIFY</h2>
+                    <p class="terminal-text text-white/40">Authorize library-sync protocol.</p>
+                </div>
+            </div>
 
-            <!-- Spotify Connect -->
-            <button id="sp-connect" class="sp-btn btn-hover p-8 rounded-2xl flex flex-col items-center gap-4 text-black">
-                <i data-lucide="layers" class="w-8 h-8"></i>
-                <span class="font-bold uppercase tracking-widest">Connect Spotify</span>
-            </button>
-        </div>
-
-        <div id="terminal" class="glass p-6 rounded-xl text-left text-[10px] text-green-500/80 h-48 overflow-y-auto font-mono">
-            <div>[SYS] Initializing X-Clipse Architect OS...</div>
-        </div>
+            <!-- Reactive Terminal -->
+            <div class="glass rounded-2xl p-6 h-40 overflow-hidden relative">
+                <div class="absolute top-2 right-4 flex gap-1">
+                    <div class="w-1 h-1 bg-white/20 rounded-full"></div>
+                    <div class="w-1 h-1 bg-white/20 rounded-full"></div>
+                </div>
+                <div id="term-logs" class="terminal-text text-white/50 lowercase"></div>
+            </div>
+        </section>
     </main>
 
     <script>
-        const SC_CLIENT_ID = '6v9CMyiHpBnmD6YcJBITXRpFXKDNtPOd';
-        const SP_CLIENT_ID = 'ee9cf7fe920d4280804730690b3fb4e8';
-        const REDIRECT_URI = 'https://xclipsestudio.xclipsenetworks.com.au/callback.html';
+        const SC_ID = '6v9CMyiHpBnmD6YcJBITXRpFXKDNtPOd';
+        const SP_ID = 'ee9cf7fe920d4280804730690b3fb4e8';
+        const URI = 'https://xclipsestudio.xclipsenetworks.com.au/callback.html';
 
         lucide.createIcons();
-        SC.initialize({ client_id: SC_CLIENT_ID, redirect_uri: REDIRECT_URI });
+        SC.initialize({ client_id: SC_ID, redirect_uri: URI });
 
-        function log(msg) {
-            const t = document.getElementById('terminal');
-            const entry = document.createElement('div');
-            entry.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
-            t.prepend(entry);
+        // Animation Engine
+        gsap.to("#scan", { y: window.innerHeight, duration: 4, repeat: -1, ease: "none" });
+        gsap.from("#interface", { opacity: 0, y: 30, duration: 1.5, ease: "power4.out" });
+
+        function log(msg, color = "white") {
+            const row = document.createElement('div');
+            row.innerHTML = `<span style="color: ${color}">>></span> ${msg}`;
+            const container = document.getElementById('term-logs');
+            container.prepend(row);
+            gsap.from(row, { opacity: 0, x: -10, duration: 0.4 });
         }
 
-        // --- SOUNDCLOUD LOGIC ---
-        document.getElementById('sc-connect').onclick = () => {
-            log("Opening SoundCloud Secure Gateway...");
-            // SC.connect uses standard token flow to avoid "Oops" errors
+        // --- SoundCloud Reactive ---
+        document.getElementById('sc-trigger').onclick = () => {
+            log("initializing_soundcloud_handshake", "#ff5500");
             SC.connect().then(() => {
-                log("SoundCloud Verified.");
+                log("handshake_success", "#ff5500");
                 return SC.get('/me');
             }).then(me => {
-                log(`Session active: ${me.username}`);
-            }).catch(e => log(`SC_ERROR: ${e.message}`));
+                log(`identity_confirmed: ${me.username}`, "#ff5500");
+            }).catch(e => log(`error: ${e.message}`, "red"));
         };
 
-        // --- SPOTIFY LOGIC (PKCE Flow) ---
-        document.getElementById('sp-connect').onclick = async () => {
-            log("Generating PKCE Cryptographic Chain...");
+        // --- Spotify Reactive ---
+        document.getElementById('sp-trigger').onclick = async () => {
+            log("generating_pkce_cryptochain", "#1DB954");
             const verifier = Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, '0')).join('');
             localStorage.setItem('sp_verifier', verifier);
             
@@ -93,16 +118,17 @@
             const challenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
                 .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-            const spUrl = `https://accounts.spotify.com/authorize?` + new URLSearchParams({
-                client_id: SP_CLIENT_ID,
+            const url = `https://accounts.spotify.com/authorize?` + new URLSearchParams({
+                client_id: SP_ID,
                 response_type: 'code',
-                redirect_uri: REDIRECT_URI,
+                redirect_uri: URI,
                 code_challenge_method: 'S256',
                 code_challenge: challenge,
                 scope: 'user-read-private user-read-email'
             });
-            log("Redirecting to Spotify Peer...");
-            window.location.href = spUrl;
+            
+            log("redirecting_to_spotify_peer", "#1DB954");
+            setTimeout(() => window.location.href = url, 800);
         };
     </script>
 </body>
