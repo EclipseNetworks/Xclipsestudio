@@ -3,241 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XCLIPSE | THE UNRELEASED VAULT</title>
+    <title>X-CLIPSE STUDIO | SOUNDCLOUD HUB</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Montserrat:wght@300;400;900&display=swap" rel="stylesheet">
-    
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    
+    <script src="https://connect.soundcloud.com/sdk/sdk-3.3.2.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root { --primary: #a855f7; --primary-glow: rgba(168, 85, 247, 0.3); }
-        body { background: #010101; color: #fff; font-family: 'Montserrat', sans-serif; overflow-x: hidden; -webkit-user-select: none; user-select: none; }
-        
-        .mesh-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(at 0% 0%, var(--primary-glow) 0, transparent 50%), 
-                        radial-gradient(at 100% 100%, var(--primary-glow) 0, transparent 50%);
-            z-index: -1; filter: blur(100px); opacity: 0.5;
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap');
+
+        :root {
+            --sc-orange: #ff5500;
+            --bg-deep: #050505;
         }
 
-        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .text-theme { color: var(--primary); }
-        .bg-theme { background: var(--primary); }
-        .shadow-glow { box-shadow: 0 0 50px -10px var(--primary-glow); }
+        body {
+            background-color: var(--bg-deep);
+            color: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+            overflow-x: hidden;
+        }
 
-        /* Search Sophistication */
-        .search-input { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); transition: all 0.4s ease; }
-        .search-input:focus { border-color: var(--primary); width: 280px !important; box-shadow: 0 0 20px var(--primary-glow); }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-        .scroller { display: flex; overflow-x: auto; gap: 24px; padding: 20px; scrollbar-width: none; scroll-behavior: smooth; }
-        .track-card { min-width: 170px; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); cursor: pointer; }
-        .track-card:hover { transform: translateY(-12px); }
+        .glass-panel:hover {
+            border-color: var(--sc-orange);
+            background: rgba(255, 85, 0, 0.03);
+            transform: translateY(-5px);
+        }
 
-        /* Sliders */
-        input[type=range] { -webkit-appearance: none; background: rgba(255,255,255,0.05); height: 2px; outline: none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: var(--primary); cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 10px var(--primary); }
+        .sc-gradient {
+            background: linear-gradient(135deg, #ff8800 0%, #ff3300 100%);
+        }
 
-        #settings-panel { transform: translateX(100%); transition: transform 0.6s cubic-bezier(0.85, 0, 0.15, 1); }
-        #settings-panel.open { transform: translateX(0); }
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        .track-row {
+            transition: transform 0.2s ease;
+        }
+
+        .track-row:hover {
+            transform: scale(1.02);
+        }
+
+        @keyframes pulse-orange {
+            0% { box-shadow: 0 0 0 0 rgba(255, 85, 0, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 85, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 85, 0, 0); }
+        }
+
+        .btn-pulse {
+            animation: pulse-orange 2s infinite;
+        }
     </style>
 </head>
+<body class="selection:bg-orange-500 selection:text-white">
 
-<body class="min-h-screen flex flex-col items-center p-6" oncontextmenu="return false;">
-    <div class="mesh-bg"></div>
+    <canvas id="bg-canvas"></canvas>
 
-    <div class="fixed top-8 left-8 right-8 flex justify-between items-center z-50">
-        <div class="relative">
-            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-[10px] opacity-20"></i>
-            <input type="text" id="vaultSearch" placeholder="SEARCH VAULT..." class="search-input w-40 rounded-full py-2 pl-10 pr-6 text-[9px] font-black tracking-widest outline-none uppercase">
+    <header class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-black/40 backdrop-blur-md border-b border-white/5">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 sc-gradient rounded-md flex items-center justify-center">
+                <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+            </div>
+            <span class="font-bold tracking-tighter text-xl uppercase">X-Clipse <span class="text-orange-500">Studio</span></span>
         </div>
-        
-        <div class="flex items-center gap-6">
-            <span class="hidden md:block text-[9px] font-bold text-theme uppercase tracking-widest"><span id="live-count">1</span> Listeners Active</span>
-            <button onclick="toggleSettings()" class="w-10 h-10 glass rounded-xl flex items-center justify-center hover:bg-white/5 transition-all">
-                <i class="fas fa-palette text-xs"></i>
-            </button>
+        <div id="connection-indicator" class="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+            <div class="w-2 h-2 rounded-full bg-red-500" id="status-dot"></div>
+            <span class="text-[10px] uppercase tracking-widest text-gray-400 font-medium" id="status-text">Disconnected</span>
         </div>
-    </div>
-
-    <div id="settings-panel" class="fixed top-0 right-0 h-full w-72 glass z-[60] p-10 border-l border-white/5">
-        <h4 class="text-[10px] font-black uppercase tracking-[0.4em] mb-10 opacity-40">Visual Core</h4>
-        <div class="grid grid-cols-2 gap-4">
-            <button onclick="setTheme('#a855f7')" class="aspect-square bg-[#a855f7] rounded-2xl border-4 border-white/5"></button>
-            <button onclick="setTheme('#00ffcc')" class="aspect-square bg-[#00ffcc] rounded-2xl border-4 border-white/5"></button>
-            <button onclick="setTheme('#ff3366')" class="aspect-square bg-[#ff3366] rounded-2xl border-4 border-white/5"></button>
-            <button onclick="setTheme('#3b82f6')" class="aspect-square bg-[#3b82f6] rounded-2xl border-4 border-white/5"></button>
-        </div>
-        <button onclick="toggleSettings()" class="absolute bottom-10 left-10 right-10 py-4 glass text-[9px] font-black uppercase tracking-[0.2em]">Close</button>
-    </div>
-
-    <header class="mt-28 mb-16 text-center">
-        <h2 class="text-[10px] tracking-[1.2em] uppercase text-theme font-black mb-4">XCLIPSE STUDIO</h2>
-        <h1 class="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-none">The <span class="text-theme">Vault</span></h1>
     </header>
 
-    <div id="player-target" class="glass w-full max-w-5xl p-8 md:p-14 rounded-[3.5rem] shadow-glow mb-20">
-        <div id="loading" class="text-center py-20 text-[10px] font-black tracking-[1em] opacity-20">DECRYPTING...</div>
-    </div>
+    <main class="relative pt-32 pb-20 px-6 max-w-6xl mx-auto">
+        <section id="auth-view" class="text-center py-20">
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 tracking-tight" id="main-title">
+                SOUNDCLOUD <br><span class="text-orange-500">INTEGRATION</span>
+            </h1>
+            <p class="text-gray-400 max-w-xl mx-auto mb-12 text-lg font-light leading-relaxed">
+                Securely connect your studio profile to manage tracks, monitor engagement, and sync metadata with X-Clipse Networks.
+            </p>
+            
+            <button id="connect-trigger" class="group relative px-12 py-5 bg-white text-black font-bold rounded-full overflow-hidden transition-all btn-pulse">
+                <span class="relative z-10 flex items-center gap-3 uppercase tracking-widest">
+                    <i data-lucide="link" class="w-5 h-5"></i> Initialize Handshake
+                </span>
+                <div class="absolute inset-0 bg-orange-500 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+            </button>
+        </section>
 
-    <div class="w-full max-w-7xl px-6">
-        <div class="flex justify-between items-end mb-8 px-4">
-            <h3 class="text-[9px] uppercase tracking-[0.5em] font-black opacity-20">Archive Index</h3>
-            <span id="result-count" class="text-[8px] font-mono opacity-20">0 TRACKS LOADED</span>
-        </div>
-        <div id="track-scroller" class="scroller"></div>
-    </div>
-
-    <footer class="mt-24 mb-10 opacity-10">
-        <p class="text-[8px] uppercase tracking-[0.8em] font-bold text-center">Encrypted &copy; 2026 XCLIPSE</p>
-    </footer>
+        <section id="dashboard" class="hidden space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="glass-panel p-8 rounded-3xl col-span-1 border-white/10">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="relative mb-6">
+                            <img id="u-avatar" src="" class="w-32 h-32 rounded-2xl border-2 border-orange-500/50 p-1">
+                        </div>
+                        <h2 id="u-name" class="text-2xl font-bold mb-1">---</h2>
+                        <div class="grid grid-cols-2 gap-4 w-full">
+                            <div class="bg-white/5 p-4 rounded-2xl">
+                                <span class="block text-[10px] text-gray-500 uppercase font-bold tracking-widest">Followers</span>
+                                <span id="s-followers" class="text-xl font-bold">0</span>
+                            </div>
+                            <div class="bg-white/5 p-4 rounded-2xl">
+                                <span class="block text-[10px] text-gray-500 uppercase font-bold tracking-widest">Tracks</span>
+                                <span id="s-tracks" class="text-xl font-bold">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-panel p-8 rounded-3xl col-span-2 border-white/10">
+                    <h3 class="text-xl font-bold mb-8">Studio Repository</h3>
+                    <div id="track-list" class="space-y-3">
+                        <div class="h-16 bg-white/5 rounded-2xl animate-pulse"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
     <script>
-        const USER_ID = "1435917656";
-        const API_BASE = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(`https://feeds.soundcloud.com/users/soundcloud:users:${USER_ID}/sounds.rss`)}&t=${Date.now()}`;
-        
-        let allTracks = [];
-        let filteredTracks = [];
-        let activeIdx = 0;
+        const CLIENT_ID = 'YOUR_CLIENT_ID';
+        const REDIRECT_URI = 'https://xclipsestudio.xclipsenetworks.com.au/callback.html';
 
-        // Firebase Block
-        const firebaseConfig = {
-            apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
-            authDomain: "xclipse-security.firebaseapp.com",
-            projectId: "xclipse-security",
-            databaseURL: "https://xclipse-security-default-rtdb.firebaseio.com"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        lucide.createIcons();
+        SC.initialize({ client_id: CLIENT_ID, redirect_uri: REDIRECT_URI });
 
-        async function secInit() {
+        const connectBtn = document.getElementById('connect-trigger');
+        const authView = document.getElementById('auth-view');
+        const dashboard = document.getElementById('dashboard');
+
+        connectBtn.onclick = async () => {
             try {
-                const res = await fetch('https://api.ipify.org?format=json');
-                const data = await res.json();
-                const cleanIP = data.ip.replaceAll('.', '-');
-                db.ref('network/blacklist/' + cleanIP).on('value', s => { if(s.exists()) window.location.href="https://google.com"; });
-                db.ref('network/traffic/' + cleanIP).set({ page: 'VAULT', last: Date.now() });
-                db.ref('network/traffic/' + cleanIP).onDisconnect().remove();
-                db.ref('network/traffic').on('value', s => document.getElementById('live-count').innerText = s.numChildren());
-            } catch(e) {}
-        }
-        secInit();
+                const session = await SC.connect();
+                document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(255,85,0,0.8)]";
+                document.getElementById('status-text').innerText = "Connected";
+                const me = await SC.get('/me');
+                loadDashboard(me);
+            } catch (err) { console.error(err); }
+        };
 
-        function setTheme(c) {
-            document.documentElement.style.setProperty('--primary', c);
-            document.documentElement.style.setProperty('--primary-glow', c + '44');
-            localStorage.setItem('v_theme', c);
-        }
-        setTheme(localStorage.getItem('v_theme') || '#a855f7');
-        function toggleSettings() { document.getElementById('settings-panel').classList.toggle('open'); }
-
-        async function loadVault() {
-            const r = await fetch(API_BASE);
-            const d = await r.json();
-            allTracks = d.items;
-            filteredTracks = [...allTracks];
-            document.getElementById('result-count').innerText = `${allTracks.length} TRACKS ENCRYPTED`;
-            renderScroller();
-            selectTrack(0);
-        }
-
-        function renderScroller() {
-            document.getElementById('track-scroller').innerHTML = filteredTracks.map((t, i) => `
-                <div class="track-card group" onclick="selectTrack(${i}, true)">
-                    <img src="${t.thumbnail}" class="w-full aspect-square object-cover rounded-3xl grayscale group-hover:grayscale-0 transition-all duration-700 border border-white/5">
-                    <p class="text-[9px] font-black uppercase tracking-widest truncate mt-4 opacity-30 group-hover:opacity-100">${t.title}</p>
-                </div>
-            `).join('');
-        }
-
-        document.getElementById('vaultSearch').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            filteredTracks = allTracks.filter(t => t.title.toLowerCase().includes(term));
-            renderScroller();
-        });
-
-        function selectTrack(i, autoPlay = false) {
-            if(!filteredTracks[i]) return;
-            const t = filteredTracks[i];
-            activeIdx = i;
-
-            document.getElementById('player-target').innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                    <div class="relative aspect-square">
-                        <div class="absolute -inset-8 bg-theme opacity-10 blur-3xl"></div>
-                        <img src="${t.thumbnail}" class="relative w-full h-full object-cover rounded-[2.5rem] border border-white/5">
-                    </div>
-                    <div class="flex flex-col">
-                        <div class="mb-10">
-                            <span class="text-theme text-[9px] font-black uppercase tracking-[0.4em] mb-4 block">Archive Node // ${allTracks.length - i}</span>
-                            <h3 class="text-4xl md:text-6xl font-black italic uppercase tracking-tighter leading-none mb-4">${t.title}</h3>
-                            <p class="text-gray-600 font-bold text-[10px] uppercase tracking-[0.3em]">Mastered by XCLIPSE</p>
-                        </div>
-                        
-                        <div class="space-y-8">
-                            <div class="flex items-center gap-4">
-                                <span id="curT" class="text-[9px] font-mono opacity-30">0:00</span>
-                                <input type="range" id="seek" value="0" class="flex-1">
-                                <span id="totT" class="text-[9px] font-mono opacity-30">0:00</span>
-                            </div>
-
-                            <div class="flex items-center justify-between glass p-6 rounded-3xl">
-                                <div class="flex items-center gap-4">
-                                    <button onclick="toggleMute()" id="muteBtn" class="text-theme opacity-50 hover:opacity-100 transition"><i class="fas fa-volume-up"></i></button>
-                                    <input type="range" id="vol" min="0" max="1" step="0.01" class="w-24 md:w-32">
-                                </div>
-                                <div class="flex items-center gap-8">
-                                    <button id="playBtn" class="w-20 h-20 bg-white text-black rounded-full flex items-center justify-center text-3xl hover:scale-105 active:scale-95 transition shadow-theme">
-                                        <i class="fas fa-play ml-1"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <audio id="v_audio" src="${t.enclosure.link}" preload="auto" controlsList="nodownload"></audio>
-            `;
-            initAudio(autoPlay);
-        }
-
-        function initAudio(playNow) {
-            const a = document.getElementById('v_audio'), pBtn = document.getElementById('playBtn'), 
-                  seek = document.getElementById('seek'), vol = document.getElementById('vol');
+        async function loadDashboard(user) {
+            gsap.to(authView, { opacity: 0, y: -50, duration: 0.6, onComplete: () => {
+                authView.style.display = 'none';
+                dashboard.classList.remove('hidden');
+                gsap.from(dashboard, { opacity: 0, y: 50, duration: 0.8 });
+            }});
+            document.getElementById('u-name').innerText = user.username.toUpperCase();
+            document.getElementById('u-avatar').src = user.avatar_url;
+            document.getElementById('s-followers').innerText = user.followers_count;
+            document.getElementById('s-tracks').innerText = user.track_count;
             
-            a.volume = localStorage.getItem('v_vol') || 0.8;
-            vol.value = a.volume;
-            
-            const fmt = s => { let m=Math.floor(s/60), sec=Math.floor(s%60); return `${m}:${sec<10?'0'+sec:sec}`; };
-            a.onloadedmetadata = () => document.getElementById('totT').innerText = fmt(a.duration);
-            
-            pBtn.onclick = () => {
-                if(a.paused) { a.play(); pBtn.innerHTML = '<i class="fas fa-pause"></i>'; }
-                else { a.pause(); pBtn.innerHTML = '<i class="fas fa-play ml-1"></i>'; }
-            };
-
-            if(playNow) { a.play(); pBtn.innerHTML = '<i class="fas fa-pause"></i>'; }
-
-            a.ontimeupdate = () => {
-                seek.value = (a.currentTime / a.duration) * 100 || 0;
-                document.getElementById('curT').innerText = fmt(a.currentTime);
-            };
-
-            seek.oninput = () => a.currentTime = (seek.value / 100) * a.duration;
-            vol.oninput = (e) => { 
-                a.volume = e.target.value; 
-                localStorage.setItem('v_vol', a.volume); 
-            };
+            const tracks = await SC.get(`/users/${user.id}/tracks`, { limit: 5 });
+            const list = document.getElementById('track-list');
+            list.innerHTML = '';
+            tracks.forEach(t => {
+                const row = document.createElement('div');
+                row.className = 'track-row p-4 bg-white/5 rounded-2xl flex justify-between items-center';
+                row.innerHTML = `<span>${t.title}</span><span class="font-mono text-orange-500">${t.playback_count}</span>`;
+                list.appendChild(row);
+            });
         }
-
-        function toggleMute() {
-            const a = document.getElementById('v_audio'), mBtn = document.getElementById('muteBtn');
-            a.muted = !a.muted;
-            mBtn.innerHTML = a.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
-            mBtn.style.opacity = a.muted ? "1" : "0.5";
-        }
-
-        loadVault();
     </script>
 </body>
 </html>
