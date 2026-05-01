@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-CLIPSE | ARCHITECT_OS_v98_ULTRA</title>
+    <title>X-CLIPSE | ARCHITECT_OS_v99</title>
     
-    <!-- SYSTEM DEPENDENCIES -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://connect.soundcloud.com/sdk/sdk-3.3.2.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -16,396 +15,239 @@
         
         :root { 
             --bg: #030303;
-            --accent: #ffffff;
             --panel: rgba(255, 255, 255, 0.02);
             --border: rgba(255, 255, 255, 0.08);
-            --neon: #ffffff;
+            --error: #ff3333;
         }
 
-        /* --- GLOBAL RESET & CURSOR --- */
         * { cursor: none !important; margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             background: var(--bg); color: white; font-family: 'Space Grotesk', sans-serif; 
-            overflow: hidden; height: 100vh; perspective: 1000px;
+            overflow: hidden; height: 100vh;
         }
 
+        .glass { background: var(--panel); backdrop-filter: blur(40px); border: 1px solid var(--border); }
+        .terminal { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px; }
+        
         #cursor {
-            width: 8px; height: 8px; background: var(--accent); position: fixed;
+            width: 8px; height: 8px; background: white; position: fixed;
             border-radius: 50%; pointer-events: none; z-index: 10000;
-            box-shadow: 0 0 20px rgba(255,255,255,0.8);
+            box-shadow: 0 0 15px white;
         }
-
-        #cursor-trail {
-            width: 30px; height: 30px; border: 1px solid rgba(255,255,255,0.1);
-            position: fixed; border-radius: 50%; pointer-events: none; z-index: 9999;
-        }
-
-        /* --- ARCHITECT UI COMPONENTS --- */
-        .glass-panel { 
-            background: var(--panel); backdrop-filter: blur(40px); 
-            border: 1px solid var(--border);
-            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-
-        .terminal-text { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px; }
 
         .btn-hw {
-            @apply p-6 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all active:scale-90 flex items-center justify-center;
+            @apply p-6 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all active:scale-90;
         }
 
-        .shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-            background-size: 200% 100%;
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-
-        /* --- VISUALIZER --- */
-        .v-bar { transition: height 0.2s ease; width: 3px; border-radius: 2px; }
-        
-        canvas#neural-net {
-            position: fixed; inset: 0; z-index: -1; opacity: 0.2;
-        }
+        /* Error state for invalid token */
+        .token-invalid { border-color: var(--error) !important; box-shadow: 0 0 20px rgba(255, 51, 51, 0.2); }
     </style>
 </head>
-<body onload="initSystem()">
+<body onload="bootSequence()">
     <div id="cursor"></div>
-    <div id="cursor-trail"></div>
-    <canvas id="neural-net"></canvas>
 
-    <!-- HEADER / HUD -->
-    <header class="fixed top-0 w-full p-12 flex justify-between items-start z-[100]">
-        <div class="flex flex-col gap-2">
-            <div class="flex items-center gap-3">
-                <span class="w-8 h-[1px] bg-white/30"></span>
-                <span class="terminal-text text-white/40 uppercase">Architect_v98_Kernel</span>
-            </div>
-            <h1 class="text-3xl font-black tracking-tighter">X-CLIPSE<span class="font-extralight opacity-30">STUDIO</span></h1>
-        </div>
-        
-        <div class="glass-panel p-6 rounded-3xl flex items-center gap-8">
-            <div class="text-right">
-                <p id="clock" class="text-xl font-bold tracking-tighter">00:00:00</p>
-                <p class="terminal-text text-[8px] opacity-30">BORDERTOWN_OS_RELAY</p>
-            </div>
-            <div class="h-8 w-[1px] bg-white/10"></div>
-            <div id="sync-status" class="flex flex-col gap-1">
-                <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] animate-pulse"></span>
-                    <span class="terminal-text text-[8px] opacity-50">SYNC_ACTIVE</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                    <span class="terminal-text text-[8px] opacity-50">ENCRYPT_AES</span>
-                </div>
-            </div>
+    <header class="fixed top-0 w-full p-12 flex justify-between items-center z-50">
+        <h1 class="text-2xl font-black tracking-tighter italic">ARCHITECT_OS</h1>
+        <div id="auth-indicator" class="glass px-6 py-2 rounded-full terminal text-[9px] flex items-center gap-3">
+            <span id="status-dot" class="w-2 h-2 rounded-full bg-yellow-500"></span>
+            <span id="status-text">INITIALIZING_UPLINK</span>
         </div>
     </header>
 
-    <!-- MAIN INTERFACE -->
-    <main class="h-screen w-full flex items-center justify-center px-12 relative overflow-hidden">
-        
-        <!-- INITIAL GATEWAY (HIDDEN IF LOGGED IN) -->
-        <section id="gateway" class="w-full max-w-4xl space-y-12 transition-all duration-1000">
-            <div class="text-center space-y-4">
-                <h2 class="text-6xl font-bold tracking-tighter">ESTABLISH_UPLINK</h2>
-                <p class="terminal-text text-white/30 tracking-[1em]">CHOOSE_PROTOCOL</p>
-            </div>
-            <div class="grid grid-cols-2 gap-8">
-                <div onclick="login('sp')" class="glass-panel p-16 rounded-[40px] group cursor-pointer hover:border-white/40">
-                    <i data-lucide="layers" class="w-12 h-12 mb-12 group-hover:text-green-500 transition-colors"></i>
-                    <h3 class="text-2xl font-bold mb-2">SPOTIFY</h3>
-                    <p class="terminal-text text-white/40">API_GATEWAY_v2</p>
-                </div>
-                <div onclick="login('sc')" class="glass-panel p-16 rounded-[40px] group cursor-pointer hover:border-white/40">
-                    <i data-lucide="cloud" class="w-12 h-12 mb-12 group-hover:text-orange-500 transition-colors"></i>
-                    <h3 class="text-2xl font-bold mb-2">SOUNDCLOUD</h3>
-                    <p class="terminal-text text-white/40">WIDGET_RELAY_v3</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- PLAYER CONSOLE (HIDDEN BY DEFAULT) -->
-        <section id="player" class="w-full max-w-6xl opacity-0 translate-y-20 hidden grid grid-cols-12 gap-16 items-center transition-all duration-1000">
+    <main class="h-screen flex items-center justify-center px-12">
+        <section id="player-ui" class="w-full max-w-5xl grid grid-cols-12 gap-16 items-center">
             
-            <!-- LEFT: VISUAL CORE -->
-            <div class="col-span-5 relative group">
-                <div class="glass-panel p-2 rounded-[50px] relative z-10 overflow-hidden">
-                    <div id="art" class="w-full aspect-square rounded-[45px] bg-white/5 bg-cover bg-center transition-all duration-700"></div>
-                    <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-end gap-1 h-12" id="viz-container">
-                        <!-- Bars generated in JS -->
-                    </div>
+            <!-- ARTWORK -->
+            <div class="col-span-5">
+                <div id="art-card" class="glass aspect-square rounded-[50px] bg-white/5 bg-cover bg-center shadow-2xl relative overflow-hidden">
+                    <div id="viz" class="absolute bottom-0 left-0 w-full h-32 flex items-end justify-around p-8 gap-1 opacity-30"></div>
                 </div>
-                <div class="absolute -inset-10 bg-white/5 blur-3xl rounded-full group-hover:bg-white/10 transition-all"></div>
             </div>
 
-            <!-- RIGHT: COMMAND DECK -->
+            <!-- CONTROLS -->
             <div class="col-span-7 space-y-10">
-                <div class="space-y-4">
-                    <div class="flex items-center gap-4">
-                        <span id="source-tag" class="terminal-text px-3 py-1 border border-white/20 rounded-full text-[8px]">DISCONNECTED</span>
-                        <div class="h-[1px] flex-grow bg-white/10"></div>
-                    </div>
-                    <h2 id="track-name" class="text-7xl font-black tracking-tighter leading-none italic uppercase">no_signal</h2>
-                    <h3 id="track-artist" class="text-2xl font-light opacity-30 tracking-[0.3em] uppercase">awaiting_packet</h3>
+                <div class="space-y-2">
+                    <h2 id="track-title" class="text-7xl font-bold tracking-tighter leading-none">OFFLINE</h2>
+                    <p id="track-artist" class="text-2xl font-light opacity-30 uppercase tracking-widest">Awaiting Command</p>
                 </div>
 
-                <!-- SCRUBBER -->
-                <div class="space-y-4 glass-panel p-8 rounded-[30px] shimmer">
-                    <div class="w-full h-[2px] bg-white/5 relative overflow-hidden">
-                        <div id="progress" class="absolute h-full bg-white w-0 shadow-[0_0_15px_white] transition-all"></div>
-                    </div>
-                    <div class="flex justify-between terminal-text text-[9px] opacity-40">
-                        <span id="time-now">00:00</span>
-                        <span id="time-end">00:00</span>
-                    </div>
-                </div>
-
-                <!-- HARDWARE CONTROLS -->
-                <div class="flex items-center justify-between">
-                    <div class="flex gap-4">
-                        <button class="btn-hw" onclick="cmd('shuffle')"><i data-lucide="shuffle" class="w-4 h-4"></i></button>
-                        <button class="btn-hw" onclick="cmd('repeat')"><i data-lucide="repeat" class="w-4 h-4"></i></button>
+                <div class="glass p-10 rounded-[40px] space-y-10">
+                    <!-- Progress -->
+                    <div class="space-y-4">
+                        <div class="w-full h-[2px] bg-white/10 relative">
+                            <div id="progress-bar" class="absolute h-full bg-white w-0 shadow-[0_0_10px_white]"></div>
+                        </div>
+                        <div class="flex justify-between terminal opacity-40 text-[8px]">
+                            <span id="time-cur">0:00</span>
+                            <span id="time-total">0:00</span>
+                        </div>
                     </div>
 
-                    <div class="flex items-center gap-6">
-                        <button class="btn-hw p-8" onclick="cmd('previous')"><i data-lucide="skip-back" class="w-6 h-6"></i></button>
-                        <button id="master-btn" class="w-24 h-24 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)]" onclick="cmd('toggle')">
-                            <i id="play-icon" data-lucide="play" class="w-10 h-10 fill-current"></i>
+                    <!-- Buttons -->
+                    <div class="flex items-center justify-between">
+                        <button class="btn-hw" onclick="handleCmd('previous')"><i data-lucide="skip-back"></i></button>
+                        <button id="play-btn" class="w-24 h-24 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all" onclick="handleCmd('toggle')">
+                            <i data-lucide="play" class="fill-current w-8 h-8"></i>
                         </button>
-                        <button class="btn-hw p-8" onclick="cmd('next')"><i data-lucide="skip-forward" class="w-6 h-6"></i></button>
-                    </div>
-
-                    <div class="flex gap-4">
-                        <button class="btn-hw" onclick="logout()"><i data-lucide="power" class="w-4 h-4 text-red-500/50"></i></button>
+                        <button class="btn-hw" onclick="handleCmd('next')"><i data-lucide="skip-forward"></i></button>
                     </div>
                 </div>
-
-                <div id="console-logs" class="terminal-text text-[9px] text-white/20 italic pt-6 border-t border-white/5">
-                    >> system_ready...
-                </div>
+                
+                <div id="log-feed" class="terminal text-[9px] text-white/20 italic">>> sys_ready</div>
             </div>
         </section>
     </main>
 
-    <!-- HIDDEN UTILITIES -->
-    <div class="hidden"><iframe id="sc-relay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/293"></iframe></div>
-
     <script>
-        /**
-         * ARCHITECT_OS CORE LOGIC
-         * Handling: Auth Redirection, Spotify API, SoundCloud Widget, & Visuals
-         */
-
         const CONFIG = {
-            spId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            redirect: window.location.origin + window.location.pathname,
-            scopes: 'user-read-playback-state user-modify-playback-state user-read-currently-playing'
+            // Updated Scope to include private playback control
+            scope: 'user-modify-playback-state user-read-playback-state user-read-currently-playing',
+            clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
+            redirect: window.location.origin + window.location.pathname
         };
 
-        let state = {
-            isPlaying: false,
-            source: localStorage.getItem('active_source'),
-            token: localStorage.getItem('sp_token'),
-            sc: null
-        };
+        let state = { isPlaying: false, token: localStorage.getItem('sp_token') };
 
-        // --- 1. BOOT SEQUENCE (Your Requested Logic Integration) ---
-        function initSystem() {
+        function bootSequence() {
+            // Fix for Lucide Icon name issue: Ensure names match library precisely
             lucide.createIcons();
-            initNeuralNet();
             
-            // Integrate your Hash Handler logic
+            // Your callback logic integration
             const hash = window.location.hash.substring(1);
             const params = new URLSearchParams(hash);
             const token = params.get('access_token');
             
             if (token) {
                 localStorage.setItem('sp_token', token);
-                localStorage.setItem('active_source', 'sp');
-                window.location.hash = ''; // Clean URL
-                location.reload();
-            } else if (window.opener && window.opener.SC) {
-                window.opener.SC.connectCallback();
+                state.token = token;
+                window.location.hash = '';
+                log("token_synced_successfully");
             }
 
-            // Route view based on token existence
-            if (localStorage.getItem('sp_token')) {
-                showPlayer();
-            }
-
-            // Start UI Heartbeat
-            setInterval(updateClock, 1000);
-            if(localStorage.getItem('sp_token')) setInterval(pollSpotify, 1000);
-            
-            // Build visualizer bars
-            const viz = document.getElementById('viz-container');
-            for(let i=0; i<40; i++) {
-                const b = document.createElement('div');
-                b.className = 'v-bar bg-white/20';
-                b.style.height = '4px';
-                viz.appendChild(b);
-            }
+            checkAuthStatus();
+            initViz();
+            setInterval(syncPlayback, 1500);
         }
 
-        // --- 2. AUTHENTICATION ---
-        function login(type) {
-            log(`initiating_${type}_handshake`);
-            if (type === 'sp') {
-                const url = `https://accounts.spotify.com/authorize?client_id=${CONFIG.spId}&response_type=token&redirect_uri=${encodeURIComponent(CONFIG.redirect)}&scope=${encodeURIComponent(CONFIG.scopes)}`;
-                window.location.href = url;
+        async function checkAuthStatus() {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            const ui = document.getElementById('player-ui');
+
+            if (!state.token) {
+                dot.className = "w-2 h-2 rounded-full bg-red-500";
+                text.innerText = "NO_TOKEN_FOUND";
+                log("err: unauthorized_access");
+                return;
+            }
+
+            // Verify token with a test call
+            const res = await fetch('https://api.spotify.com/v1/me', {
+                headers: { 'Authorization': `Bearer ${state.token}` }
+            });
+
+            if (res.status === 401) {
+                dot.className = "w-2 h-2 rounded-full bg-red-500";
+                text.innerText = "TOKEN_EXPIRED_REAUTH";
+                ui.classList.add('token-invalid');
+                log("err: 401_unauthorized");
             } else {
-                SC.initialize({ client_id: 'YOUR_SC_CLIENT_ID', redirect_uri: CONFIG.redirect });
-                SC.connect().then(() => {
-                    localStorage.setItem('active_source', 'sc');
-                    location.reload();
-                });
+                dot.className = "w-2 h-2 rounded-full bg-green-500";
+                text.innerText = "UPLINK_STABLE";
+                log("handshake_verified");
             }
         }
 
-        function logout() {
-            localStorage.clear();
-            location.reload();
+        async function handleCmd(action) {
+            if (!state.token) { login(); return; }
+            log(`executing_${action}`);
+
+            const headers = { 
+                'Authorization': `Bearer ${state.token}`,
+                'Content-Type': 'application/json' 
+            };
+
+            try {
+                let url = 'https://api.spotify.com/v1/me/player/';
+                let method = 'POST';
+
+                if (action === 'toggle') {
+                    method = 'PUT';
+                    url += state.isPlaying ? 'pause' : 'play';
+                } else {
+                    url += action;
+                }
+
+                const res = await fetch(url, { method, headers });
+                
+                if (res.status === 404) {
+                    log("err: no_active_device_found");
+                    alert("Open Spotify on your device first!");
+                } else if (res.status === 401) {
+                    login(); // Token dead, refresh
+                }
+                
+                setTimeout(syncPlayback, 300);
+            } catch (e) {
+                log("api_collision_detected");
+            }
         }
 
-        // --- 3. UI ENGINE ---
-        function showPlayer() {
-            gsap.to("#gateway", { opacity: 0, y: -50, duration: 1, onComplete: () => {
-                document.getElementById('gateway').classList.add('hidden');
-                const p = document.getElementById('player');
-                p.classList.remove('hidden');
-                gsap.to(p, { opacity: 1, y: 0, duration: 1.5, ease: "expo.out" });
-            }});
+        async function syncPlayback() {
+            if (!state.token) return;
+
+            const res = await fetch('https://api.spotify.com/v1/me/player', {
+                headers: { 'Authorization': `Bearer ${state.token}` }
+            });
+
+            if (res.status === 200) {
+                const data = await res.json();
+                document.getElementById('track-title').innerText = data.item.name.toUpperCase();
+                document.getElementById('track-artist').innerText = data.item.artists[0].name.toUpperCase();
+                document.getElementById('art-card').style.backgroundImage = `url(${data.item.album.images[0].url})`;
+                
+                const progress = (data.progress_ms / data.item.duration_ms) * 100;
+                document.getElementById('progress-bar').style.width = progress + '%';
+                
+                state.isPlaying = data.is_playing;
+                updateIcon(data.is_playing);
+            }
+        }
+
+        function updateIcon(playing) {
+            const btn = document.getElementById('play-btn');
+            btn.innerHTML = playing ? '<i data-lucide="pause" class="fill-current w-8 h-8"></i>' : '<i data-lucide="play" class="fill-current w-8 h-8"></i>';
+            lucide.createIcons();
+        }
+
+        function login() {
+            const url = `https://accounts.spotify.com/authorize?client_id=${CONFIG.clientId}&response_type=token&redirect_uri=${encodeURIComponent(CONFIG.redirect)}&scope=${encodeURIComponent(CONFIG.scope)}`;
+            window.location.href = url;
         }
 
         function log(msg) {
-            const l = document.getElementById('console-logs');
-            l.innerText = `>> ${msg.toLowerCase()}`;
-            gsap.from(l, { opacity: 0, x: -10, duration: 0.3 });
+            document.getElementById('log-feed').innerText = `>> ${msg}`;
         }
 
-        // --- 4. PLAYBACK COMMANDS ---
-        async function cmd(action) {
-            log(`exec_hardware_command: ${action}`);
-            const token = localStorage.getItem('sp_token');
-            if(!token) return;
-
-            const headers = { 'Authorization': `Bearer ${token}` };
-            let endpoint = 'https://api.spotify.com/v1/me/player/';
-
-            try {
-                if(action === 'toggle') {
-                    const method = state.isPlaying ? 'pause' : 'play';
-                    await fetch(endpoint + method, { method: 'PUT', headers });
-                } else if(action === 'next' || action === 'previous') {
-                    await fetch(endpoint + action, { method: 'POST', headers });
-                }
-                
-                // Haptic feedback
-                gsap.from("#master-btn", { scale: 0.8, duration: 0.2 });
-                setTimeout(pollSpotify, 300);
-            } catch(e) { log('api_relay_failure'); }
-        }
-
-        // --- 5. DATA POLLING ---
-        async function pollSpotify() {
-            const token = localStorage.getItem('sp_token');
-            try {
-                const res = await fetch('https://api.spotify.com/v1/me/player', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if(res.status === 200) {
-                    const data = await res.json();
-                    updateUI({
-                        title: data.item.name,
-                        artist: data.item.artists[0].name,
-                        art: data.item.album.images[0].url,
-                        progress: (data.progress_ms / data.item.duration_ms) * 100,
-                        playing: data.is_playing,
-                        cur: data.progress_ms,
-                        tot: data.item.duration_ms
-                    });
-                }
-            } catch(e) { console.error("Poll fail", e); }
-        }
-
-        function updateUI(d) {
-            document.getElementById('track-name').innerText = d.title;
-            document.getElementById('track-artist').innerText = d.artist;
-            document.getElementById('art').style.backgroundImage = `url(${d.art})`;
-            document.getElementById('progress').style.width = d.progress + '%';
-            document.getElementById('source-tag').innerText = 'SPOTIFY_UPLINK_STABLE';
-            
-            document.getElementById('time-now').innerText = formatMs(d.cur);
-            document.getElementById('time-end').innerText = formatMs(d.tot);
-            
-            state.isPlaying = d.playing;
-            const icon = document.getElementById('play-icon');
-            icon.setAttribute('data-lucide', d.playing ? 'pause' : 'play');
-            lucide.createIcons();
-
-            // Animate Viz
-            const bars = document.querySelectorAll('.v-bar');
-            bars.forEach(b => {
-                const h = d.playing ? Math.random() * 50 + 5 : 4;
-                b.style.height = h + 'px';
-                b.style.opacity = d.playing ? '1' : '0.2';
-            });
-        }
-
-        // --- 6. PHYSICS & UTILS ---
-        function initNeuralNet() {
-            const canvas = document.getElementById('neural-net');
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            let points = [];
-            for(let i=0; i<60; i++) points.push({
-                x: Math.random() * canvas.width, 
-                y: Math.random() * canvas.height,
-                vx: (Math.random() - 0.5) * 0.5,
-                vy: (Math.random() - 0.5) * 0.5
-            });
-
-            function draw() {
-                ctx.clearRect(0,0,canvas.width, canvas.height);
-                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-                ctx.beginPath();
-                points.forEach((p, i) => {
-                    p.x += p.vx; p.y += p.vy;
-                    if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
-                    if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
-                    points.forEach((p2, j) => {
-                        if(i === j) return;
-                        const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                        if(dist < 150) {
-                            ctx.moveTo(p.x, p.y);
-                            ctx.lineTo(p2.x, p2.y);
-                        }
-                    });
-                });
-                ctx.stroke();
-                requestAnimationFrame(draw);
+        function initViz() {
+            const v = document.getElementById('viz');
+            for(let i=0; i<30; i++) {
+                const b = document.createElement('div');
+                b.className = "w-1 bg-white rounded-full transition-all duration-300";
+                b.style.height = "4px";
+                v.appendChild(b);
             }
-            draw();
+            setInterval(() => {
+                if(state.isPlaying) {
+                    document.querySelectorAll('#viz div').forEach(b => {
+                        b.style.height = Math.random() * 80 + 5 + 'px';
+                    });
+                }
+            }, 150);
         }
 
-        function updateClock() {
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB', { hour12: false });
-        }
-
-        function formatMs(ms) {
-            const m = Math.floor(ms / 60000);
-            const s = ((ms % 60000) / 1000).toFixed(0);
-            return m + ":" + (s < 10 ? '0' : '') + s;
-        }
-
-        // Cursor Physics
         document.addEventListener('mousemove', e => {
-            gsap.to("#cursor", { x: e.clientX, y: e.clientY, duration: 0 });
-            gsap.to("#cursor-trail", { x: e.clientX - 11, y: e.clientY - 11, duration: 0.15 });
+            gsap.to("#cursor", { x: e.clientX - 4, y: e.clientY - 4, duration: 0.1 });
         });
     </script>
 </body>
