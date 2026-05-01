@@ -2,51 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>XCLIPSE | SYNC_PENDING</title>
+    <title>XCLIPSE | RELAY</title>
     <style>
-        body { 
-            background: #000; color: #fff; height: 100vh; margin: 0; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            font-family: 'JetBrains Mono', monospace; overflow: hidden; 
-        }
-        .loader-bar { width: 200px; height: 1px; background: rgba(255,255,255,0.1); position: relative; }
-        .loader-bar::after { 
-            content: ''; position: absolute; left: 0; width: 0; height: 100%; 
-            background: white; animation: load 2s cubic-bezier(0.23, 1, 0.32, 1) forwards; 
-        }
-        @keyframes load { to { width: 100%; } }
-        .status { font-size: 8px; letter-spacing: 4px; margin-top: 20px; opacity: 0.5; text-transform: uppercase; }
+        body { background: #000; color: #fff; height: 100vh; display: flex; align-items: center; justify-content: center; font-family: monospace; }
+        .relay-status { letter-spacing: 5px; font-size: 10px; opacity: 0.5; }
     </style>
 </head>
-<body onload="executeHandshake()">
-    <div class="loader-bar"></div>
-    <div class="status" id="status-msg">Initiating Handshake_Relay</div>
-
+<body onload="processRelay()">
+    <div class="relay-status">FINALIZING_RELAY...</div>
     <script>
-        /**
-         * Dual-Vendor Auth Relay
-         * Processes incoming codes from Spotify/SoundCloud and redirects to origin.[cite: 3]
-         */
-        async function executeHandshake() {
+        async function processRelay() {
             const params = new URLSearchParams(window.location.search);
             const code = params.get('code');
             const returnUrl = localStorage.getItem('return_to') || 'index.html';
 
-            // CASE A: SOUNDCLOUD POPUP HANDSHAKE[cite: 2]
-            if (window.opener && !code) {
-                document.getElementById('status-msg').innerText = "SC_RELAY_ESTABLISHED";
-                try {
-                    window.opener.SC.connectCallback();
-                    setTimeout(() => window.close(), 800);
-                } catch (e) {
-                    console.error("Parent connection failed.");
-                }
-                return;
-            }
-
-            // CASE B: SPOTIFY PKCE TOKEN EXCHANGE[cite: 3]
             if (code) {
-                document.getElementById('status-msg').innerText = "SP_TOKEN_EXCHANGE_ACTIVE";
+                // Spotify Token Exchange[cite: 3]
                 try {
                     const response = await fetch('https://accounts.spotify.com/api/token', {
                         method: 'POST',
@@ -59,22 +30,20 @@
                             code_verifier: localStorage.getItem('sp_verifier')
                         })
                     });
-
                     const data = await response.json();
                     if (data.access_token) {
                         localStorage.setItem('sp_token', data.access_token);
-                        document.getElementById('status-msg').innerText = "SUCCESS_REDIRECTING";
-                        
-                        // Wait for aesthetic animation completion
-                        setTimeout(() => {
-                            window.location.href = returnUrl;
-                            localStorage.removeItem('return_to');
-                        }, 1000);
                     }
-                } catch (e) {
-                    document.getElementById('status-msg').innerText = "FATAL_TOKEN_ERROR";
-                }
+                } catch (e) { console.error("Relay Fault."); }
+            } else if (window.opener) {
+                // SoundCloud Popup Signal[cite: 2]
+                window.opener.SC.connectCallback();
             }
+
+            setTimeout(() => {
+                window.location.href = returnUrl;
+                localStorage.removeItem('return_to');
+            }, 800);
         }
     </script>
 </body>
