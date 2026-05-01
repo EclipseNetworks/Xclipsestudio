@@ -1,21 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
-<body onload="handle()">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X-CLIPSE | SECURE_HANDSHAKE</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400&family=Space+Grotesk:wght@300;700&display=swap');
+        
+        :root {
+            --bg: #050505;
+            --accent: #ffffff;
+            --glitch-gap: 5px;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .terminal {
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+
+        .loader-ring {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scanner {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            top: 50%;
+            opacity: 0.5;
+        }
+
+        #status-box {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .success-glow {
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="relative flex flex-col items-center gap-12">
+        <!-- Animated Core -->
+        <div class="loader-ring" id="core-container">
+            <div id="ring-outer" class="absolute inset-0 border-2 border-dashed border-white/20 rounded-full"></div>
+            <div id="ring-inner" class="absolute inset-4 border border-white/10 rounded-full"></div>
+            <div class="scanner" id="scan-line"></div>
+            
+            <div class="text-center z-10">
+                <span id="percent" class="text-4xl font-bold italic tracking-tighter">00</span>
+                <span class="text-xs opacity-40 block terminal mt-1">Decrypting</span>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div id="status-box" class="p-8 rounded-[32px] w-80 space-y-4 text-center">
+            <div class="flex justify-center gap-2">
+                <div class="w-1 h-1 rounded-full bg-white/20" id="dot-1"></div>
+                <div class="w-1 h-1 rounded-full bg-white/20" id="dot-2"></div>
+                <div class="w-1 h-1 rounded-full bg-white/20" id="dot-3"></div>
+            </div>
+            <p id="message" class="terminal text-[10px] opacity-50">Initializing Auth_Relay</p>
+            <div class="h-[1px] w-full bg-white/5 relative overflow-hidden">
+                <div id="progress-line" class="absolute h-full bg-white w-0"></div>
+            </div>
+        </div>
+
+        <div class="terminal text-[8px] opacity-20 fixed bottom-12 tracking-[0.5em]">
+            Protocol: ARCHITECT_OS // ID: ee9cf7...
+        </div>
+    </div>
+
     <script>
-        function handle() {
+        /**
+         * X-CLIPSE SECURE CALLBACK LOGIC
+         */
+        const CONFIG = {
+            target: 'soundcloud.html', // Where to send the user after auth
+            clientId: 'ee9cf7fe920d4280804730690b3fb4e8'
+        };
+
+        function startHandshake() {
+            // 1. Capture the Fragment
             const hash = window.location.hash.substring(1);
             const params = new URLSearchParams(hash);
-            const token = params.get('access_token');
-            
-            if (token) {
-                localStorage.setItem('sp_token', token);
-                window.location.href = 'index.html';
-            } else if (window.opener) {
-                window.opener.SC.connectCallback();
+            const accessToken = params.get('access_token');
+            const error = params.get('error');
+
+            // Start Animations
+            gsap.to("#ring-outer", { rotation: 360, duration: 8, repeat: -1, ease: "none" });
+            gsap.to("#ring-inner", { rotation: -360, duration: 4, repeat: -1, ease: "none" });
+            gsap.to("#scan-line", { top: "100%", duration: 2, repeat: -1, yoyo: true, ease: "power1.inOut" });
+
+            if (accessToken) {
+                processSuccess(accessToken);
             } else {
-                window.location.href = 'index.html';
+                processFailure(error || "Unknown Protocol Error");
             }
         }
+
+        function processSuccess(token) {
+            // Store token in LocalStorage for the main app to pick up
+            localStorage.setItem('sp_token', token);
+            localStorage.setItem('sp_token_time', Date.now());
+
+            const tl = gsap.timeline({ onComplete: () => window.location.href = CONFIG.target });
+
+            tl.to("#percent", { 
+                innerText: 100, 
+                duration: 2, 
+                snap: { innerText: 1 },
+                onUpdate: function() {
+                    document.getElementById('progress-line').style.width = this.targets()[0].innerText + '%';
+                }
+            });
+
+            tl.to("#message", { textContent: "UPLINK_ESTABLISHED", duration: 0.5 }, "-=1");
+            tl.to("#status-box", { className: "+=success-glow border-white/40", duration: 0.5 }, "-=0.5");
+            tl.to("body", { opacity: 0, scale: 1.1, duration: 0.8, ease: "expo.in", delay: 0.5 });
+        }
+
+        function processFailure(err) {
+            document.getElementById('message').innerText = "AUTH_FAILED: " + err;
+            document.getElementById('message').style.color = "#ff3333";
+            gsap.to("#core-container", { borderColor: "#ff3333", duration: 0.5 });
+            
+            setTimeout(() => {
+                window.location.href = CONFIG.target;
+            }, 3000);
+        }
+
+        window.onload = startHandshake;
     </script>
 </body>
 </html>
