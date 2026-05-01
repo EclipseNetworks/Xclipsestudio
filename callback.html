@@ -1,49 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>XCLIPSE | RELAY</title>
-    <style>
-        body { background: #000; color: #fff; height: 100vh; display: flex; align-items: center; justify-content: center; font-family: monospace; }
-        .relay-status { letter-spacing: 5px; font-size: 10px; opacity: 0.5; }
-    </style>
-</head>
-<body onload="processRelay()">
-    <div class="relay-status">FINALIZING_RELAY...</div>
+<body onload="relay()">
     <script>
-        async function processRelay() {
+        async function relay() {
             const params = new URLSearchParams(window.location.search);
             const code = params.get('code');
-            const returnUrl = localStorage.getItem('return_to') || 'index.html';
-
+            
             if (code) {
-                // Spotify Token Exchange[cite: 3]
-                try {
-                    const response = await fetch('https://accounts.spotify.com/api/token', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({
-                            client_id: 'ee9cf7fe920d4280804730690b3fb4e8',
-                            grant_type: 'authorization_code',
-                            code: code,
-                            redirect_uri: 'https://xclipsestudio.xclipsenetworks.com.au/callback.html',
-                            code_verifier: localStorage.getItem('sp_verifier')
-                        })
-                    });
-                    const data = await response.json();
-                    if (data.access_token) {
-                        localStorage.setItem('sp_token', data.access_token);
-                    }
-                } catch (e) { console.error("Relay Fault."); }
+                const response = await fetch('https://accounts.spotify.com/api/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        client_id: 'ee9cf7fe920d4280804730690b3fb4e8',
+                        grant_type: 'authorization_code',
+                        code: code,
+                        redirect_uri: 'https://xclipsestudio.xclipsenetworks.com.au/callback.html',
+                        code_verifier: localStorage.getItem('sp_verifier')
+                    })
+                });
+                const data = await response.json();
+                if (data.access_token) localStorage.setItem('sp_token', data.access_token);
             } else if (window.opener) {
-                // SoundCloud Popup Signal[cite: 2]
                 window.opener.SC.connectCallback();
+                localStorage.setItem('sc_linked', 'true');
             }
-
-            setTimeout(() => {
-                window.location.href = returnUrl;
-                localStorage.removeItem('return_to');
-            }, 800);
+            
+            window.location.href = localStorage.getItem('return_to') || 'index.html';
         }
     </script>
 </body>
