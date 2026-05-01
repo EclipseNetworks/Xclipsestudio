@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-CLIPSE | ARCHITECT_OS_ULTRA_v96</title>
+    <title>X-CLIPSE | ARCHITECT_OS_v98_ULTRA</title>
     
-    <!-- Core Dependencies -->
+    <!-- SYSTEM DEPENDENCIES -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://connect.soundcloud.com/sdk/sdk-3.3.2.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -15,494 +15,398 @@
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400;800&family=Space+Grotesk:wght@300;500;700&display=swap');
         
         :root { 
-            --sc-brand: #ff5500; 
-            --sp-brand: #1DB954; 
             --bg: #030303;
+            --accent: #ffffff;
             --panel: rgba(255, 255, 255, 0.02);
             --border: rgba(255, 255, 255, 0.08);
-            --glow: rgba(255, 255, 255, 0.1);
+            --neon: #ffffff;
         }
 
-        /* --- ARCHITECT RESET --- */
+        /* --- GLOBAL RESET & CURSOR --- */
         * { cursor: none !important; margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             background: var(--bg); color: white; font-family: 'Space Grotesk', sans-serif; 
-            overflow: hidden; height: 100vh; perspective: 2000px;
+            overflow: hidden; height: 100vh; perspective: 1000px;
         }
 
-        /* --- NEURAL BACKGROUND --- */
-        #neural-canvas {
-            position: fixed; inset: 0; z-index: -1;
-            opacity: 0.3; pointer-events: none;
-        }
-
-        .cyber-grid { 
-            position: fixed; inset: 0; 
-            background-image: 
-                linear-gradient(var(--border) 1px, transparent 1px),
-                linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 80px 80px;
-            transform: rotateX(60deg) translateY(-200px) translateZ(-200px);
-            z-index: -2; opacity: 0.15;
-            animation: grid-drift 60s linear infinite;
-        }
-
-        @keyframes grid-drift { from { background-position: 0 0; } to { background-position: 0 800px; } }
-
-        /* --- OS COMPONENTS --- */
-        .glass-module { 
-            background: var(--panel); backdrop-filter: blur(50px) saturate(180%);
-            border: 1px solid var(--border);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .glass-module:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-5px); }
-
-        .terminal-font { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px; }
-
-        /* --- CURSOR --- */
-        #cursor-main {
-            width: 8px; height: 8px; background: white; position: fixed;
+        #cursor {
+            width: 8px; height: 8px; background: var(--accent); position: fixed;
             border-radius: 50%; pointer-events: none; z-index: 10000;
-            box-shadow: 0 0 25px white;
+            box-shadow: 0 0 20px rgba(255,255,255,0.8);
         }
-        #cursor-follower {
-            width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.2); 
+
+        #cursor-trail {
+            width: 30px; height: 30px; border: 1px solid rgba(255,255,255,0.1);
             position: fixed; border-radius: 50%; pointer-events: none; z-index: 9999;
         }
 
-        /* --- UI ANIMATIONS --- */
-        .view-transition { transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.23, 1, 0.32, 1); }
-        .hidden-node { display: none !important; opacity: 0; transform: translateY(50px) scale(0.9); }
-
-        .btn-hardware {
-            @apply p-5 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 flex items-center justify-center;
+        /* --- ARCHITECT UI COMPONENTS --- */
+        .glass-panel { 
+            background: var(--panel); backdrop-filter: blur(40px); 
+            border: 1px solid var(--border);
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
-        .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+        .terminal-text { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px; }
+
+        .btn-hw {
+            @apply p-6 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all active:scale-90 flex items-center justify-center;
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+        /* --- VISUALIZER --- */
+        .v-bar { transition: height 0.2s ease; width: 3px; border-radius: 2px; }
+        
+        canvas#neural-net {
+            position: fixed; inset: 0; z-index: -1; opacity: 0.2;
+        }
     </style>
 </head>
-<body>
-    <div id="cursor-main"></div>
-    <div id="cursor-follower"></div>
-    <div class="cyber-grid"></div>
-    <canvas id="neural-canvas"></canvas>
+<body onload="initSystem()">
+    <div id="cursor"></div>
+    <div id="cursor-trail"></div>
+    <canvas id="neural-net"></canvas>
 
-    <!-- OS HUD -->
-    <nav class="fixed top-0 w-full p-12 flex justify-between items-start z-[100]">
-        <div class="space-y-4">
-            <div class="flex items-center gap-4">
-                <div class="w-10 h-[1px] bg-white/20"></div>
-                <span class="terminal-font text-white/40 uppercase">System_v.96_Ultra</span>
+    <!-- HEADER / HUD -->
+    <header class="fixed top-0 w-full p-12 flex justify-between items-start z-[100]">
+        <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-3">
+                <span class="w-8 h-[1px] bg-white/30"></span>
+                <span class="terminal-text text-white/40 uppercase">Architect_v98_Kernel</span>
             </div>
-            <h1 class="text-3xl font-light tracking-[0.2em]">X-CLIPSE<span class="font-black">STUDIO</span></h1>
+            <h1 class="text-3xl font-black tracking-tighter">X-CLIPSE<span class="font-extralight opacity-30">STUDIO</span></h1>
         </div>
-
-        <div class="glass-module p-6 px-10 rounded-[30px] flex items-center gap-10">
+        
+        <div class="glass-panel p-6 rounded-3xl flex items-center gap-8">
             <div class="text-right">
-                <p id="clock" class="text-2xl font-light tracking-tighter">00:00:00</p>
-                <p class="terminal-font text-[8px] opacity-30 uppercase">Bordertown_SA_AU</p>
+                <p id="clock" class="text-xl font-bold tracking-tighter">00:00:00</p>
+                <p class="terminal-text text-[8px] opacity-30">BORDERTOWN_OS_RELAY</p>
             </div>
-            <div class="h-10 w-[1px] bg-white/10"></div>
-            <div class="flex flex-col gap-1">
+            <div class="h-8 w-[1px] bg-white/10"></div>
+            <div id="sync-status" class="flex flex-col gap-1">
                 <div class="flex items-center gap-2">
-                    <span class="status-dot bg-green-500 shadow-[0_0_10px_#22c55e]"></span>
-                    <span class="terminal-font text-[9px] opacity-50">Core_Linked</span>
+                    <span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] animate-pulse"></span>
+                    <span class="terminal-text text-[8px] opacity-50">SYNC_ACTIVE</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="status-dot bg-blue-500"></span>
-                    <span class="terminal-font text-[9px] opacity-50">AES_256_Active</span>
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span class="terminal-text text-[8px] opacity-50">ENCRYPT_AES</span>
                 </div>
             </div>
         </div>
-    </nav>
+    </header>
 
     <!-- MAIN INTERFACE -->
-    <main class="relative z-10 h-screen w-full flex items-center justify-center px-20">
+    <main class="h-screen w-full flex items-center justify-center px-12 relative overflow-hidden">
         
-        <!-- INITIAL GATEWAY VIEW -->
-        <section id="view-gateway" class="w-full max-w-5xl space-y-20 view-transition">
+        <!-- INITIAL GATEWAY (HIDDEN IF LOGGED IN) -->
+        <section id="gateway" class="w-full max-w-4xl space-y-12 transition-all duration-1000">
             <div class="text-center space-y-4">
-                <h2 class="text-8xl font-black tracking-tighter italic opacity-10 select-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">ARCHITECT</h2>
-                <h3 class="text-5xl font-light tracking-tight">INITIALIZE_CONNECTION</h3>
-                <p class="terminal-font text-white/30 tracking-[1em] uppercase">Select Cloud Protocol Provider</p>
+                <h2 class="text-6xl font-bold tracking-tighter">ESTABLISH_UPLINK</h2>
+                <p class="terminal-text text-white/30 tracking-[1em]">CHOOSE_PROTOCOL</p>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <!-- SoundCloud -->
-                <div id="trigger-sc" class="glass-module p-16 rounded-[50px] group cursor-pointer overflow-hidden relative">
-                    <div class="absolute top-0 right-0 p-8 opacity-5">
-                        <i data-lucide="music-3" class="w-32 h-32"></i>
-                    </div>
-                    <div class="relative z-10">
-                        <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-16 group-hover:bg-[#ff5500] transition-colors duration-500">
-                            <i data-lucide="cloud" class="w-6 h-6"></i>
-                        </div>
-                        <h4 class="text-4xl font-bold tracking-tight mb-4">SOUNDCLOUD</h4>
-                        <p class="terminal-font text-white/40 leading-relaxed">Connect to public stream API via secure popup handshake.</p>
-                    </div>
+            <div class="grid grid-cols-2 gap-8">
+                <div onclick="login('sp')" class="glass-panel p-16 rounded-[40px] group cursor-pointer hover:border-white/40">
+                    <i data-lucide="layers" class="w-12 h-12 mb-12 group-hover:text-green-500 transition-colors"></i>
+                    <h3 class="text-2xl font-bold mb-2">SPOTIFY</h3>
+                    <p class="terminal-text text-white/40">API_GATEWAY_v2</p>
                 </div>
-
-                <!-- Spotify -->
-                <div id="trigger-sp" class="glass-module p-16 rounded-[50px] group cursor-pointer overflow-hidden relative">
-                    <div class="absolute top-0 right-0 p-8 opacity-5">
-                        <i data-lucide="layers-2" class="w-32 h-32"></i>
-                    </div>
-                    <div class="relative z-10">
-                        <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-16 group-hover:bg-[#1DB954] transition-colors duration-500">
-                            <i data-lucide="spotify" class="w-6 h-6"></i>
-                        </div>
-                        <h4 class="text-4xl font-bold tracking-tight mb-4">SPOTIFY</h4>
-                        <p class="terminal-font text-white/40 leading-relaxed">Authorization Code Flow with PKCE extension for secure device control.</p>
-                    </div>
+                <div onclick="login('sc')" class="glass-panel p-16 rounded-[40px] group cursor-pointer hover:border-white/40">
+                    <i data-lucide="cloud" class="w-12 h-12 mb-12 group-hover:text-orange-500 transition-colors"></i>
+                    <h3 class="text-2xl font-bold mb-2">SOUNDCLOUD</h3>
+                    <p class="terminal-text text-white/40">WIDGET_RELAY_v3</p>
                 </div>
             </div>
         </section>
 
-        <!-- MASTER PLAYER VIEW -->
-        <section id="view-player" class="hidden-node w-full max-w-7xl grid grid-cols-12 gap-20 items-center view-transition">
+        <!-- PLAYER CONSOLE (HIDDEN BY DEFAULT) -->
+        <section id="player" class="w-full max-w-6xl opacity-0 translate-y-20 hidden grid grid-cols-12 gap-16 items-center transition-all duration-1000">
             
-            <!-- Left Panel: The Visual Core -->
-            <div class="col-span-5 space-y-10">
-                <div class="relative group">
-                    <div id="track-art" class="w-full aspect-square rounded-[60px] bg-white/5 bg-cover bg-center glass-module border-none shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative z-10"></div>
-                    <div class="absolute -inset-6 border border-white/5 rounded-[70px] z-0 group-hover:scale-105 transition-transform duration-700"></div>
-                    <div class="absolute -inset-12 border border-white/5 rounded-[80px] z-0 opacity-50 group-hover:scale-110 transition-transform duration-1000"></div>
-                </div>
-
-                <div class="glass-module p-10 rounded-[40px] flex flex-col items-center gap-6">
-                    <div class="flex gap-2 h-12 items-end overflow-hidden" id="viz-bars">
-                        <!-- Bars injected by JS -->
-                    </div>
-                    <div class="flex items-center gap-4 w-full">
-                        <div class="h-[1px] flex-grow bg-white/10"></div>
-                        <span class="terminal-font text-[8px] opacity-30 uppercase tracking-widest">Acoustic_Signature</span>
-                        <div class="h-[1px] flex-grow bg-white/10"></div>
+            <!-- LEFT: VISUAL CORE -->
+            <div class="col-span-5 relative group">
+                <div class="glass-panel p-2 rounded-[50px] relative z-10 overflow-hidden">
+                    <div id="art" class="w-full aspect-square rounded-[45px] bg-white/5 bg-cover bg-center transition-all duration-700"></div>
+                    <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-end gap-1 h-12" id="viz-container">
+                        <!-- Bars generated in JS -->
                     </div>
                 </div>
+                <div class="absolute -inset-10 bg-white/5 blur-3xl rounded-full group-hover:bg-white/10 transition-all"></div>
             </div>
 
-            <!-- Right Panel: Data & Command Deck -->
-            <div class="col-span-7 space-y-12">
-                <div class="space-y-6">
+            <!-- RIGHT: COMMAND DECK -->
+            <div class="col-span-7 space-y-10">
+                <div class="space-y-4">
                     <div class="flex items-center gap-4">
-                        <div id="provider-pill" class="px-4 py-1 rounded-full border border-white/10 terminal-font text-[8px] uppercase tracking-widest bg-white/5">
-                            DISCONNECTED
-                        </div>
-                        <div class="h-[1px] w-20 bg-white/10"></div>
-                        <span class="terminal-font text-[8px] text-white/20 uppercase" id="bitrate-info">Lossless_24bit_Sync</span>
+                        <span id="source-tag" class="terminal-text px-3 py-1 border border-white/20 rounded-full text-[8px]">DISCONNECTED</span>
+                        <div class="h-[1px] flex-grow bg-white/10"></div>
                     </div>
-                    
-                    <div class="space-y-2">
-                        <h2 id="track-title" class="text-8xl font-black tracking-tighter leading-[0.85] italic truncate">NO_SIGNAL</h2>
-                        <h4 id="track-artist" class="text-3xl font-light opacity-30 uppercase tracking-[0.4em] truncate">searching_origin...</h4>
+                    <h2 id="track-name" class="text-7xl font-black tracking-tighter leading-none italic uppercase">no_signal</h2>
+                    <h3 id="track-artist" class="text-2xl font-light opacity-30 tracking-[0.3em] uppercase">awaiting_packet</h3>
+                </div>
+
+                <!-- SCRUBBER -->
+                <div class="space-y-4 glass-panel p-8 rounded-[30px] shimmer">
+                    <div class="w-full h-[2px] bg-white/5 relative overflow-hidden">
+                        <div id="progress" class="absolute h-full bg-white w-0 shadow-[0_0_15px_white] transition-all"></div>
+                    </div>
+                    <div class="flex justify-between terminal-text text-[9px] opacity-40">
+                        <span id="time-now">00:00</span>
+                        <span id="time-end">00:00</span>
                     </div>
                 </div>
 
-                <!-- Control Console -->
-                <div class="glass-module p-10 rounded-[40px] space-y-10">
-                    <div class="space-y-4">
-                        <div class="w-full h-[2px] bg-white/5 relative overflow-hidden rounded-full">
-                            <div id="track-progress" class="absolute inset-0 bg-white w-0 shadow-[0_0_20px_white] transition-all duration-1000"></div>
-                        </div>
-                        <div class="flex justify-between terminal-font opacity-40 text-[9px]">
-                            <span id="time-curr">00:00</span>
-                            <div class="flex gap-4">
-                                <span class="text-white/20">SEQ_MODE:</span>
-                                <span class="text-white">LINEAR_v4</span>
-                            </div>
-                            <span id="time-total">00:00</span>
-                        </div>
+                <!-- HARDWARE CONTROLS -->
+                <div class="flex items-center justify-between">
+                    <div class="flex gap-4">
+                        <button class="btn-hw" onclick="cmd('shuffle')"><i data-lucide="shuffle" class="w-4 h-4"></i></button>
+                        <button class="btn-hw" onclick="cmd('repeat')"><i data-lucide="repeat" class="w-4 h-4"></i></button>
                     </div>
 
-                    <div class="flex items-center justify-between">
-                        <div class="flex gap-4">
-                            <button class="btn-hardware group" onclick="ctrl('shuffle')"><i data-lucide="shuffle" class="w-4 h-4 opacity-40 group-hover:opacity-100"></i></button>
-                            <button class="btn-hardware group" onclick="ctrl('repeat')"><i data-lucide="repeat" class="w-4 h-4 opacity-40 group-hover:opacity-100"></i></button>
-                        </div>
+                    <div class="flex items-center gap-6">
+                        <button class="btn-hw p-8" onclick="cmd('previous')"><i data-lucide="skip-back" class="w-6 h-6"></i></button>
+                        <button id="master-btn" class="w-24 h-24 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)]" onclick="cmd('toggle')">
+                            <i id="play-icon" data-lucide="play" class="w-10 h-10 fill-current"></i>
+                        </button>
+                        <button class="btn-hw p-8" onclick="cmd('next')"><i data-lucide="skip-forward" class="w-6 h-6"></i></button>
+                    </div>
 
-                        <div class="flex items-center gap-6">
-                            <button class="btn-hardware p-8 rounded-3xl" onclick="ctrl('prev')"><i data-lucide="skip-back" class="w-6 h-6"></i></button>
-                            <button id="master-play" class="w-24 h-24 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 transition-all active:scale-90 shadow-[0_0_50px_rgba(255,255,255,0.2)]" onclick="ctrl('toggle')">
-                                <i data-lucide="play" class="w-10 h-10 fill-current ml-1"></i>
-                            </button>
-                            <button class="btn-hardware p-8 rounded-3xl" onclick="ctrl('next')"><i data-lucide="skip-forward" class="w-6 h-6"></i></button>
-                        </div>
-
-                        <div class="flex gap-4">
-                            <button class="btn-hardware group" onclick="toggleMute()"><i data-lucide="volume-2" id="vol-icon" class="w-4 h-4 opacity-40 group-hover:opacity-100"></i></button>
-                            <button class="btn-hardware group" onclick="logout()"><i data-lucide="power" class="w-4 h-4 text-red-500/40 group-hover:text-red-500 transition-colors"></i></button>
-                        </div>
+                    <div class="flex gap-4">
+                        <button class="btn-hw" onclick="logout()"><i data-lucide="power" class="w-4 h-4 text-red-500/50"></i></button>
                     </div>
                 </div>
 
-                <!-- System Logs -->
-                <div class="pt-6 border-t border-white/5 h-20 overflow-hidden relative">
-                    <div id="log-stream" class="terminal-font text-[9px] text-white/20 space-y-1 italic">
-                        <div>>> architect_kernel v96.0.1 initialized...</div>
-                        <div>>> standing by for packet arrival...</div>
-                    </div>
-                    <div class="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-bg to-transparent"></div>
+                <div id="console-logs" class="terminal-text text-[9px] text-white/20 italic pt-6 border-t border-white/5">
+                    >> system_ready...
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- FOOTER -->
-    <footer class="fixed bottom-0 w-full p-10 flex justify-between items-center z-[100] border-t border-white/5">
-        <div class="flex gap-10 terminal-font text-[8px] opacity-20 uppercase tracking-[0.3em]">
-            <span>Latency: 14ms</span>
-            <span>Buffer: 1024kb</span>
-            <span>Enc: Opus_Multichannel</span>
-        </div>
-        <div id="system-status" class="terminal-font text-[8px] opacity-40 uppercase tracking-widest">
-            Awaiting_User_Handshake
-        </div>
-    </footer>
+    <!-- HIDDEN UTILITIES -->
+    <div class="hidden"><iframe id="sc-relay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/293"></iframe></div>
 
     <script>
         /**
-         * X-CLIPSE ARCHITECT ENGINE v.96_ULTRA
-         * Logic: PKCE Auth, Signal Polling, Neural Visualization, DOM Management.
+         * ARCHITECT_OS CORE LOGIC
+         * Handling: Auth Redirection, Spotify API, SoundCloud Widget, & Visuals
          */
 
         const CONFIG = {
             spId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            scId: '6v9CMyiHpBnmD6YcJBITXRpFXKDNtPOd',
-            redirect: 'https://xclipsestudio.xclipsenetworks.com.au/callback.html',
-            scopes: 'user-read-currently-playing user-modify-playback-state user-read-playback-state'
+            redirect: window.location.origin + window.location.pathname,
+            scopes: 'user-read-playback-state user-modify-playback-state user-read-currently-playing'
         };
 
-        const state = {
-            source: localStorage.getItem('active_source'),
+        let state = {
             isPlaying: false,
-            lastId: null,
-            vizInterval: null
+            source: localStorage.getItem('active_source'),
+            token: localStorage.getItem('sp_token'),
+            sc: null
         };
 
-        // --- 1. INITIALIZATION ---
-        lucide.createIcons();
-        SC.initialize({ client_id: CONFIG.scId, redirect_uri: CONFIG.redirect });
-        
-        // Setup visualizer bars
-        const vizContainer = document.getElementById('viz-bars');
-        for(let i=0; i<30; i++) {
-            const bar = document.createElement('div');
-            bar.className = 'w-1 bg-white/20 rounded-full transition-all duration-200';
-            bar.style.height = '4px';
-            vizContainer.appendChild(bar);
-        }
-
-        // --- 2. AUTHENTICATION LOGIC ---
-        document.getElementById('trigger-sc').onclick = () => {
-            log('requesting_soundcloud_handshake');
-            SC.connect().then(() => {
-                localStorage.setItem('active_source', 'sc');
-                state.source = 'sc';
-                transitionToPlayer();
-            }).catch(e => log(`sc_error: ${e.message}`));
-        };
-
-        document.getElementById('trigger-sp').onclick = async () => {
-            log('generating_pkce_payload');
-            const verifier = Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, '0')).join('');
-            localStorage.setItem('sp_verifier', verifier);
+        // --- 1. BOOT SEQUENCE (Your Requested Logic Integration) ---
+        function initSystem() {
+            lucide.createIcons();
+            initNeuralNet();
             
-            const encoder = new TextEncoder();
-            const data = encoder.encode(verifier);
-            const digest = await crypto.subtle.digest('SHA-256', data);
-            const challenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
-                .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+            // Integrate your Hash Handler logic
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            const token = params.get('access_token');
+            
+            if (token) {
+                localStorage.setItem('sp_token', token);
+                localStorage.setItem('active_source', 'sp');
+                window.location.hash = ''; // Clean URL
+                location.reload();
+            } else if (window.opener && window.opener.SC) {
+                window.opener.SC.connectCallback();
+            }
 
-            const url = `https://accounts.spotify.com/authorize?` + new URLSearchParams({
-                client_id: CONFIG.spId,
-                response_type: 'code',
-                redirect_uri: CONFIG.redirect,
-                code_challenge_method: 'S256',
-                code_challenge: challenge,
-                scope: CONFIG.scopes
-            });
+            // Route view based on token existence
+            if (localStorage.getItem('sp_token')) {
+                showPlayer();
+            }
 
-            localStorage.setItem('active_source', 'sp');
-            log('redirecting_to_spotify_gateway');
-            setTimeout(() => window.location.href = url, 1000);
-        };
-
-        // --- 3. UI ENGINE ---
-        function log(msg) {
-            const stream = document.getElementById('log-stream');
-            const div = document.createElement('div');
-            div.innerText = `>> ${new Date().toLocaleTimeString()} | ${msg.toLowerCase()}`;
-            stream.prepend(div);
-            if(stream.children.length > 5) stream.lastElementChild.remove();
+            // Start UI Heartbeat
+            setInterval(updateClock, 1000);
+            if(localStorage.getItem('sp_token')) setInterval(pollSpotify, 1000);
+            
+            // Build visualizer bars
+            const viz = document.getElementById('viz-container');
+            for(let i=0; i<40; i++) {
+                const b = document.createElement('div');
+                b.className = 'v-bar bg-white/20';
+                b.style.height = '4px';
+                viz.appendChild(b);
+            }
         }
 
-        function transitionToPlayer() {
-            gsap.to("#view-gateway", { 
-                opacity: 0, scale: 1.1, y: -50, duration: 1, ease: "power4.inOut",
-                onComplete: () => {
-                    document.getElementById('view-gateway').style.display = 'none';
-                    const player = document.getElementById('view-player');
-                    player.classList.remove('hidden-node');
-                    gsap.to(player, { opacity: 1, scale: 1, y: 0, duration: 1.5, ease: "elastic.out(1, 0.8)" });
-                    startSystemLoop();
-                }
-            });
-            document.getElementById('system-status').innerText = `Sync_Established // ${state.source.toUpperCase()}`;
-        }
-
-        // --- 4. COMMAND & CONTROL ---
-        async function ctrl(action) {
-            log(`hardware_command: ${action}`);
-            const token = localStorage.getItem('sp_token');
-            if(!token && state.source === 'sp') return;
-
-            let endpoint = '';
-            let method = 'POST';
-
-            if(state.source === 'sp') {
-                switch(action) {
-                    case 'next': endpoint = 'next'; break;
-                    case 'prev': endpoint = 'previous'; break;
-                    case 'toggle': 
-                        endpoint = state.isPlaying ? 'pause' : 'play'; 
-                        method = 'PUT'; 
-                        break;
-                }
-
-                await fetch(`https://api.spotify.com/v1/me/player/${endpoint}`, {
-                    method: method,
-                    headers: { 'Authorization': `Bearer ${token}` }
+        // --- 2. AUTHENTICATION ---
+        function login(type) {
+            log(`initiating_${type}_handshake`);
+            if (type === 'sp') {
+                const url = `https://accounts.spotify.com/authorize?client_id=${CONFIG.spId}&response_type=token&redirect_uri=${encodeURIComponent(CONFIG.redirect)}&scope=${encodeURIComponent(CONFIG.scopes)}`;
+                window.location.href = url;
+            } else {
+                SC.initialize({ client_id: 'YOUR_SC_CLIENT_ID', redirect_uri: CONFIG.redirect });
+                SC.connect().then(() => {
+                    localStorage.setItem('active_source', 'sc');
+                    location.reload();
                 });
             }
-            // Trigger feedback
-            gsap.from("#master-play", { scale: 0.8, duration: 0.3, ease: "back.out" });
         }
 
-        // --- 5. SYSTEM LOOP (POLLING & VIZ) ---
-        function startSystemLoop() {
-            setInterval(async () => {
-                // Randomize bars for aesthetic visualizer
-                const bars = document.querySelectorAll('#viz-bars div');
-                bars.forEach(bar => {
-                    gsap.to(bar, { height: Math.random() * 48 + 4, duration: 0.2, backgroundColor: state.isPlaying ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.1)' });
-                });
+        function logout() {
+            localStorage.clear();
+            location.reload();
+        }
 
-                if(state.source === 'sp') {
-                    const token = localStorage.getItem('sp_token');
-                    if(!token) return;
-                    
-                    try {
-                        const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        });
-                        if(res.status === 200) {
-                            const data = await res.json();
-                            updateUI({
-                                title: data.item.name,
-                                artist: data.item.artists[0].name,
-                                art: data.item.album.images[0].url,
-                                progress: (data.progress_ms / data.item.duration_ms) * 100,
-                                playing: data.is_playing,
-                                curr: formatTime(data.progress_ms),
-                                total: formatTime(data.item.duration_ms)
-                            });
-                        }
-                    } catch(e) { log('polling_error: signal_lost'); }
+        // --- 3. UI ENGINE ---
+        function showPlayer() {
+            gsap.to("#gateway", { opacity: 0, y: -50, duration: 1, onComplete: () => {
+                document.getElementById('gateway').classList.add('hidden');
+                const p = document.getElementById('player');
+                p.classList.remove('hidden');
+                gsap.to(p, { opacity: 1, y: 0, duration: 1.5, ease: "expo.out" });
+            }});
+        }
+
+        function log(msg) {
+            const l = document.getElementById('console-logs');
+            l.innerText = `>> ${msg.toLowerCase()}`;
+            gsap.from(l, { opacity: 0, x: -10, duration: 0.3 });
+        }
+
+        // --- 4. PLAYBACK COMMANDS ---
+        async function cmd(action) {
+            log(`exec_hardware_command: ${action}`);
+            const token = localStorage.getItem('sp_token');
+            if(!token) return;
+
+            const headers = { 'Authorization': `Bearer ${token}` };
+            let endpoint = 'https://api.spotify.com/v1/me/player/';
+
+            try {
+                if(action === 'toggle') {
+                    const method = state.isPlaying ? 'pause' : 'play';
+                    await fetch(endpoint + method, { method: 'PUT', headers });
+                } else if(action === 'next' || action === 'previous') {
+                    await fetch(endpoint + action, { method: 'POST', headers });
                 }
-            }, 1000);
+                
+                // Haptic feedback
+                gsap.from("#master-btn", { scale: 0.8, duration: 0.2 });
+                setTimeout(pollSpotify, 300);
+            } catch(e) { log('api_relay_failure'); }
+        }
+
+        // --- 5. DATA POLLING ---
+        async function pollSpotify() {
+            const token = localStorage.getItem('sp_token');
+            try {
+                const res = await fetch('https://api.spotify.com/v1/me/player', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if(res.status === 200) {
+                    const data = await res.json();
+                    updateUI({
+                        title: data.item.name,
+                        artist: data.item.artists[0].name,
+                        art: data.item.album.images[0].url,
+                        progress: (data.progress_ms / data.item.duration_ms) * 100,
+                        playing: data.is_playing,
+                        cur: data.progress_ms,
+                        tot: data.item.duration_ms
+                    });
+                }
+            } catch(e) { console.error("Poll fail", e); }
         }
 
         function updateUI(d) {
-            if(state.lastId !== d.title) {
-                document.getElementById('track-title').innerText = d.title.toUpperCase();
-                document.getElementById('track-artist').innerText = d.artist.toUpperCase();
-                document.getElementById('track-art').style.backgroundImage = `url(${d.art})`;
-                document.getElementById('provider-pill').innerText = `SOURCE: ${state.source.toUpperCase()}`;
-                state.lastId = d.title;
-                log(`packet_decoded: ${d.title}`);
-            }
-            document.getElementById('track-progress').style.width = d.progress + '%';
-            document.getElementById('time-curr').innerText = d.curr;
-            document.getElementById('time-total').innerText = d.total;
-            state.isPlaying = d.playing;
+            document.getElementById('track-name').innerText = d.title;
+            document.getElementById('track-artist').innerText = d.artist;
+            document.getElementById('art').style.backgroundImage = `url(${d.art})`;
+            document.getElementById('progress').style.width = d.progress + '%';
+            document.getElementById('source-tag').innerText = 'SPOTIFY_UPLINK_STABLE';
             
-            const icon = document.querySelector('#master-play i');
+            document.getElementById('time-now').innerText = formatMs(d.cur);
+            document.getElementById('time-end').innerText = formatMs(d.tot);
+            
+            state.isPlaying = d.playing;
+            const icon = document.getElementById('play-icon');
             icon.setAttribute('data-lucide', d.playing ? 'pause' : 'play');
             lucide.createIcons();
+
+            // Animate Viz
+            const bars = document.querySelectorAll('.v-bar');
+            bars.forEach(b => {
+                const h = d.playing ? Math.random() * 50 + 5 : 4;
+                b.style.height = h + 'px';
+                b.style.opacity = d.playing ? '1' : '0.2';
+            });
         }
 
-        function formatTime(ms) {
+        // --- 6. PHYSICS & UTILS ---
+        function initNeuralNet() {
+            const canvas = document.getElementById('neural-net');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let points = [];
+            for(let i=0; i<60; i++) points.push({
+                x: Math.random() * canvas.width, 
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5
+            });
+
+            function draw() {
+                ctx.clearRect(0,0,canvas.width, canvas.height);
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.beginPath();
+                points.forEach((p, i) => {
+                    p.x += p.vx; p.y += p.vy;
+                    if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                    if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                    points.forEach((p2, j) => {
+                        if(i === j) return;
+                        const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                        if(dist < 150) {
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                        }
+                    });
+                });
+                ctx.stroke();
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        function updateClock() {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB', { hour12: false });
+        }
+
+        function formatMs(ms) {
             const m = Math.floor(ms / 60000);
             const s = ((ms % 60000) / 1000).toFixed(0);
             return m + ":" + (s < 10 ? '0' : '') + s;
         }
 
-        // --- 6. CURSOR & CANVAS PHYSICS ---
-        const c1 = document.getElementById('cursor-main');
-        const c2 = document.getElementById('cursor-follower');
+        // Cursor Physics
         document.addEventListener('mousemove', e => {
-            gsap.to(c1, { x: e.clientX - 4, y: e.clientY - 4, duration: 0 });
-            gsap.to(c2, { x: e.clientX - 20, y: e.clientY - 20, duration: 0.15 });
+            gsap.to("#cursor", { x: e.clientX, y: e.clientY, duration: 0 });
+            gsap.to("#cursor-trail", { x: e.clientX - 11, y: e.clientY - 11, duration: 0.15 });
         });
-
-        // Neural Canvas Animation
-        const canvas = document.getElementById('neural-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-
-        function initCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            particles = [];
-            for(let i=0; i<50; i++) particles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                vx: (Math.random() - 0.5) * 0.5,
-                vy: (Math.random() - 0.5) * 0.5
-            });
-        }
-
-        function animateCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-            ctx.beginPath();
-            particles.forEach((p, i) => {
-                p.x += p.vx; p.y += p.vy;
-                if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
-                if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
-                
-                particles.forEach((p2, j) => {
-                    if(i === j) return;
-                    const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                    if(dist < 150) {
-                        ctx.moveTo(p.x, p.y);
-                        ctx.lineTo(p2.x, p2.y);
-                    }
-                });
-            });
-            ctx.stroke();
-            requestAnimationFrame(animateCanvas);
-        }
-
-        // --- 7. RECOVERY ---
-        window.onload = () => {
-            initCanvas();
-            animateCanvas();
-            setInterval(() => {
-                document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB', { hour12: false });
-            }, 1000);
-
-            if(localStorage.getItem('sp_token') || state.source === 'sc') {
-                transitionToPlayer();
-            }
-        };
-
-        function logout() {
-            localStorage.clear();
-            window.location.reload();
-        }
     </script>
 </body>
 </html>
