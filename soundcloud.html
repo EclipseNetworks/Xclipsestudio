@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-CLIPSE | ARCHITECT_OS_SUPREME_v95</title>
+    <title>X-CLIPSE | ARCHITECT_OS_PREMIUM_v98</title>
     
-    <!-- External Dependencies -->
+    <!-- Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://connect.soundcloud.com/sdk/sdk-3.3.2.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -15,415 +15,286 @@
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400;800&family=Space+Grotesk:wght@300;500;700&display=swap');
         
         :root { 
-            --sc: #ff5500; 
-            --sp: #1DB954; 
-            --bg: #050505;
-            --panel: rgba(255, 255, 255, 0.015);
-            --border: rgba(255, 255, 255, 0.07);
+            --sc: #ff5500; --sp: #1DB954; --bg: #020202;
+            --panel: rgba(255, 255, 255, 0.02);
+            --border: rgba(255, 255, 255, 0.08);
             --accent: #ffffff;
         }
 
-        /* --- GLOBAL RESET & SCROLLBAR --- */
         * { cursor: none !important; margin: 0; padding: 0; box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 3px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-
         body { 
-            background: var(--bg); 
-            color: white; 
-            font-family: 'Space Grotesk', sans-serif; 
-            overflow: hidden; 
-            height: 100vh;
-            perspective: 1500px;
+            background: var(--bg); color: white; font-family: 'Space Grotesk', sans-serif; 
+            overflow: hidden; height: 100vh; perspective: 2000px;
         }
 
-        /* --- BACKGROUND ENGINE --- */
+        /* --- ADVANCED BACKGROUND SYSTEM --- */
+        #canvas-bg { position: fixed; inset: 0; z-index: -2; opacity: 0.3; }
         .cyber-grid { 
             position: fixed; inset: 0; 
-            background-image: 
-                linear-gradient(var(--border) 1px, transparent 1px),
-                linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 60px 60px;
-            transform: rotateX(55deg) translateY(-300px) translateZ(-100px);
-            z-index: -2;
-            opacity: 0.1;
-            animation: grid-scroll 40s linear infinite;
+            background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 80px 80px; transform: rotateX(65deg) translateY(-200px);
+            z-index: -1; opacity: 0.1; animation: grid-scroll 60s linear infinite;
         }
+        @keyframes grid-scroll { from { background-position: 0 0; } to { background-position: 0 800px; } }
 
-        .ambient-glow {
-            position: fixed; top: 50%; left: 50%;
-            width: 80vw; height: 80vh;
-            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
-            transform: translate(-50%, -50%);
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        @keyframes grid-scroll {
-            from { background-position: 0 0; }
-            to { background-position: 0 600px; }
-        }
-
-        /* --- GLASS & OS UTILITIES --- */
+        /* --- UI COMPONENTS --- */
         .glass { 
-            background: var(--panel); 
-            backdrop-filter: blur(40px); 
-            border: 1px solid var(--border);
-            transition: border-color 0.4s ease, transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            background: var(--panel); backdrop-filter: blur(50px); 
+            border: 1px solid var(--border); transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
         }
-
-        .terminal-text { 
-            font-family: 'JetBrains Mono', monospace; 
-            font-size: 10px; 
-            letter-spacing: 2px;
-            text-transform: lowercase; 
-        }
-
+        .terminal-text { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; }
+        
         #cursor {
-            width: 10px; height: 10px; 
-            background: white; 
-            position: fixed;
-            border-radius: 50%; 
-            pointer-events: none; 
-            z-index: 10000;
-            box-shadow: 0 0 20px rgba(255,255,255,0.5);
+            width: 12px; height: 12px; background: white; position: fixed;
+            border-radius: 50%; pointer-events: none; z-index: 10000;
+            box-shadow: 0 0 25px rgba(255,255,255,0.8); mix-blend-difference: difference;
         }
 
-        .hidden-node { display: none; opacity: 0; transform: scale(0.95) translateY(30px); }
+        .toggle-active { background: white !important; color: black !important; border-color: white !important; }
+        .hidden-node { display: none; opacity: 0; transform: translateY(50px); }
 
-        /* --- ANIMATIONS --- */
-        .animate-spin-slow { animation: spin 12s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        .v-bar { transition: height 0.15s ease-out; }
+        /* Scanning HUD */
+        .scan-bar {
+            position: absolute; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            z-index: 5; pointer-events: none;
+        }
     </style>
 </head>
 <body>
+    <canvas id="canvas-bg"></canvas>
     <div id="cursor"></div>
     <div class="cyber-grid"></div>
-    <div class="ambient-glow"></div>
 
-    <!-- UI OVERLAY LAYER -->
-    <div class="fixed inset-0 pointer-events-none z-50 border-[20px] border-black/20"></div>
-
-    <!-- TOP NAVIGATION -->
-    <header class="fixed top-0 w-full p-12 flex justify-between items-end z-[60]">
-        <div class="flex items-start gap-6">
-            <div class="flex flex-col">
-                <span class="text-[10px] font-bold tracking-[1.5em] uppercase text-white/40 mb-2">Architect // v.95</span>
-                <h1 class="text-2xl font-light tracking-widest">X-CLIPSE<span class="font-black">STUDIO</span></h1>
+    <!-- UI NAVIGATION -->
+    <header class="fixed top-0 w-full p-12 flex justify-between items-start z-[60]">
+        <div class="flex items-center gap-8">
+            <div class="w-12 h-12 glass flex items-center justify-center rounded-xl rotate-45 border-white/20">
+                <i data-lucide="zap" class="text-white -rotate-45 w-5 h-5"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-[0.4em]">X-CLIPSE<span class="font-light">ARCHITECT</span></h1>
+                <p class="terminal-text text-white/20 text-[7px]">Protocol_v.98_Active</p>
             </div>
         </div>
-        <div class="flex gap-12 terminal-text items-center">
-            <div class="flex flex-col items-end">
-                <span class="text-white/20 uppercase text-[8px] mb-1">Current_Origin</span>
-                <span id="origin-label">GUEST_LINK_REQUIRED</span>
-            </div>
-            <div class="h-8 w-[1px] bg-white/10"></div>
-            <div class="flex flex-col items-end">
-                <span class="text-white/20 uppercase text-[8px] mb-1">System_Clock</span>
-                <span id="clock">00:00:00</span>
-            </div>
+        
+        <!-- AUTO-LOGIN TOGGLE -->
+        <div class="flex items-center gap-6 glass px-6 py-3 rounded-full border-white/5">
+            <span class="terminal-text text-[8px] opacity-40">Auto_Sync</span>
+            <button id="auto-login-toggle" class="w-12 h-6 rounded-full border border-white/20 relative transition-all duration-500">
+                <div id="toggle-knob" class="absolute top-1 left-1 w-4 h-4 bg-white/20 rounded-full transition-all duration-500"></div>
+            </button>
         </div>
     </header>
 
-    <!-- MAIN OS VIEWPORT -->
-    <main class="h-screen flex items-center justify-center px-12 relative overflow-hidden">
+    <!-- MAIN VIEWPORT -->
+    <main class="h-screen flex items-center justify-center px-12 relative">
         
-        <!-- MODULE 01: THE SYNC GATEWAY (The Initial View) -->
-        <section id="sync-hub" class="w-full max-w-5xl">
-            <div class="flex flex-col items-center text-center mb-20">
-                <div class="w-20 h-[1px] bg-white/20 mb-10"></div>
-                <h2 class="text-[15vw] leading-none font-black tracking-tighter opacity-10 select-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">GATEWAY</h2>
-                <h3 class="text-6xl font-light tracking-tighter mb-4 relative z-10">SELECT_PROTOCOL</h3>
-                <p class="terminal-text text-white/30 tracking-[1em] uppercase relative z-10">Network Handshake Authorization</p>
+        <!-- MODULE: SYNC GATEWAY -->
+        <section id="sync-hub" class="w-full max-w-6xl">
+            <div class="text-center mb-24">
+                <h2 class="text-[12vw] font-black opacity-5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none tracking-tighter">AUTHENTICATE</h2>
+                <h3 class="text-7xl font-light tracking-tighter mb-6">CHOOSE_NODE</h3>
+                <div class="flex justify-center items-center gap-4">
+                    <div class="h-[1px] w-12 bg-white/20"></div>
+                    <p class="terminal-text text-white/30">Secure Asset Integration</p>
+                    <div class="h-[1px] w-12 bg-white/20"></div>
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10">
-                <!-- SoundCloud Protocol -->
-                <div id="sc-trigger" class="glass p-12 rounded-[40px] group cursor-pointer hover:bg-white/5 active:scale-95 transition-all">
-                    <div class="flex justify-between items-start mb-20">
-                        <div class="p-4 rounded-2xl bg-white/5 group-hover:bg-[#ff5500] transition-colors duration-500">
-                            <i data-lucide="music-3" class="w-8 h-8 text-white"></i>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div id="sc-trigger" class="glass p-16 rounded-[50px] group cursor-pointer hover:translate-y-[-10px] active:scale-95">
+                    <div class="flex justify-between items-center mb-24">
+                        <div class="p-6 rounded-3xl bg-white/5 group-hover:bg-[#ff5500] transition-all duration-700">
+                            <i data-lucide="music-4" class="w-10 h-10"></i>
                         </div>
-                        <span class="terminal-text opacity-20">01_PROVIDER</span>
+                        <span class="terminal-text opacity-20">Link_01</span>
                     </div>
-                    <h4 class="text-3xl font-bold tracking-tight mb-2">SOUNDCLOUD</h4>
-                    <p class="terminal-text text-white/40">Connect via Secure OAuth Popup Relay[cite: 2]</p>
+                    <h4 class="text-4xl font-bold mb-4">SOUNDCLOUD</h4>
+                    <p class="terminal-text text-white/40 leading-loose">Pop-up Handshake // Direct_Relay</p>
                 </div>
 
-                <!-- Spotify Protocol -->
-                <div id="sp-trigger" class="glass p-12 rounded-[40px] group cursor-pointer hover:bg-white/5 active:scale-95 transition-all">
-                    <div class="flex justify-between items-start mb-20">
-                        <div class="p-4 rounded-2xl bg-white/5 group-hover:bg-[#1DB954] transition-colors duration-500">
-                            <i data-lucide="layers-2" class="w-8 h-8 text-white"></i>
+                <div id="sp-trigger" class="glass p-16 rounded-[50px] group cursor-pointer hover:translate-y-[-10px] active:scale-95">
+                    <div class="flex justify-between items-center mb-24">
+                        <div class="p-6 rounded-3xl bg-white/5 group-hover:bg-[#1DB954] transition-all duration-700">
+                            <i data-lucide="spotify" class="w-10 h-10"></i>
                         </div>
-                        <span class="terminal-text opacity-20">02_PROVIDER</span>
+                        <span class="terminal-text opacity-20">Link_02</span>
                     </div>
-                    <h4 class="text-3xl font-bold tracking-tight mb-2">SPOTIFY</h4>
-                    <p class="terminal-text text-white/40">Authorize via PKCE Redirect Chain</p>
+                    <h4 class="text-4xl font-bold mb-4">SPOTIFY</h4>
+                    <p class="terminal-text text-white/40 leading-loose">OAuth2 PKCE // Redirect_Relay</p>
                 </div>
             </div>
         </section>
 
-        <!-- MODULE 02: THE ARCHITECT PLAYER (Replaces Hub on Success) -->
-        <section id="now-playing-container" class="hidden-node w-full max-w-4xl">
-            <div class="grid grid-cols-12 gap-10 items-center">
-                
-                <!-- Left: Visual Stats -->
-                <div class="col-span-4 flex flex-col gap-6">
-                    <div class="glass p-8 rounded-[30px] text-center">
-                        <div id="track-art" class="w-full aspect-square rounded-2xl bg-white/5 bg-cover bg-center mb-6 border border-white/10 shadow-2xl"></div>
-                        <div id="provider-badge" class="inline-block px-4 py-1 rounded-full border border-white/10 terminal-text text-[8px] uppercase tracking-widest text-white/40">
-                            Source_Detected
-                        </div>
-                    </div>
-                    <div class="glass p-6 rounded-[30px] flex flex-col items-center">
-                        <span class="terminal-text text-[8px] opacity-20 mb-4 uppercase">Network_Signal</span>
-                        <div class="flex gap-1 h-8 items-end">
-                            <div class="v-bar w-1 bg-white h-2"></div><div class="v-bar w-1 bg-white h-5"></div>
-                            <div class="v-bar w-1 bg-white h-8"></div><div class="v-bar w-1 bg-white h-4"></div>
-                            <div class="v-bar w-1 bg-white h-6"></div>
-                        </div>
-                    </div>
+        <!-- MODULE: NOW PLAYING -->
+        <section id="now-playing-container" class="hidden-node w-full max-w-5xl">
+            <div class="grid grid-cols-12 gap-16 items-center">
+                <div class="col-span-5 relative">
+                    <div class="scan-bar" id="hud-scan"></div>
+                    <div id="track-art" class="w-full aspect-square rounded-[60px] bg-white/5 bg-cover bg-center border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative z-10"></div>
+                    <div class="absolute -bottom-10 -right-10 w-40 h-40 border border-white/5 rounded-full animate-spin-slow"></div>
                 </div>
 
-                <!-- Right: Meta Data & Controls -->
-                <div class="col-span-8 space-y-12">
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-3">
-                            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                            <span class="terminal-text text-[9px] opacity-40 uppercase tracking-[0.5em]">Active_Sync_Stream</span>
-                        </div>
-                        <h2 id="track-title" class="text-7xl font-bold tracking-tighter leading-none">INITIALIZING...</h2>
-                        <p id="track-artist" class="text-2xl font-light opacity-30 tracking-wide uppercase">SIGNAL_SEARCHING</p>
-                    </div>
-
+                <div class="col-span-7 space-y-12">
                     <div class="space-y-6">
-                        <div class="w-full h-[1px] bg-white/10 relative overflow-hidden">
-                            <div id="track-progress" class="absolute top-0 left-0 h-full bg-white w-0 transition-all duration-1000"></div>
+                        <div class="flex items-center gap-4">
+                            <div class="px-3 py-1 rounded border border-green-500/50 text-[8px] text-green-500 terminal-text animate-pulse">Live_Signal</div>
+                            <span id="provider-name" class="terminal-text text-white/30 text-[9px]">Awaiting_Link</span>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <div class="flex gap-6">
-                                <i data-lucide="skip-back" class="w-5 h-5 opacity-20 hover:opacity-100 transition cursor-pointer"></i>
-                                <i data-lucide="play-circle" class="w-5 h-5 text-white cursor-pointer"></i>
-                                <i data-lucide="skip-forward" class="w-5 h-5 opacity-20 hover:opacity-100 transition cursor-pointer"></i>
-                            </div>
-                            <span class="terminal-text text-[10px] opacity-40" id="time-display">00:00 / LIVE</span>
-                        </div>
+                        <h2 id="track-title" class="text-8xl font-black tracking-tighter leading-none">IDLE</h2>
+                        <p id="track-artist" class="text-3xl font-light text-white/40 uppercase tracking-widest">Searching_Frequencies</p>
                     </div>
 
-                    <!-- Logs Layer -->
-                    <div class="pt-10 border-t border-white/5">
-                        <div id="mini-logs" class="terminal-text text-white/20 italic leading-relaxed">
-                            >> kernel: established link with asset server. decoding packet_v4...[cite: 3]
+                    <div class="w-full h-1 bg-white/5 relative rounded-full overflow-hidden">
+                        <div id="track-progress" class="absolute top-0 left-0 h-full bg-white w-0 transition-all duration-1000"></div>
+                    </div>
+
+                    <div class="pt-12 border-t border-white/5 flex justify-between items-center">
+                        <div id="mini-logs" class="terminal-text text-[10px] text-white/20 italic">
+                            >> standing_by... handshake_protocol_pending
                         </div>
+                        <button id="logout-btn" class="glass px-6 py-3 rounded-full text-[8px] terminal-text hover:bg-red-500/20 border-white/10 transition-all">Disconnect</button>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- FOOTER STATUS BAR -->
-    <footer class="fixed bottom-0 w-full p-10 flex justify-between items-center z-[60] border-t border-white/5">
-        <div class="flex gap-10 terminal-text text-[8px] opacity-30 uppercase">
-            <span>Lat: -34.92 // Lon: 138.62</span>
-            <span>Security: AES-256_ACTIVE</span>
-        </div>
-        <div class="flex items-center gap-4">
-            <span class="terminal-text text-[8px] opacity-30 uppercase">System_Healthy</span>
-            <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
-        </div>
+    <footer class="fixed bottom-0 w-full p-12 flex justify-between terminal-text text-[8px] opacity-20">
+        <span>X-CLIPSE_CORE_SYSTEM_AUTHORIZED</span>
+        <span>©2026_ARCHITECT_v.98</span>
     </footer>
 
     <script>
         /**
-         * X-CLIPSE ARCHITECT OS ENGINE v.95
-         * Components: State Manager, Auth Relay, Motion Physics.
+         * X-CLIPSE OS ENGINE v.98
+         * Features: PKCE Auth, State Persistence, UI Motion, User Preference Logic.
          */
 
-        // --- GLOBAL CONFIGURATION ---
         const CONFIG = {
             scId: '6v9CMyiHpBnmD6YcJBITXRpFXKDNtPOd',
             spId: 'ee9cf7fe920d4280804730690b3fb4e8',
             redirect: 'https://xclipsestudio.xclipsenetworks.com.au/callback.html'
         };
 
-        const state = {
-            activeSource: localStorage.getItem('active_source') || null,
-            isSyncing: false,
-            lastTrack: null
+        let autoLogin = localStorage.getItem('auto_login') === 'true';
+
+        // 1. Initial State Check
+        function initSystem() {
+            lucide.createIcons();
+            SC.initialize({ client_id: CONFIG.scId, redirect_uri: CONFIG.redirect });
+            
+            // UI Toggle State
+            if (autoLogin) {
+                document.getElementById('toggle-knob').style.left = '24px';
+                document.getElementById('auto-login-toggle').classList.add('toggle-active');
+            }
+
+            // Persistence Recovery
+            if (autoLogin && (localStorage.getItem('sp_token') || localStorage.getItem('sc_linked'))) {
+                transitionToPlayer();
+            }
+        }
+
+        // 2. Auth Preference Handler
+        document.getElementById('auto-login-toggle').onclick = () => {
+            autoLogin = !autoLogin;
+            localStorage.setItem('auto_login', autoLogin);
+            
+            gsap.to('#toggle-knob', { left: autoLogin ? '24px' : '4px', duration: 0.4 });
+            document.getElementById('auto-login-toggle').classList.toggle('toggle-active');
+            sysLog(`Auto_Sync: ${autoLogin ? 'ENABLED' : 'DISABLED'}`);
         };
 
-        // --- INITIALIZATION ---
-        lucide.createIcons();
-        SC.initialize({ client_id: CONFIG.scId, redirect_uri: CONFIG.redirect });
-
-        // --- CURSOR PHYSICS ENGINE ---
-        const cursor = document.getElementById('cursor');
-        document.addEventListener('mousemove', e => {
-            gsap.to(cursor, { 
-                x: e.clientX - 5, 
-                y: e.clientY - 5, 
-                duration: 0.15,
-                ease: "power2.out"
-            });
-        });
-
-        // --- UI UTILITY FUNCTIONS ---
-        function sysLog(msg) {
-            const logEl = document.getElementById('mini-logs');
-            logEl.innerText = `>> ${msg.toLowerCase()}`;
-            gsap.fromTo(logEl, { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.5 });
-        }
-
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB', { hour12: false });
-        }
-        setInterval(updateClock, 1000);
-
-        // --- THE GREAT TRANSITION ENGINE ---
-        function activatePlayer() {
-            sysLog("reconfiguring_ui: swapping_gateway_for_observer...");
-            
-            const tl = gsap.timeline();
-            
-            tl.to("#sync-hub", { 
-                opacity: 0, 
-                scale: 1.1, 
-                filter: "blur(20px)",
-                duration: 1, 
-                ease: "power4.inOut",
-                onComplete: () => document.getElementById('sync-hub').style.display = 'none'
-            });
-
-            tl.to("#now-playing-container", { 
-                display: 'block', 
-                opacity: 1, 
-                scale: 1, 
-                y: 0, 
-                duration: 1.5, 
-                ease: "elastic.out(1, 0.9)" 
-            });
-
-            startLivePolling();
-        }
-
-        // --- AUTH PROTOCOL HANDLERS ---
+        // 3. Handshake Triggers
         document.getElementById('sc-trigger').onclick = () => {
-            sysLog("requesting_soundcloud_handshake...");
+            sysLog("Initializing SoundCloud Node...");
             SC.connect().then(() => {
+                localStorage.setItem('sc_linked', 'true');
                 localStorage.setItem('active_source', 'sc');
-                state.activeSource = 'sc';
-                activatePlayer();
-            }).catch(err => sysLog(`fault: ${err.message}`));
+                transitionToPlayer();
+            }).catch(e => sysLog(`Fault: ${e.message}`));
         };
 
         document.getElementById('sp-trigger').onclick = async () => {
-            sysLog("generating_pkce_cryptochain...");
+            sysLog("Generating PKCE Chain...");
             localStorage.setItem('return_to', window.location.href);
             localStorage.setItem('active_source', 'sp');
 
             const verifier = Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, '0')).join('');
             localStorage.setItem('sp_verifier', verifier);
-            
             const encoder = new TextEncoder();
             const data = encoder.encode(verifier);
             const digest = await crypto.subtle.digest('SHA-256', data);
-            const challenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
-                .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+            const challenge = btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
             const url = `https://accounts.spotify.com/authorize?` + new URLSearchParams({
-                client_id: CONFIG.spId,
-                response_type: 'code',
-                redirect_uri: CONFIG.redirect,
-                code_challenge_method: 'S256',
-                code_challenge: challenge,
-                scope: 'user-read-currently-playing user-read-private'
+                client_id: CONFIG.spId, response_type: 'code', redirect_uri: CONFIG.redirect,
+                code_challenge_method: 'S256', code_challenge: challenge,
+                scope: 'user-read-currently-playing'
             });
-            
-            setTimeout(() => window.location.href = url, 800);
+            window.location.href = url;
         };
 
-        // --- LIVE POLLING & SIGNAL ENGINE ---
-        function startLivePolling() {
-            sysLog("live_polling_engaged: target_frequency_0.33hz");
-            
-            setInterval(async () => {
-                // Animate Visualizer Bars randomly to simulate activity
-                gsap.to(".v-bar", { 
-                    height: () => Math.random() * 32 + 4, 
-                    duration: 0.2, 
-                    stagger: 0.05 
-                });
+        // 4. UI Transition Engine
+        function transitionToPlayer() {
+            const tl = gsap.timeline();
+            tl.to("#sync-hub", { opacity: 0, y: -40, duration: 0.8, ease: "power4.in", onComplete: () => {
+                document.getElementById('sync-hub').style.display = 'none';
+            }});
+            tl.to("#now-playing-container", { display: 'block', opacity: 1, y: 0, duration: 1, ease: "expo.out" });
+            gsap.to("#hud-scan", { top: '100%', duration: 3, repeat: -1, ease: "none" });
+            startObserver();
+        }
 
-                if (state.activeSource === 'sp') {
+        // 5. Signal Observer (Live Polling)
+        function startObserver() {
+            setInterval(async () => {
+                const source = localStorage.getItem('active_source');
+                if (source === 'sp') {
                     const token = localStorage.getItem('sp_token');
                     if (!token) return;
-
                     try {
                         const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
-
                         if (res.status === 200) {
                             const data = await res.json();
-                            updateUI(
-                                data.item.name, 
-                                data.item.artists[0].name, 
-                                data.item.album.images[0].url, 
-                                (data.progress_ms / data.item.duration_ms) * 100,
-                                'SPOTIFY'
-                            );
+                            updateUI(data.item.name, data.item.artists[0].name, data.item.album.images[0].url, (data.progress_ms/data.item.duration_ms)*100, 'Spotify');
                         }
-                    } catch (e) { sysLog("signal_interrupted: check_connection"); }
-
-                } else if (state.activeSource === 'sc') {
+                    } catch(e) {}
+                } else if (source === 'sc') {
                     try {
                         const me = await SC.get('/me');
-                        const activities = await SC.get(`/users/${me.id}/favorites`, { limit: 1 });
-                        if (activities[0]) {
-                            updateUI(
-                                activities[0].title, 
-                                activities[0].user.username, 
-                                activities[0].artwork_url.replace('large', 't500x500'), 
-                                50, 
-                                'SOUNDCLOUD'
-                            );
-                        }
-                    } catch (e) { sysLog("handshake_expired: relink_required"); }
+                        const favs = await SC.get(`/users/${me.id}/favorites`, { limit: 1 });
+                        if(favs[0]) updateUI(favs[0].title, favs[0].user.username, favs[0].artwork_url.replace('large', 't500x500'), 50, 'SoundCloud');
+                    } catch(e) {}
                 }
             }, 3000);
         }
 
-        function updateUI(title, artist, art, progress, provider) {
-            const titleEl = document.getElementById('track-title');
-            if (titleEl.innerText !== title.toUpperCase()) {
-                titleEl.innerText = title.toUpperCase();
-                document.getElementById('track-artist').innerText = artist.toUpperCase();
-                document.getElementById('track-art').style.backgroundImage = `url(${art})`;
-                document.getElementById('provider-badge').innerText = `SOURCE: ${provider}`;
-                document.getElementById('origin-label').innerText = `${provider}_CONNECTED`;
-                
-                // Color Shift Based on Provider
-                const color = provider === 'SPOTIFY' ? '#1DB954' : '#ff5500';
-                gsap.to("#track-progress", { backgroundColor: color, duration: 1 });
-                
-                sysLog(`new_packet_received: ${title}`);
-            }
-            document.getElementById('track-progress').style.width = `${progress}%`;
+        function updateUI(title, artist, art, prog, source) {
+            document.getElementById('track-title').innerText = title.toUpperCase();
+            document.getElementById('track-artist').innerText = artist.toUpperCase();
+            document.getElementById('track-art').style.backgroundImage = `url(${art})`;
+            document.getElementById('track-progress').style.width = `${prog}%`;
+            document.getElementById('provider-name').innerText = `${source}_Linked`.toUpperCase();
         }
 
-        // --- RECOVERY LOGIC ---
-        window.onload = () => {
-            updateClock();
-            if (localStorage.getItem('sp_token') || state.activeSource === 'sc') {
-                state.activeSource = localStorage.getItem('active_source');
-                activatePlayer();
-            }
+        // 6. Logout Logic
+        document.getElementById('logout-btn').onclick = () => {
+            localStorage.clear();
+            window.location.reload();
         };
+
+        // UI Utility
+        function sysLog(m) { document.getElementById('mini-logs').innerText = `>> ${m.toLowerCase()}`; }
+        
+        // Cursor Engine
+        document.addEventListener('mousemove', e => { gsap.to("#cursor", { x: e.clientX, y: e.clientY, duration: 0.1 }); });
+
+        initSystem();
     </script>
 </body>
 </html>
