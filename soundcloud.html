@@ -152,7 +152,7 @@
         }
 
         function triggerRedirect() {
-            const url = `https://accounts.spotify.com/authorize?client_id=${CONFIG.clientId}&response_type=token&redirect_uri=${encodeURIComponent(CONFIG.redirect)}&scope=${encodeURIComponent(CONFIG.scope)}`;
+            const url = `https://accounts.spotify.com/authorize?ee9cf7fe920d4280804730690b3fb4e8=${CONFIG.clientId}&response_type=token&redirect_uri=${encodeURIComponent(CONFIG.redirect)}&scope=${encodeURIComponent(CONFIG.scope)}`;
             
             gsap.to("body", { 
                 opacity: 0, 
