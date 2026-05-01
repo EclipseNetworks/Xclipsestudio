@@ -3,34 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-CLIPSE | SYSTEM_ENTRY</title>
+    <title>X-CLIPSE | ARCHITECT_OS</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
-        body { background: #020202; color: white; font-family: sans-serif; overflow: hidden; }
-        .hero-text { font-size: clamp(3rem, 15vw, 10rem); font-weight: 900; letter-spacing: -0.05em; }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400&family=Space+Grotesk:wght@300;800&display=swap');
+        :root { --bg: #020202; --accent: #ffffff; }
+        body { background: var(--bg); color: white; font-family: 'Space Grotesk', sans-serif; overflow: hidden; height: 100vh; }
+        .terminal { font-family: 'JetBrains Mono', monospace; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        #bg-canvas { position: fixed; inset: 0; z-index: -1; opacity: 0.2; }
     </style>
 </head>
-<body class="flex items-center justify-center h-screen">
-    <div class="text-center space-y-8">
-        <h1 class="hero-text italic uppercase">XCLIPSE</h1>
-        <button onclick="initiateAuth()" class="px-12 py-6 rounded-full border border-white/20 hover:bg-white hover:text-black transition-all font-mono text-xs tracking-widest">
-            INITIALIZE_SYSTEM
+<body onload="initSystem()">
+
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- UI LAYER: LOGIN (Visible if no code) -->
+    <div id="view-login" class="flex flex-col items-center justify-center h-screen space-y-12 transition-all duration-1000">
+        <div class="text-center">
+            <p class="terminal text-[10px] tracking-[1em] opacity-20 mb-2">SYSTEM_ENTRY_REQUIRED</p>
+            <h1 class="text-8xl font-black italic uppercase tracking-tighter">XCLIPSE</h1>
+        </div>
+        <button onclick="triggerSpotifyAuth()" class="px-16 py-8 rounded-full glass border border-white/10 hover:bg-white hover:text-black transition-all flex items-center gap-4 group">
+            <i data-lucide="power" class="w-5 h-5 group-hover:rotate-90 transition-transform"></i>
+            <span class="terminal text-xs font-bold">INITIALIZE_KERNEL</span>
+        </button>
+    </div>
+
+    <!-- UI LAYER: PLAYER (Visible if code exists) -->
+    <div id="view-player" class="hidden flex-col items-center justify-center h-screen space-y-6">
+        <div class="glass p-12 rounded-[60px] text-center space-y-4">
+            <div id="status-dot" class="w-2 h-2 rounded-full bg-green-500 mx-auto animate-pulse"></div>
+            <h2 class="terminal text-xs tracking-widest">UPLINK_ESTABLISHED</h2>
+            <p class="text-4xl font-light opacity-50 italic">System Ready.</p>
+        </div>
+        <div class="terminal text-[9px] opacity-20">AUTH_CODE_CAPTURED // REDIRECT_SUCCESS</div>
+        
+        <!-- FORCE REFRESH BUTTON (From your request) -->
+        <button id="gh-sync-btn" onclick="forceSystemRefresh()" class="mt-8 group p-4 rounded-2xl glass hover:bg-white/10 transition-all border border-white/5">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
         </button>
     </div>
 
     <script>
-        function initiateAuth() {
-            const client_id = 'ee9cf7fe920d4280804730690b3fb4e8';
-            const redirect_uri = 'https://xclipsestudio.xclipsenetworks.com.au/soundcloud';
-            const scope = 'user-modify-playback-state user-read-playback-state user-read-currently-playing';
-            
-            // Building URL manually to ensure no hidden character encoding issues
-            const authUrl = `https://accounts.spotify.com/authorize?client_id=${client_id}&response_type=code&redirect_uri=${encodeURIComponent(redirect_uri)}&scope=${encodeURIComponent(scope)}&show_dialog=true`;
+        const CONFIG = {
+            clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
+            // Since this file IS the index, the redirect is itself
+            redirect: 'https://xclipsestudio.xclipsenetworks.com.au/soundcloud.html',
+            scope: 'user-modify-playback-state user-read-playback-state user-read-currently-playing',
+            github: { user: 'EclipseNetworks', repo: 'Xclipsestudio', branch: 'main' }
+        };
+
+        // --- 1. SYSTEM INITIALIZATION ---
+        async function initSystem() {
+            lucide.createIcons();
+            initBackground();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const error = urlParams.get('error');
+
+            if (code) {
+                // We have returned from Spotify!
+                showPlayerView();
+                localStorage.setItem('sp_auth_code', code);
+                // Clean the URL so the code doesn't stay in the bar
+                window.history.replaceState({}, document.title, "/soundcloud.html");
+            } else if (error) {
+                console.error("Spotify Auth Error:", error);
+                alert("Auth Error: " + error);
+            }
+
+            // Start GitHub Watcher
+            setInterval(checkGitHubUpdate, 30000);
+        }
+
+        // --- 2. VIEW SWITCHING ---
+        function showPlayerView() {
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-player').classList.remove('hidden');
+            gsap.from("#view-player", { opacity: 0, y: 20, duration: 1 });
+        }
+
+        // --- 3. SPOTIFY HANDSHAKE ---
+        function triggerSpotifyAuth() {
+            const authUrl = new URL("https://accounts.spotify.com/authorize");
+            authUrl.searchParams.append('client_id', CONFIG.clientId);
+            authUrl.searchParams.append('response_type', 'code');
+            authUrl.searchParams.append('redirect_uri', CONFIG.redirect);
+            authUrl.searchParams.append('scope', CONFIG.scope);
+            authUrl.searchParams.append('show_dialog', 'true');
 
             gsap.to("body", { opacity: 0, duration: 0.5, onComplete: () => {
-                window.location.href = authUrl;
+                window.location.href = authUrl.toString();
             }});
+        }
+
+        // --- 4. GITHUB REFRESH LOGIC ---
+        let lastSha = null;
+        async function checkGitHubUpdate() {
+            try {
+                const res = await fetch(`https://api.github.com/repos/${CONFIG.github.user}/${CONFIG.github.repo}/commits/${CONFIG.github.branch}`);
+                const data = await res.json();
+                if (lastSha && data.sha !== lastSha) {
+                    window.location.reload();
+                }
+                lastSha = data.sha;
+            } catch (e) { console.log("GH_Check_Failed"); }
+        }
+
+        function forceSystemRefresh() {
+            const btn = document.getElementById('gh-sync-btn');
+            gsap.to(btn, { rotation: "+=360", duration: 1 });
+            checkGitHubUpdate();
+        }
+
+        // --- 5. VISUALS ---
+        function initBackground() {
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            let p = [];
+            for(let i=0; i<50; i++) p.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, vx:(Math.random()-0.5)*0.5, vy:(Math.random()-0.5)*0.5});
+            function draw() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                ctx.strokeStyle="rgba(255,255,255,0.05)"; ctx.beginPath();
+                p.forEach(d => {
+                    d.x+=d.vx; d.y+=d.vy;
+                    if(d.x<0||d.x>canvas.width) d.vx*=-1; if(d.y<0||d.y>canvas.height) d.vy*=-1;
+                    p.forEach(d2 => { if(Math.hypot(d.x-d2.x, d.y-d2.y)<150) { ctx.moveTo(d.x, d.y); ctx.lineTo(d2.x, d2.y); }});
+                });
+                ctx.stroke(); requestAnimationFrame(draw);
+            }
+            draw();
         }
     </script>
 </body>
