@@ -6,45 +6,30 @@
     <title>X-CLIPSE | SYSTEM_ENTRY</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400&family=Space+Grotesk:wght@300;800&display=swap');
-        body { background: #020202; color: white; font-family: 'Space Grotesk', sans-serif; overflow: hidden; height: 100vh; }
-        .terminal { font-family: 'JetBrains Mono', monospace; }
-        .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .hero-text { font-size: clamp(3rem, 15vw, 10rem); line-height: 0.8; letter-spacing: -0.05em; }
+        body { background: #020202; color: white; font-family: sans-serif; overflow: hidden; }
+        .hero-text { font-size: clamp(3rem, 15vw, 10rem); font-weight: 900; letter-spacing: -0.05em; }
     </style>
 </head>
-<body class="flex items-center justify-center">
-
-    <div class="relative z-10 text-center space-y-12">
-        <h1 class="hero-text font-black italic uppercase">XCLIPSE</h1>
-        <button onclick="initiateSystem()" class="px-16 py-8 rounded-full glass-panel border border-white/10 hover:bg-white hover:text-black transition-all group">
-            <span class="terminal text-xs tracking-widest font-bold">INITIALIZE_HANDSHAKE</span>
+<body class="flex items-center justify-center h-screen">
+    <div class="text-center space-y-8">
+        <h1 class="hero-text italic uppercase">XCLIPSE</h1>
+        <button onclick="initiateAuth()" class="px-12 py-6 rounded-full border border-white/20 hover:bg-white hover:text-black transition-all font-mono text-xs tracking-widest">
+            INITIALIZE_SYSTEM
         </button>
-        <div id="status" class="terminal text-[8px] opacity-0 transition-opacity">REDIRECTING_TO_AUTH...</div>
     </div>
 
     <script>
-        const CONFIG = {
-            clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            // MUST match your dashboard exactly
-            redirect: 'https://xclipsestudio.xclipsenetworks.com.au/soundcloud',
-            scope: 'user-modify-playback-state user-read-playback-state user-read-currently-playing'
-        };
-
-        function initiateSystem() {
-            document.getElementById('status').classList.remove('opacity-0');
+        function initiateAuth() {
+            const client_id = 'ee9cf7fe920d4280804730690b3fb4e8';
+            const redirect_uri = 'https://xclipsestudio.xclipsenetworks.com.au/soundcloud';
+            const scope = 'user-modify-playback-state user-read-playback-state user-read-currently-playing';
             
-            const authUrl = new URL("https://accounts.spotify.com/authorize");
-            authUrl.searchParams.append('client_id', CONFIG.clientId);
-            authUrl.searchParams.append('response_type', 'code');
-            authUrl.searchParams.append('redirect_uri', CONFIG.redirect);
-            authUrl.searchParams.append('scope', CONFIG.scope);
-            authUrl.searchParams.append('show_dialog', 'true');
+            // Building URL manually to ensure no hidden character encoding issues
+            const authUrl = `https://accounts.spotify.com/authorize?client_id=${client_id}&response_type=code&redirect_uri=${encodeURIComponent(redirect_uri)}&scope=${encodeURIComponent(scope)}&show_dialog=true`;
 
-            gsap.to("body", { opacity: 0, duration: 0.8, onComplete: () => {
-                window.location.href = authUrl.toString();
+            gsap.to("body", { opacity: 0, duration: 0.5, onComplete: () => {
+                window.location.href = authUrl;
             }});
         }
     </script>
