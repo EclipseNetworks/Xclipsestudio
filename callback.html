@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>XCLIPSE | ARCHITECT_SYNC_v84</title>
+    <title>XCLIPSE | DUAL_ARCHITECT_SYNC_v85</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400;800&family=Inter:wght@900&display=swap" rel="stylesheet">
     <style>
@@ -16,7 +16,8 @@
         .ts { opacity: 0.2; }
         .tag { font-weight: 800; min-width: 80px; }
         .tag-sys { color: #5b5bff; }
-        .tag-auth { color: #1DB954; }
+        .tag-sc { color: #ff5500; } /* SoundCloud Orange */
+        .tag-sp { color: #1DB954; } /* Spotify Green */
         .tag-err { color: #ff3333; }
         @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; } }
         @keyframes slideIn { from { transform: translateX(10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -25,20 +26,16 @@
 <body>
     <div class="grid-bg"></div>
     <main class="main-ui">
-        <div class="status-header">Protocol_Synchronizing</div>
+        <div class="status-header">Dual_Protocol_Sync_Active</div>
         <div id="terminal"></div>
-        <div class="mt-20 text-[8px] tracking-[3em] opacity-10 font-black">ARCHITECT_OS_CORE_v84</div>
+        <div class="mt-20 text-[8px] tracking-[3em] opacity-10 font-black">ARCHITECT_OS_CORE_v85</div>
     </main>
 
     <script>
-        /**
-         * --- MASTER SYNC CLASS ---
-         * Provides unified authentication for all future Xclipse Modules.
-         */
-        class SyncProtocol {
+        class DualSyncProtocol {
             constructor() {
                 this.config = {
-                    clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
+                    spotifyId: 'ee9cf7fe920d4280804730690b3fb4e8',
                     redirectUri: 'https://xclipsestudio.xclipsenetworks.com.au/callback.html'
                 };
                 this.term = document.getElementById('terminal');
@@ -53,58 +50,75 @@
             }
 
             async execute() {
-                this.log("SYS", "Initializing Xclipse_Exchange_Protocol...");
+                this.log("SYS", "Initializing Xclipse_Multi_Vendor_Exchange...");
                 
-                // Aesthetic Memory Sweep
-                for(let i=0; i<300; i+=20) {
-                    await new Promise(r => setTimeout(r, 10));
-                    this.log("HW", `Validating Registry Sector 0x${i.toString(16).toUpperCase()}... OK`);
-                }
-
                 const urlParams = new URLSearchParams(window.location.search);
                 const code = urlParams.get('code');
-                const verifier = localStorage.getItem('sp_verifier');
+                const state = urlParams.get('state');
 
-                if (!code || !verifier) {
-                    this.log("ERR", "FAULT: PKCE_CHAIN_BROKEN or TIMEOUT.", "err");
-                    return;
+                // --- SOUNDCLOUD GATE ---
+                // SoundCloud usually opens in a popup and expects window.opener to exist
+                if (window.opener && !code) {
+                    this.log("SC", "SoundCloud Handshake Detected.");
+                    this.log("SC", "Relaying connectCallback to Parent Window...");
+                    try {
+                        window.opener.SC.connectCallback();
+                        this.log("SC", "Handshake Relayed Successfully.", "sc");
+                        // Close popup if it's SoundCloud
+                        setTimeout(() => window.close(), 1000);
+                        return;
+                    } catch (e) {
+                        this.log("ERR", "Parent Window Connection Refused.", "err");
+                    }
                 }
 
-                this.log("AUTH", "Chain Verified. Attempting Token Exchange...");
+                // --- SPOTIFY GATE ---
+                if (code) {
+                    this.log("SP", "Spotify Auth Code Detected.");
+                    const verifier = localStorage.getItem('sp_verifier');
 
-                try {
-                    const response = await fetch('https://accounts.spotify.com/api/token', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({
-                            client_id: this.config.clientId,
-                            grant_type: 'authorization_code',
-                            code: code,
-                            redirect_uri: this.config.redirectUri,
-                            code_verifier: verifier
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (data.access_token) {
-                        this.log("AUTH", "SUCCESS: Token_Acquired // Global_State_Active", "auth");
-                        localStorage.setItem('sp_token', data.access_token);
-                        localStorage.setItem('sp_refresh', data.refresh_token);
-                        localStorage.removeItem('sp_verifier'); // Cleanup
-
-                        setTimeout(() => { window.location.href = 'shh.html'; }, 1500);
-                    } else {
-                        this.log("ERR", `DENIED: ${data.error_description || data.error}`, "err");
+                    if (!verifier) {
+                        this.log("ERR", "FAULT: PKCE_VERIFIER_LOST. Session invalid.", "err");
+                        return;
                     }
-                } catch (e) {
-                    this.log("ERR", "NETWORK_FAULT: Protocol Connection Refused.", "err");
+
+                    this.log("SP", "Attempting Spotify Token Exchange...");
+
+                    try {
+                        const response = await fetch('https://accounts.spotify.com/api/token', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: new URLSearchParams({
+                                client_id: this.config.spotifyId,
+                                grant_type: 'authorization_code',
+                                code: code,
+                                redirect_uri: this.config.redirectUri,
+                                code_verifier: verifier
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.access_token) {
+                            this.log("SP", "SUCCESS: Spotify_Token_Vaulted", "sp");
+                            localStorage.setItem('sp_token', data.access_token);
+                            localStorage.setItem('sp_refresh', data.refresh_token);
+                            localStorage.removeItem('sp_verifier');
+
+                            setTimeout(() => { window.location.href = 'shh.html'; }, 1500);
+                        } else {
+                            this.log("ERR", `SP_DENIED: ${data.error_description || data.error}`, "err");
+                        }
+                    } catch (e) {
+                        this.log("ERR", "NETWORK_FAULT: Spotify Peer Refused.", "err");
+                    }
+                } else {
+                    this.log("SYS", "Awaiting Active Protocol Signal...");
                 }
             }
         }
 
-        // AUTO-INITIATE
-        window.onload = () => { new SyncProtocol().execute(); };
+        window.onload = () => { new DualSyncProtocol().execute(); };
     </script>
 </body>
 </html>
