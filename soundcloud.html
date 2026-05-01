@@ -3,317 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-CLIPSE | ARCHITECT_OS_v101</title>
+    <title>X-CLIPSE | SYSTEM_ENTRY</title>
     
-    <!-- CORE SYSTEM DEPENDENCIES -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://connect.soundcloud.com/sdk/sdk-3.3.2.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400;800&family=Space+Grotesk:wght@300;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400&family=Space+Grotesk:wght@300;800&display=swap');
         
-        :root { 
-            --bg: #010101;
-            --panel: rgba(255, 255, 255, 0.02);
-            --border: rgba(255, 255, 255, 0.08);
+        :root {
+            --bg: #020202;
             --accent: #ffffff;
-            --spotify: #1DB954;
+            --low-white: rgba(255, 255, 255, 0.03);
         }
 
-        * { cursor: none !important; margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: var(--bg); color: white; font-family: 'Space Grotesk', sans-serif; 
-            overflow: hidden; height: 100vh;
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden;
+            height: 100vh;
         }
 
-        /* --- UI COMPONENTS --- */
-        .glass { background: var(--panel); backdrop-filter: blur(50px); border: 1px solid var(--border); }
-        .terminal { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
+        .terminal { font-family: 'JetBrains Mono', monospace; }
 
-        #cursor-dot {
-            width: 6px; height: 6px; background: white; position: fixed;
-            border-radius: 50%; pointer-events: none; z-index: 10000;
-            box-shadow: 0 0 15px white;
+        /* --- STYLIZED UI --- */
+        .scan-overlay {
+            position: fixed; inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none; z-index: 100;
         }
 
-        #cursor-ring {
-            width: 34px; height: 34px; border: 1px solid rgba(255,255,255,0.15);
-            position: fixed; border-radius: 50%; pointer-events: none; z-index: 9999;
+        .glass-panel {
+            background: var(--low-white);
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 50px 100px rgba(0,0,0,0.8);
         }
 
-        .btn-hw {
-            @apply p-7 rounded-[24px] bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all active:scale-90 flex items-center justify-center;
+        .hero-text {
+            font-size: clamp(3rem, 15vw, 12rem);
+            line-height: 0.8;
+            letter-spacing: -0.05em;
         }
 
-        /* --- BACKGROUND PARTICLES --- */
-        #bg-canvas { position: fixed; inset: 0; z-index: -1; opacity: 0.2; }
-
-        @keyframes pulse-sync {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 1; transform: scale(1.1); }
+        .power-btn {
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .sync-active { animation: pulse-sync 2s infinite; }
+
+        .power-btn:hover {
+            transform: scale(1.05);
+            background: white;
+            color: black;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.2);
+        }
+
+        #bg-canvas {
+            position: fixed; inset: 0; z-index: -1;
+            opacity: 0.3;
+        }
     </style>
 </head>
-<body onload="bootSystem()">
+<body class="flex items-center justify-center">
 
-    <div id="cursor-dot"></div>
-    <div id="cursor-ring"></div>
+    <div class="scan-overlay"></div>
     <canvas id="bg-canvas"></canvas>
 
-    <!-- TOP NAVIGATION / HUD -->
-    <header class="fixed top-0 w-full p-12 flex justify-between items-start z-[100]">
-        <div class="space-y-2">
-            <div class="flex items-center gap-3">
-                <span class="w-8 h-[1px] bg-white/30"></span>
-                <span class="terminal text-white/40">Architect_OS_v101</span>
-            </div>
-            <h1 class="text-4xl font-black tracking-tighter italic">X-CLIPSE</h1>
+    <!-- TOP HUD -->
+    <header class="fixed top-0 w-full p-10 flex justify-between items-start z-[200]">
+        <div class="terminal text-[9px] tracking-[0.5em] opacity-30">
+            [ ARCHITECT_LEVEL_01 ]<br>SYSTEM_ID: X_STU_99
         </div>
-        
-        <div class="flex gap-6">
-            <div class="glass p-6 px-8 rounded-3xl flex flex-col items-end">
-                <p id="clock" class="text-xl font-bold tracking-tighter">00:00:00</p>
-                <p id="uplink-label" class="terminal text-[8px] opacity-30">UPLINK_STANDBY</p>
-            </div>
-            <button onclick="login()" class="btn-hw p-6 group">
-                <i data-lucide="key" class="w-5 h-5 group-hover:text-green-400 transition-colors"></i>
-            </button>
+        <div class="terminal text-[9px] tracking-[0.5em] opacity-30 text-right">
+            STATUS: AWAITING_AUTH<br>LOCATION: 127.0.0.1
         </div>
     </header>
 
     <!-- MAIN INTERFACE -->
-    <main id="main-console" class="h-screen w-full flex items-center justify-center px-20 transition-all duration-1000 opacity-0 scale-95">
-        <div class="w-full max-w-6xl grid grid-cols-12 gap-20 items-center">
-            
-            <!-- LEFT: VISUALS -->
-            <div class="col-span-5 relative group">
-                <div id="track-art" class="glass w-full aspect-square rounded-[60px] bg-white/5 bg-cover bg-center shadow-2xl relative z-10 transition-all duration-700"></div>
-                <div class="absolute -inset-10 bg-white/5 blur-3xl rounded-full z-0 group-hover:bg-white/10 transition-all"></div>
-            </div>
+    <div class="relative z-10 text-center space-y-12">
+        <div class="space-y-2">
+            <p class="terminal text-[10px] tracking-[1em] opacity-20 ml-4">GENESIS_INIT</p>
+            <h1 class="hero-text font-black italic uppercase">XCLIPSE</h1>
+            <p class="terminal text-[10px] tracking-[0.8em] opacity-40">Architect Audio Environment</p>
+        </div>
 
-            <!-- RIGHT: COMMAND CENTER -->
-            <div class="col-span-7 space-y-12">
-                <div class="space-y-4">
-                    <div class="flex items-center gap-4">
-                        <span id="protocol-tag" class="terminal px-3 py-1 border border-white/10 rounded-full text-[8px] text-white/40">PROTOCOL_DISCONNECTED</span>
-                        <div class="h-[1px] flex-grow bg-white/10"></div>
-                    </div>
-                    <h2 id="track-name" class="text-7xl font-black tracking-tighter leading-none italic uppercase">NO_SIGNAL</h2>
-                    <h3 id="track-artist" class="text-2xl font-light opacity-30 tracking-[0.3em] uppercase">system_idle</h3>
+        <div class="flex flex-col items-center gap-8">
+            <!-- BIOMETRIC START -->
+            <button onclick="initiateSystem()" class="power-btn glass-panel px-16 py-8 rounded-full border border-white/10 flex items-center gap-6 group">
+                <div class="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center">
+                    <i data-lucide="fingerprint" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
                 </div>
+                <span class="terminal text-xs tracking-widest font-bold">INITIALIZE_HANDSHAKE</span>
+            </button>
 
-                <!-- PLAYBACK PANEL -->
-                <div class="glass p-12 rounded-[50px] space-y-10">
-                    <div class="space-y-4">
-                        <div class="w-full h-[2px] bg-white/5 relative">
-                            <div id="progress-bar" class="absolute h-full bg-white w-0 shadow-[0_0_15px_white] transition-all"></div>
-                        </div>
-                        <div class="flex justify-between terminal text-[8px] opacity-30">
-                            <span id="time-cur">0:00</span>
-                            <span id="time-tot">0:00</span>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between">
-                        <button class="btn-hw" onclick="cmd('previous')"><i data-lucide="skip-back" class="w-6 h-6"></i></button>
-                        
-                        <button id="master-play" class="w-24 h-24 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 active:scale-95 transition-all" onclick="cmd('toggle')">
-                            <i id="play-icon" data-lucide="play" class="w-10 h-10 fill-current"></i>
-                        </button>
-
-                        <button class="btn-hw" onclick="cmd('next')"><i data-lucide="skip-forward" class="w-6 h-6"></i></button>
-                    </div>
-                </div>
-
-                <!-- CONSOLE FEED -->
-                <div id="console-logs" class="terminal text-[9px] text-white/20 italic h-4">
-                    >> system_init_complete...
-                </div>
+            <div id="loader-status" class="terminal text-[8px] opacity-0 transition-opacity duration-500">
+                Verifying_System_Integrity...
             </div>
         </div>
-    </main>
-
-    <!-- GITHUB AUTO-REFRESH STATUS -->
-    <div class="fixed bottom-12 left-12 flex items-center gap-6 glass p-5 rounded-[25px] border-white/5">
-        <div class="flex items-center gap-3">
-            <div id="gh-signal" class="w-2 h-2 rounded-full bg-blue-500 sync-active"></div>
-            <div class="flex flex-col">
-                <span class="terminal text-[8px] opacity-40">GITHUB_STATUS</span>
-                <span id="gh-ver" class="terminal text-[9px]">SYNCED</span>
-            </div>
-        </div>
-        <div class="h-8 w-[1px] bg-white/10"></div>
-        <button id="gh-sync-btn" onclick="forceSystemRefresh()" class="group p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all border border-white/5">
-            <i data-lucide="refresh-cw" class="w-4 h-4 group-active:rotate-180 transition-transform duration-500"></i>
-        </button>
     </div>
+
+    <!-- FOOTER INFO -->
+    <footer class="fixed bottom-10 w-full px-10 flex justify-between items-end z-[200]">
+        <div class="glass-panel p-4 px-6 rounded-2xl flex items-center gap-4">
+            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+            <span class="terminal text-[9px] opacity-60">KERNEL_STABLE</span>
+        </div>
+        <div class="terminal text-[8px] opacity-20">
+            &copy; 2026 ECLIPSE_NETWORKS // ALL_RIGHTS_RESERVED
+        </div>
+    </footer>
 
     <script>
         const CONFIG = {
             clientId: 'ee9cf7fe920d4280804730690b3fb4e8',
-            redirect: window.location.origin + window.location.pathname,
-            scope: 'user-modify-playback-state user-read-playback-state user-read-currently-playing',
-            github: {
-                user: 'EclipseNetworks',
-                repo: 'Xclipsestudio',
-                branch: 'main',
-                interval: 30000
-            }
+            redirect: window.location.origin + window.location.pathname.replace('index.html', 'callback.html'),
+            scope: 'user-modify-playback-state user-read-playback-state user-read-currently-playing'
         };
 
-        let state = {
-            token: localStorage.getItem('sp_token'),
-            isPlaying: false,
-            lastSha: null
-        };
-
-        // --- 1. BOOT SEQUENCE ---
-        function bootSystem() {
+        function boot() {
             lucide.createIcons();
-            handleCallback();
-            initParticles();
+            initMesh();
             
-            gsap.to("#main-console", { opacity: 1, scale: 1, duration: 1.5, ease: "expo.out" });
-            
-            setInterval(() => {
-                document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB', { hour12: false });
-            }, 1000);
-
-            if (state.token) {
-                document.getElementById('uplink-label').innerText = 'UPLINK_STABLE';
-                document.getElementById('protocol-tag').innerText = 'PROTOCOL_SPOTIFY_ACTIVE';
-                setInterval(syncPlayback, 2000);
-            }
-
-            // Start GitHub Watcher
-            setInterval(checkGitHubUpdate, CONFIG.github.interval);
+            // Entry Animation
+            gsap.from(".hero-text", { y: 100, opacity: 0, duration: 2, ease: "expo.out" });
+            gsap.from(".power-btn", { scale: 0.8, opacity: 0, duration: 1.5, delay: 0.5, ease: "back.out" });
         }
 
-        // --- 2. GITHUB AUTO-REFRESH ENGINE ---
-        async function forceSystemRefresh() {
-            log("manual_github_handshake_initiated");
-            const btn = document.getElementById('gh-sync-btn');
-            gsap.to(btn, { rotation: "+=360", duration: 1, ease: "power2.inOut" });
+        function initiateSystem() {
+            const status = document.getElementById('loader-status');
+            status.classList.remove('opacity-0');
             
-            const updated = await checkGitHubUpdate();
-            if (!updated) {
-                log("already_at_latest_version");
-                gsap.to("#gh-signal", { backgroundColor: "#10b981", duration: 0.3, yoyo: true, repeat: 1 });
-            }
-        }
-
-        async function checkGitHubUpdate() {
-            const url = `https://api.github.com/repos/${CONFIG.github.user}/${CONFIG.github.repo}/commits/${CONFIG.github.branch}`;
-            try {
-                const res = await fetch(url);
-                if (res.ok) {
-                    const data = await res.json();
-                    const currentSha = data.sha;
-
-                    if (state.lastSha && currentSha !== state.lastSha) {
-                        log("version_mismatch_reloading...");
-                        gsap.to("body", { opacity: 0, duration: 1, onComplete: () => window.location.reload() });
-                        return true;
-                    }
-                    state.lastSha = currentSha;
-                    return false;
+            // Artificial Loading Sequence for "Pro" feel
+            const logs = ["Verifying_Kernel...", "Mapping_Neural_Mesh...", "Opening_Spotify_Portal..."];
+            let i = 0;
+            
+            const interval = setInterval(() => {
+                status.innerText = logs[i];
+                i++;
+                if (i >= logs.length) {
+                    clearInterval(interval);
+                    triggerRedirect();
                 }
-            } catch (e) { return false; }
+            }, 600);
         }
 
-        // --- 3. AUTH & CALLBACK (Your logic) ---
-        function handleCallback() {
-            const hash = window.location.hash.substring(1);
-            const params = new URLSearchParams(hash);
-            const token = params.get('access_token');
-            if (token) {
-                localStorage.setItem('sp_token', token);
-                state.token = token;
-                window.location.hash = '';
-                location.reload();
-            }
-        }
-
-        function login() {
+        function triggerRedirect() {
             const url = `https://accounts.spotify.com/authorize?client_id=${CONFIG.clientId}&response_type=token&redirect_uri=${encodeURIComponent(CONFIG.redirect)}&scope=${encodeURIComponent(CONFIG.scope)}`;
-            window.location.href = url;
-        }
-
-        // --- 4. PLAYBACK ENGINE ---
-        async function cmd(action) {
-            if (!state.token) { login(); return; }
-            log(`executing_command: ${action}`);
-
-            const base = 'https://api.spotify.com/v1/me/player/';
-            const headers = { 'Authorization': `Bearer ${state.token}` };
             
-            let endpoint = action;
-            let method = 'POST';
-
-            if (action === 'toggle') {
-                method = 'PUT';
-                endpoint = state.isPlaying ? 'pause' : 'play';
-            }
-
-            try {
-                const res = await fetch(base + endpoint, { method, headers });
-                if (res.status === 404) alert("Open Spotify on your device first!");
-                setTimeout(syncPlayback, 400);
-            } catch (e) { log("api_collision"); }
-        }
-
-        async function syncPlayback() {
-            const res = await fetch('https://api.spotify.com/v1/me/player', {
-                headers: { 'Authorization': `Bearer ${state.token}` }
+            gsap.to("body", { 
+                opacity: 0, 
+                filter: "blur(20px)", 
+                scale: 1.2, 
+                duration: 1, 
+                onComplete: () => window.location.href = url 
             });
-
-            if (res.status === 200) {
-                const data = await res.json();
-                document.getElementById('track-name').innerText = data.item.name;
-                document.getElementById('track-artist').innerText = data.item.artists[0].name;
-                document.getElementById('track-art').style.backgroundImage = `url(${data.item.album.images[0].url})`;
-                
-                const pct = (data.progress_ms / data.item.duration_ms) * 100;
-                document.getElementById('progress-bar').style.width = pct + '%';
-                
-                state.isPlaying = data.is_playing;
-                document.getElementById('play-icon').setAttribute('data-lucide', state.isPlaying ? 'pause' : 'play');
-                lucide.createIcons();
-            }
         }
 
-        // --- 5. UTILS & FX ---
-        function initParticles() {
+        function initMesh() {
             const canvas = document.getElementById('bg-canvas');
             const ctx = canvas.getContext('2d');
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            let dots = [];
-            for(let i=0; i<50; i++) dots.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: Math.random()-0.5, vy: Math.random()-0.5});
+            
+            let particles = [];
+            for(let i=0; i<80; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5
+                });
+            }
 
             function draw() {
-                ctx.clearRect(0,0,canvas.width, canvas.height);
-                ctx.fillStyle = "rgba(255,255,255,0.2)";
-                dots.forEach(d => {
-                    d.x += d.vx; d.y += d.vy;
-                    if(d.x<0||d.x>canvas.width) d.vx*=-1;
-                    if(d.y<0||d.y>canvas.height) d.vy*=-1;
-                    ctx.fillRect(d.x, d.y, 2, 2);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = "rgba(255,255,255,0.05)";
+                ctx.beginPath();
+                particles.forEach((p, i) => {
+                    p.x += p.vx; p.y += p.vy;
+                    if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                    if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                    
+                    particles.forEach((p2, j) => {
+                        if(i === j) return;
+                        const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                        if(dist < 150) {
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                        }
+                    });
                 });
+                ctx.stroke();
                 requestAnimationFrame(draw);
             }
             draw();
         }
 
-        function log(msg) { document.getElementById('console-logs').innerText = `>> ${msg}`; }
-
-        document.addEventListener('mousemove', e => {
-            gsap.to("#cursor-dot", { x: e.clientX, y: e.clientY, duration: 0 });
-            gsap.to("#cursor-ring", { x: e.clientX - 14, y: e.clientY - 14, duration: 0.15 });
-        });
+        window.onload = boot;
     </script>
 </body>
 </html>
