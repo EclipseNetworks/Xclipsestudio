@@ -10,17 +10,17 @@
       tailwind.config = {
         theme: {
           extend: {
-            colors: {
-                 primary: '#ec4899',
-                 secondary: '#0ea5e9',
+            colors: { 
+                primary: '#ec4899', 
+                secondary: '#0ea5e9',
                 alert: '#ff003c',
                 terminal: '#4ade80',
-                dark: '#050811'
-             },
-            fontFamily: {
-                 display: ['Syncopate', 'sans-serif'],
-                 mono: ['JetBrains Mono', 'monospace']
-             }
+                dark: '#050811' 
+            },
+            fontFamily: { 
+                display: ['Syncopate', 'sans-serif'], 
+                mono: ['JetBrains Mono', 'monospace'] 
+            }
           }
         }
       }
@@ -70,13 +70,6 @@
         border: 20px solid #ff003c;
       }
 
-      #boot-overlay {
-        position: fixed; inset: 0; background: #050811; z-index: 3000;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        cursor: none;
-      }
-
       .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 8px; }
       .no-select { user-select: none; }
       .shield-box { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px; }
@@ -87,19 +80,8 @@
     </style>
 </head>
 <body class="no-select">
-
     <div id="custom-cursor"></div>
     <div id="cursor-follower"></div>
-
-    <div id="boot-overlay">
-        <div class="text-center pointer-events-none">
-            <div class="mb-6 opacity-20 font-mono text-[10px] tracking-[1em] uppercase animate-pulse">System Standby</div>
-            <div class="px-12 py-4 border border-primary/30 group-hover:border-primary transition-all duration-500">
-                <span class="font-display text-primary text-xs md:text-sm tracking-[0.5em]">CLICK_ANYWHERE_TO_INITIALIZE</span>
-            </div>
-            <p class="mt-6 font-mono text-[8px] text-white/20 uppercase tracking-widest">Establishing secure uplink protocol</p>
-        </div>
-    </div>
 
     <div id="global-marquee-container">
         <marquee id="global-marquee-text" scrollamount="10"></marquee>
@@ -200,7 +182,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-                const securityConfig = {
+        
+        const securityConfig = {
             apiKey: "AIzaSyCdv6yESBrKhlEvU2URCXoVRVO-2OjAEv4",
             authDomain: "xclipse-security.firebaseapp.com",
             databaseURL: "https://xclipse-security-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -253,8 +236,7 @@
                 this.resize();
                 this.createParticles();
                 this.animate();
-                this.setupBoot(); 
-                this.setupCursor(); 
+                this.setupCursor();
                 
                 window.addEventListener('resize', () => this.resize());
                 setInterval(() => this.updateTemporalCycle(), 100);
@@ -277,14 +259,6 @@
                 document.querySelectorAll('button, .cursor-pointer, .hover-target').forEach(el => {
                     el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
                     el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
-                });
-            },
-
-            setupBoot() {
-                const bootOverlay = document.getElementById('boot-overlay');
-                bootOverlay.addEventListener('click', () => {
-                    bootOverlay.style.opacity = '0';
-                    setTimeout(() => { bootOverlay.style.display = 'none'; }, 800);
                 });
             },
 
